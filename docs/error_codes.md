@@ -11,6 +11,7 @@ The following error codes may be returned by the PixelKey.
 | 4 | Input buffer overflow |
 | 5 | Index out of range |
 | 6 | Keyframe processing stopped |
+| 7 | RTC not set |
 |    | **Configuration and command specific errors** |
 | 16 | Configuration key not found |
 | 17 | NV-mem error on configuration save |
