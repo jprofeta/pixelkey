@@ -1,5 +1,6 @@
 # Commands
 
+A list of error codes can be found [here](./error_codes.md).
 
 ## Configuration get values
 Retreives a configured value. See below for available configuration keys.
@@ -87,9 +88,9 @@ OK
 Returns "RTC not set" error if the RTC has not been programmed.
 
 ## Time set
-Sets the current time for the RTC. Accepts an ISO-8601 timestamp, but the time specifier `T` may be replaced with a space or underscore.
+Sets the current time for the RTC. Accepts an ISO-8601 timestamp, but the time specifier `T` may be replaced with a space or underscore. The time zone is optional but highly suggested.
 ```
-$time-set YYYY-MM-DD HH:mm:ss
+$time-set YYYY-MM-DD HH:mm:ssZZZZZZ
 ```
 Returns `OK` on success or `<error> NAK` if RTC failed to set.
 
