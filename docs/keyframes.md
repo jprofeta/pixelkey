@@ -26,13 +26,15 @@ where
 Transitions a NeoPixel between a list of colors over a specified time period. The NeoPixel color will be set to the last color after completion of the fade keyframe.
 
 ```
-[index] fade <period> <color 1>[,<color 2>,...] [[+]type]
+[index] fade <period> [&]<color 1>[,<color 2>,...] [type]
 ```
 where
-- **period**: Number of seconds over which the keyframe will fade between colors.
+- **period**: Number of seconds over which the keyframe will fade between colors. Maximum of 60 seconds.
 - **color 1,2,...**: List of colors to transition between.
   - If only one color is specified it will fade from the current color to the specified one.
-- **type**: Type of transition to use. If precceded by a plus symbol, "`+`", the transition will apply between each color at intervals of `period/(len(colors)-1)`. Otherwise, the transition keyframe will use the specified function once across the entire transition. Available transition types are:
+  - Up to 15 colors allowed.
+  - If the first color is prefixed with an ampersand, "`&`", then an additional transition from the current color to color 1 will occur first.
+- **type**: Type of transition to use. ~~If precceded by a plus symbol, "`+`", the transition will apply between each color at intervals of `period/(len(colors)-1)`. Otherwise, the transition keyframe will use the specified function once across the entire transition.~~ Available transition types are:
     - *step*: No smooth transition occurs. Colors change immediately every `period/(len(colors)-1)` seconds.
     - *linear*: Transitions linearly between the specified colors [`cubic(0,0,1,1)`]. (default)
     - *ease*: Slow start, then fast middle, then slower end transition [`cubic(0.25,0.1,0.25,1)`].
@@ -42,7 +44,7 @@ where
     - *cubic(x1,y1,x2,y2)*: Specify a custom cubic bezier transition formula.
         - For more information, see https://cubic-bezier.com/.
 
-In cases where the transition occurs between all colors entirely, i.e. no `+` transition prefix, the colors are equally spaced across the transition curve. So if one uses `fade 10 red,green,blue ease-in`, it will quickly transition from red towards green, then slowly transition from green to blue all over 10 seconds. Whereas, if one uses `fade 10 red,green,blue +ease-in`, it will perform two transitions over 5 seconds each. This is equivalent to `fade 5 red,green ease-in; fade 5 green,blue ease-in`.
+~~In cases where the transition occurs between all colors entirely, i.e. no `+` transition prefix, the colors are equally spaced across the transition curve. So if one uses `fade 10 red,green,blue ease-in`, it will quickly transition from red towards green, then slowly transition from green to blue all over 10 seconds. Whereas, if one uses `fade 10 red,green,blue +ease-in`, it will perform two transitions over 5 seconds each. This is equivalent to `fade 5 red,green ease-in; fade 5 green,blue ease-in`.~~
 
 For non-pure color transitions, e.g. red to white, each color component will be transitioned separately in the HSV color space.
 
