@@ -392,14 +392,84 @@
       <configSetting altId="debug0.traceswo.p109" configurationId="debug0.traceswo"/>
       <configSetting altId="gpt5.gtiocb.p408" configurationId="gpt5.gtiocb"/>
       <configSetting altId="gpt5.mode.gtiocaorgtiocb.free" configurationId="gpt5.mode"/>
+      <configSetting altId="p000.input" configurationId="p000"/>
+      <configSetting altId="p000.gpio_mode.gpio_mode_in" configurationId="p000.gpio_mode"/>
+      <configSetting altId="p000.gpio_pupd.gpio_pupd_ip_up" configurationId="p000.gpio_pupd"/>
+      <configSetting altId="p001.input" configurationId="p001"/>
+      <configSetting altId="p001.gpio_mode.gpio_mode_in" configurationId="p001.gpio_mode"/>
+      <configSetting altId="p001.gpio_pupd.gpio_pupd_ip_up" configurationId="p001.gpio_pupd"/>
+      <configSetting altId="p010.input" configurationId="p010"/>
+      <configSetting altId="p010.gpio_mode.gpio_mode_in" configurationId="p010.gpio_mode"/>
+      <configSetting altId="p010.gpio_pupd.gpio_pupd_ip_up" configurationId="p010.gpio_pupd"/>
+      <configSetting altId="p011.input" configurationId="p011"/>
+      <configSetting altId="p011.gpio_mode.gpio_mode_in" configurationId="p011.gpio_mode"/>
+      <configSetting altId="p011.gpio_pupd.gpio_pupd_ip_up" configurationId="p011.gpio_pupd"/>
+      <configSetting altId="p012.input" configurationId="p012"/>
+      <configSetting altId="p012.gpio_mode.gpio_mode_in" configurationId="p012.gpio_mode"/>
+      <configSetting altId="p012.gpio_pupd.gpio_pupd_ip_up" configurationId="p012.gpio_pupd"/>
+      <configSetting altId="p013.input" configurationId="p013"/>
+      <configSetting altId="p013.gpio_mode.gpio_mode_in" configurationId="p013.gpio_mode"/>
+      <configSetting altId="p013.gpio_pupd.gpio_pupd_ip_up" configurationId="p013.gpio_pupd"/>
+      <configSetting altId="p014.input" configurationId="p014"/>
+      <configSetting altId="p014.gpio_mode.gpio_mode_in" configurationId="p014.gpio_mode"/>
+      <configSetting altId="p014.gpio_pupd.gpio_pupd_ip_up" configurationId="p014.gpio_pupd"/>
+      <configSetting altId="p015.input" configurationId="p015"/>
+      <configSetting altId="p015.gpio_mode.gpio_mode_in" configurationId="p015.gpio_mode"/>
+      <configSetting altId="p015.gpio_pupd.gpio_pupd_ip_up" configurationId="p015.gpio_pupd"/>
+      <configSetting altId="p100.input" configurationId="p100"/>
+      <configSetting altId="p100.gpio_mode.gpio_mode_in" configurationId="p100.gpio_mode"/>
+      <configSetting altId="p100.gpio_pupd.gpio_pupd_ip_up" configurationId="p100.gpio_pupd"/>
+      <configSetting altId="p101.input" configurationId="p101"/>
+      <configSetting altId="p101.gpio_mode.gpio_mode_in" configurationId="p101.gpio_mode"/>
+      <configSetting altId="p101.gpio_pupd.gpio_pupd_ip_up" configurationId="p101.gpio_pupd"/>
+      <configSetting altId="p102.input" configurationId="p102"/>
+      <configSetting altId="p102.gpio_mode.gpio_mode_in" configurationId="p102.gpio_mode"/>
+      <configSetting altId="p102.gpio_pupd.gpio_pupd_ip_up" configurationId="p102.gpio_pupd"/>
       <configSetting altId="p108.debug0.swdio" configurationId="p108"/>
       <configSetting altId="p108.gpio_mode.gpio_mode_peripheral" configurationId="p108.gpio_mode"/>
       <configSetting altId="p109.debug0.traceswo" configurationId="p109"/>
       <configSetting altId="p109.gpio_mode.gpio_mode_peripheral" configurationId="p109.gpio_mode"/>
+      <configSetting altId="p110.input" configurationId="p110"/>
+      <configSetting altId="p110.gpio_mode.gpio_mode_in" configurationId="p110.gpio_mode"/>
+      <configSetting altId="p110.gpio_pupd.gpio_pupd_ip_up" configurationId="p110.gpio_pupd"/>
+      <configSetting altId="p111.input" configurationId="p111"/>
+      <configSetting altId="p111.gpio_mode.gpio_mode_in" configurationId="p111.gpio_mode"/>
+      <configSetting altId="p111.gpio_pupd.gpio_pupd_ip_up" configurationId="p111.gpio_pupd"/>
+      <configSetting altId="p112.input" configurationId="p112"/>
+      <configSetting altId="p112.gpio_mode.gpio_mode_in" configurationId="p112.gpio_mode"/>
+      <configSetting altId="p112.gpio_pupd.gpio_pupd_ip_up" configurationId="p112.gpio_pupd"/>
+      <configSetting altId="p200.input" configurationId="p200"/>
+      <configSetting altId="p200.gpio_mode.gpio_mode_in" configurationId="p200.gpio_mode"/>
+      <configSetting altId="p201.input" configurationId="p201"/>
+      <configSetting altId="p201.gpio_mode.gpio_mode_in" configurationId="p201.gpio_mode"/>
+      <configSetting altId="p201.gpio_pupd.gpio_pupd_ip_up" configurationId="p201.gpio_pupd"/>
+      <configSetting altId="p212.input" configurationId="p212"/>
+      <configSetting altId="p212.gpio_mode.gpio_mode_in" configurationId="p212.gpio_mode"/>
+      <configSetting altId="p212.gpio_pupd.gpio_pupd_ip_up" configurationId="p212.gpio_pupd"/>
+      <configSetting altId="p213.input" configurationId="p213"/>
+      <configSetting altId="p213.gpio_mode.gpio_mode_in" configurationId="p213.gpio_mode"/>
+      <configSetting altId="p213.gpio_pupd.gpio_pupd_ip_up" configurationId="p213.gpio_pupd"/>
+      <configSetting altId="p214.input" configurationId="p214"/>
+      <configSetting altId="p214.gpio_mode.gpio_mode_in" configurationId="p214.gpio_mode"/>
+      <configSetting altId="p215.input" configurationId="p215"/>
+      <configSetting altId="p215.gpio_mode.gpio_mode_in" configurationId="p215.gpio_mode"/>
       <configSetting altId="p300.debug0.swclk" configurationId="p300"/>
       <configSetting altId="p300.gpio_mode.gpio_mode_peripheral" configurationId="p300.gpio_mode"/>
+      <configSetting altId="p301.input" configurationId="p301"/>
+      <configSetting altId="p301.gpio_mode.gpio_mode_in" configurationId="p301.gpio_mode"/>
+      <configSetting altId="p301.gpio_pupd.gpio_pupd_ip_up" configurationId="p301.gpio_pupd"/>
+      <configSetting altId="p407.usbfs0.vbus" configurationId="p407"/>
+      <configSetting altId="p407.gpio_mode.gpio_mode_peripheral" configurationId="p407.gpio_mode"/>
       <configSetting altId="p408.gpt5.gtiocb" configurationId="p408"/>
       <configSetting altId="p408.gpio_mode.gpio_mode_peripheral" configurationId="p408.gpio_mode"/>
+      <configSetting altId="p914.usbfs0.usbdp" configurationId="p914"/>
+      <configSetting altId="p914.gpio_mode.gpio_mode_peripheral" configurationId="p914.gpio_mode"/>
+      <configSetting altId="p915.usbfs0.usbdm" configurationId="p915"/>
+      <configSetting altId="p915.gpio_mode.gpio_mode_peripheral" configurationId="p915.gpio_mode"/>
+      <configSetting altId="usbfs0.mode.device" configurationId="usbfs0.mode"/>
+      <configSetting altId="usbfs0.usbdm.p915" configurationId="usbfs0.usbdm"/>
+      <configSetting altId="usbfs0.usbdp.p914" configurationId="usbfs0.usbdp"/>
+      <configSetting altId="usbfs0.vbus.p407" configurationId="usbfs0.vbus"/>
     </pincfg>
   </raPinConfiguration>
 </raConfiguration>
