@@ -122,7 +122,9 @@ or in-line
 ### Grouping keyframes
 Keyframes may be grouped together and optionally named. Please note, the name has no effect other than as information for the user.
 
-Groups are started by using a pound symbol, "`#`", and groups are ended by a pound symbol followed by a forward-slash, "`#/`". A list of indexes may follow the pound symbol for group starts to overide the default index list. Groups may be nested.
+Groups are started by using a pound symbol, "`#`", and groups are ended by a pound symbol followed by a forward-slash, "`#/`". A list of indexes may follow the pound symbol for group starts to override the default index list. Groups may be nested.
+
+Up to 16 keyframes or child groups can be added to a group.
 
 > **📝Note:**
 > The NeoPixel states will not update until all groups have been closed with a `#/`. At which point, the group keyframes will be executed.
