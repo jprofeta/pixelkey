@@ -3,6 +3,14 @@
 #include <math.h>
 #include "pixelkey.h"
 
+#ifndef max
+#define max(a,b)    ((a) < (b) ? (b) : (a))
+#endif
+
+#ifndef min
+#define min(a,b)    ((a) < (b) ? (a) : (b))
+#endif
+
 /**
  * Converts a color to the RGB color space.
  * @param[in]  p_in  Pointer to the color to convert from.
@@ -20,8 +28,8 @@ static void color_convert_rgb(color_t const * p_in, color_t * p_out)
             float s = (float) p_in->hsl.saturation / 100.0f;
             float l = (float) p_in->hsl.lightness / 100.0f;
 
-            float chroma = s * (1.0 - fabsf(2.0 * l - 1.0));
-            float x = chroma * (1.0 - fabsf((h & 1) - 1));
+            float chroma = s * (1.0f - fabsf(2.0f * l - 1.0f));
+            float x = chroma * (1.0f - fabsf((float)(h & 1) - 1.0f));
             float m = l - chroma / 2.0f;
 
             switch (h)
@@ -66,7 +74,7 @@ static void color_convert_rgb(color_t const * p_in, color_t * p_out)
             float v = (float) p_in->hsv.value / 100.0f;
 
             float chroma = v * s;
-            float x = chroma * (1.0 - fabsf((h & 1) - 1));
+            float x = chroma * (1.0f - fabsf((float)(h & 1) - 1.0f));
             float m = v - chroma;
 
             switch (h)
@@ -123,14 +131,13 @@ static void color_convert_hsv(color_t const * p_in, color_t * p_out)
     {
         case COLOR_SPACE_HSL:
         {
-            uint16_t h = p_in->hsl.hue / 60;
             float s = (float) p_in->hsl.saturation / 100.0f;
             float l = (float) p_in->hsl.lightness / 100.0f;
 
             float v = l + s * fminf(l, 1.0f - l);
 
             p_out->hsv.hue = p_in->hsl.hue; // Hue is the same in both HSV and HSL.
-            p_out->hsv.value = (uint8_t) (100.0f * c);
+            p_out->hsv.value = (uint8_t) (100.0f * v);
             if (p_out->hsv.value == 0)
             {
                 p_out->hsv.saturation = 0;
@@ -145,8 +152,8 @@ static void color_convert_hsv(color_t const * p_in, color_t * p_out)
         {
             const color_rgb_t rgb = p_in->rgb;
 
-            uint8_t M = max(rgb.red, max(rgb.green, rgb.blue));
-            uint8_t m = min(rgb.red, min(rgb.green, rgb.blue));
+            uint8_t M = (uint8_t) max(rgb.red, max(rgb.green, rgb.blue));
+            uint8_t m = (uint8_t) min(rgb.red, min(rgb.green, rgb.blue));
             uint8_t chroma = M - m;
 
             float h = 0;
@@ -167,8 +174,8 @@ static void color_convert_hsv(color_t const * p_in, color_t * p_out)
             }
             // else: keep default of 0 deg.
 
-            p_out->hsv.hue = 60.0f * h;
-            p_out->hsv.value = (100 * (uint16_t) M) / 255;  // Convert 0-255 -> 0-100
+            p_out->hsv.hue = (uint16_t) (60.0f * h);
+            p_out->hsv.value = (uint8_t) ((100 * (uint16_t) M) / 255);  // Convert 0-255 -> 0-100
 
             if (M == 0) // Value == 0
             {
@@ -176,7 +183,7 @@ static void color_convert_hsv(color_t const * p_in, color_t * p_out)
             }
             else
             {
-                p_out->hsv.saturation = (100 * (uint16_t) chroma) / ((uint16_t) M); // No need to convert 0-255 here.
+                p_out->hsv.saturation = (uint8_t) ((100 * (uint16_t) chroma) / ((uint16_t) M)); // No need to convert 0-255 here.
             }
         }
         break;
@@ -199,7 +206,6 @@ static void color_convert_hsl(color_t const * p_in, color_t * p_out)
     {
         case COLOR_SPACE_HSV:
         {
-            uint16_t h = p_in->hsv.hue / 60;
             float s = (float) p_in->hsv.saturation / 100.0f;
             float v = (float) p_in->hsv.value / 100.0f;
 
@@ -223,8 +229,8 @@ static void color_convert_hsl(color_t const * p_in, color_t * p_out)
         {
             const color_rgb_t rgb = p_in->rgb;
 
-            uint8_t M = max(rgb.red, max(rgb.green, rgb.blue));
-            uint8_t m = min(rgb.red, min(rgb.green, rgb.blue));
+            uint8_t M = (uint8_t) max(rgb.red, max(rgb.green, rgb.blue));
+            uint8_t m = (uint8_t) min(rgb.red, min(rgb.green, rgb.blue));
             uint8_t chroma = M - m;
 
             float h = 0;
@@ -247,7 +253,7 @@ static void color_convert_hsl(color_t const * p_in, color_t * p_out)
 
             float l = ((float) M + (float) m) / (255.0f * 2.0f);
 
-            p_out->hsl.hue = 60.0f * h;
+            p_out->hsl.hue = (uint16_t) (60.0f * h);
             p_out->hsl.lightness = (uint8_t) (100.0f * l);
 
             if (p_out->hsl.lightness == 0 || p_out->hsl.lightness == 100)
