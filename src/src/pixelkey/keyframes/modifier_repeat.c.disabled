@@ -1,8 +1,6 @@
 
 #include "pixelkey.h"
 #include "keyframes.h"
-#include "keyframe_modifiers.h"
-
 typedef struct st_keyframe_mod_repeat
 {
     /** Keyframe base; MUST be the first entry in the struct. */
