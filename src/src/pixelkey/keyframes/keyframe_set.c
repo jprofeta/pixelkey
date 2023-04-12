@@ -25,7 +25,6 @@ static const keyframe_base_api_t keyframe_set_api =
 static const keyframe_set_t keyframe_set_init =
 {
     .base = { .p_api = &keyframe_set_api },
-    .args = {0}
 };
 
 static bool keyframe_set_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out)

@@ -37,10 +37,6 @@ static const keyframe_base_api_t keyframe_mod_group_api =
 static const keyframe_mod_group_t keyframe_mod_group_init = 
 {
     .base = { .p_api = &keyframe_mod_group_api },
-    .state = {0},
-    .current_child_idx = 0,
-    .children_len = 0,
-    .children = {0}
 };
 
 static bool keyframe_mod_group_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out)

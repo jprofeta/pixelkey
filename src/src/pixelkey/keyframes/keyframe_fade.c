@@ -77,8 +77,6 @@ static const keyframe_base_api_t keyframe_fade_api =
 static const keyframe_fade_t keyframe_fade_init = 
 {
     .base = { .p_api = &keyframe_fade_api },
-    .args = {0},
-    .state = {0},
 };
 
 static const cubic_bezier_t linear      = { { 0.0f,  0.0f }, { 1.0f,  1.0f } };

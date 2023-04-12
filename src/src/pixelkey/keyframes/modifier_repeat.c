@@ -34,9 +34,6 @@ static const keyframe_base_api_t keyframe_mod_repeat_api =
 static const keyframe_mod_repeat_t keyframe_mod_repeat_init = 
 {
     .base = { .p_api = &keyframe_mod_repeat_api },
-    .state = {0},
-    .repeat_count = 0,
-    .child = NULL
 };
 
 static bool keyframe_mod_repeat_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out)
