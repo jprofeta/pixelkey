@@ -1,6 +1,6 @@
 
-#ifndef KEYFRAME_H
-#define KEYFRAME_H
+#ifndef PIXELKEY_H
+#define PIXELKEY_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -97,4 +97,4 @@ struct st_keyframe_base
     } modifiers;
 };
 
-#endif // KEYFRAME_H
+#endif // PIXELKEY_H
