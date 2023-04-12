@@ -24,13 +24,11 @@ typedef struct st_keyframe_mod_repeat
 
 static bool keyframe_mod_repeat_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out);
 static void keyframe_mod_repeat_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
-static keyframe_modifier_type_t keyframe_mod_repeat_modifier_type_get(keyframe_base_t * const p_keyframe);
 
 static const keyframe_base_api_t keyframe_mod_repeat_api =
 {
     .render_frame = keyframe_mod_repeat_render_frame,
     .render_init = keyframe_mod_repeat_render_init,
-    .modifier_type_get = keyframe_mod_repeat_modifier_type_get,
 };
 
 static const keyframe_mod_repeat_t keyframe_mod_repeat_init = 
@@ -95,11 +93,3 @@ static void keyframe_mod_repeat_render_init(keyframe_base_t * const p_keyframe, 
     p_mod_repeat->state.init_keyframe = true;
     p_mod_repeat->state.start_offset = 0;
 }
-
-static keyframe_modifier_type_t keyframe_mod_repeat_modifier_type_get(keyframe_base_t * const p_keyframe)
-{
-    ARG_NOT_USED(p_keyframe);
-
-    return KEYFRAME_MODIFIER_TYPE_REPEATING;
-}
-

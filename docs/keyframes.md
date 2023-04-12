@@ -54,7 +54,7 @@ Keyframe modifiers perform additional operations beyond that of specifying a Neo
 Please note, the order of keyframe modifiers matter. `^5; @PT10M;` is not the same as `@PT10M; ^5;`. The former meaning to repeat every 10 minutes for a total of 5 times, while the latter represents in 10 minutes immediately repeat the keyframe 5 times. When in doubt, use keyframe groups.
 
 ### Repeating keyframes
-Keyframes may be repeated by sending a repeat modifier before the desired repeating keyframe. A repeat modifier is a carrot, "`^`", followed by a count. A count of "0" indicates repeat until next keyframe is received.
+Keyframes may be repeated by sending a repeat modifier before the desired repeating keyframe. A repeat modifier is a carrot, "`^`", followed by a count. A blank count or a count of "0" indicates repeat indefinitely or until the next keyframe is ready.
 
 ```
 ^<count>
@@ -70,15 +70,15 @@ or in-line
 ^10; blink 2 red
 ```
 
-### Timestamped keyframes
-Keyframes may be queued for a specific time, which can be used to synchronize multiple devices. Only one timestamped keyframe is supported per index. 
+### Scheduled keyframes
+Keyframes may be queued for a specific time, which can be used to synchronize multiple devices.
 
-A timestamped modifier is an at symbol, "`@`", followed by a time string in ISO-8601 format. Date/time literals and durations are supported.
+A scheduled modifier is an at symbol, "`@`", followed by a time string in ISO-8601 format. Date/time literals and durations are supported.
 ```
-@<timestamp:iso8601>
+@<schedule:iso8601>
 ```
 
-The following ISO-8601 representations are allowed:
+The following ISO-8601 representations are allowed for the schedule:
 - Dates
   - `YYYYMMDD`, `YYYY-MM-DD`
   - Time assumes the time component is `00:00` or midnight in the morning.
@@ -98,10 +98,10 @@ The following ISO-8601 representations are allowed:
   - These can be used to automatically stop a timestamped keyframe at a specific time.
   - Any supported time representation may be used on either side of the interval.
   - A double hyphen, "`--`", may be used instead of a forward-slash, "`/`".
-- Repeating intervals
-  - `Rn/<interval or duration>`
-  - Can be used instead of a repeating keyframe modifier to repeat over a certain interval.
-  - If `n` is not specified, it will repeat indefinitely until stopped.
+- ~~Repeating intervals~~
+  - ~~`Rn/<interval or duration>`~~
+  - ~~Can be used instead of a repeating keyframe modifier to repeat over a certain interval.~~
+  - ~~If `n` is not specified, it will repeat indefinitely until stopped.~~
 - For more information, see https://en.wikipedia.org/wiki/ISO_8601.
 
 

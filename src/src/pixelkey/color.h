@@ -47,11 +47,20 @@ typedef struct st_color_hsl
     uint8_t  lightness;  ///< Lightness component; ranges from 0-100.
 } color_hsl_t;
 
+typedef union u_color_kind
+{
+    /** Values in the RGB (red-green-blue) color space. */
+    color_rgb_t rgb;
+    /** Values in the HSV (hue-saturation-value) color space. */
+    color_hsv_t hsv;
+    /** Values in the HSL (hue-saturation-lightness) color space. */
+    color_hsl_t hsl;
+} color_kind_t;
+
 /** Represents a color in a defined color space. */
 typedef struct st_color
 {
-    /** Color space being used to represented the color. */
-    color_space_t color_space;
+    /* !IMPORTANT! Keep this union at the top so color_t can be cast directly to color_kind_t. */
     union
     {
         /** Values in the RGB (red-green-blue) color space. */
@@ -61,6 +70,8 @@ typedef struct st_color
         /** Values in the HSL (hue-saturation-lightness) color space. */
         color_hsl_t hsl;
     };
+    /** Color space being used for this color. */
+    color_space_t color_space;
 } color_t;
 
 /**
@@ -70,5 +81,14 @@ typedef struct st_color
  * @param[out] p_out Pointer to the color for the desired color space.
  */
 void color_convert(color_space_t to, color_t const * p_in, color_t * p_out);
+
+/**
+ * Convert a color to a different color space.
+ * @param[in]  from  Color space to convert from.
+ * @param[in]  to    Desired color space to convert to.
+ * @param[in]  p_in  Pointer to the color in the original color space.
+ * @param[out] p_out Pointer to the color for the desired color space.
+ */
+void color_convert2(color_space_t from, color_space_t to, color_kind_t const * p_in, color_kind_t * p_out);
 
 #endif // COLOR_H

@@ -72,7 +72,6 @@ static const keyframe_base_api_t keyframe_fade_api =
 {
     .render_frame = keyframe_fade_render_frame,
     .render_init = keyframe_fade_render_init,
-    .modifier_type_get = keyframe_default_modifier_type_get,
 };
 
 static const keyframe_fade_t keyframe_fade_init = 
@@ -121,7 +120,7 @@ static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framer
         p_fade->args.colors_len += 1;
 
         // Insert the current color as HSV.
-        color_convert(COLOR_SPACE_HSV, &current_color, &p_fade->args.colors[0]);
+        color_convert2(COLOR_SPACE_RGB, COLOR_SPACE_HSV, (color_kind_t *)&current_color, (color_kind_t *)&p_fade->args.colors[0]);
     }
 
     // Determine which axis require fading. This allows for some optimization later.

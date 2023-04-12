@@ -20,10 +20,9 @@ static const keyframe_base_api_t keyframe_set_api =
 {
     .render_frame = keyframe_set_render_frame,
     .render_init = keyframe_set_render_init,
-    .modifier_type_get = keyframe_default_modifier_type_get,
 };
 
-static const keyframe_set_t keyframe_set_init = 
+static const keyframe_set_t keyframe_set_init =
 {
     .base = { .p_api = &keyframe_set_api },
     .args = {0}

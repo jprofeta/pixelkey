@@ -33,7 +33,6 @@ static const keyframe_base_api_t keyframe_blink_api =
 {
     .render_frame = keyframe_blink_render_frame,
     .render_init = keyframe_blink_render_init,
-    .modifier_type_get = keyframe_default_modifier_type_get,
 };
 
 static const keyframe_blink_t keyframe_blink_init = 
