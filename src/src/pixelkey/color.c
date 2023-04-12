@@ -3,11 +3,18 @@
 #include <math.h>
 #include "pixelkey.h"
 
+/** Number of degrees in each sector of the hue component. */
+#define HUE_SECTOR_SIZE     (60U)
+/** Number of degrees in each sector of the hue component as a float-32. */
+#define HUE_SECTOR_SIZE_F32 (60.0f)
+
 #ifndef max
-#define max(a,b)    ((a) < (b) ? (b) : (a))
+/** Maximum of two values. */
+#define max(a,b)    ((a) > (b) ? (a) : (b))
 #endif
 
 #ifndef min
+/** Minimum of two values. */
 #define min(a,b)    ((a) < (b) ? (a) : (b))
 #endif
 
@@ -23,9 +30,9 @@ static void color_convert_rgb(color_space_t from, color_kind_t const * p_in, col
     {
         case COLOR_SPACE_HSL:
         {
-            uint16_t h = p_in->hsv.hue / 60;
-            float s = (float) p_in->hsl.saturation / 100.0f;
-            float l = (float) p_in->hsl.lightness / 100.0f;
+            uint16_t h = p_in->hsv.hue / HUE_SECTOR_SIZE;
+            float s = (float) p_in->hsl.saturation / SATURATION_MAX_F32;
+            float l = (float) p_in->hsl.lightness / LIGHTNESS_MAX_F32;
 
             float chroma = s * (1.0f - fabsf(2.0f * l - 1.0f));
             float x = chroma * (1.0f - fabsf((float)(h & 1) - 1.0f));
@@ -34,43 +41,43 @@ static void color_convert_rgb(color_space_t from, color_kind_t const * p_in, col
             switch (h)
             {
                 case 0:
-                    p_out->red = (uint8_t) (255.0f * (chroma + m));
-                    p_out->green = (uint8_t) (255.0f * (x + m));
-                    p_out->blue = (uint8_t) (255.0f * m);
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * (x + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * m);
                     break;
                 case 1:
-                    p_out->red = (uint8_t) (255.0f * (x + m));
-                    p_out->green = (uint8_t) (255.0f * (chroma + m));
-                    p_out->blue = (uint8_t) (255.0f * m);
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * (x + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * m);
                     break;
                 case 2:
-                    p_out->red = (uint8_t) (255.0f * m);
-                    p_out->green = (uint8_t) (255.0f * (chroma + m));
-                    p_out->blue = (uint8_t) (255.0f * (x + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * m);
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (x + m));
                     break;
                 case 3:
-                    p_out->red = (uint8_t) (255.0f * m);
-                    p_out->green = (uint8_t) (255.0f * (x + m));
-                    p_out->blue = (uint8_t) (255.0f * (chroma + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * m);
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * (x + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (chroma + m));
                     break;
                 case 4:
-                    p_out->red = (uint8_t) (255.0f * (x + m));
-                    p_out->green = (uint8_t) (255.0f * m);
-                    p_out->blue = (uint8_t) (255.0f * (chroma + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * (x + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * m);
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (chroma + m));
                     break;
                 default:
-                    p_out->red = (uint8_t) (255.0f * (chroma + m));
-                    p_out->green = (uint8_t) (255.0f * m);
-                    p_out->blue = (uint8_t) (255.0f * (x + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * m);
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (x + m));
                     break;
             }
         }
         break;
         case COLOR_SPACE_HSV:
         {
-            uint16_t h = p_in->hsv.hue / 60;
-            float s = (float) p_in->hsv.saturation / 100.0f;
-            float v = (float) p_in->hsv.value / 100.0f;
+            uint16_t h = p_in->hsv.hue / HUE_SECTOR_SIZE;
+            float s = (float) p_in->hsv.saturation / SATURATION_MAX_F32;
+            float v = (float) p_in->hsv.value / VALUE_MAX_F32;
 
             float chroma = v * s;
             float x = chroma * (1.0f - fabsf((float)(h & 1) - 1.0f));
@@ -79,34 +86,34 @@ static void color_convert_rgb(color_space_t from, color_kind_t const * p_in, col
             switch (h)
             {
                 case 0:
-                    p_out->red = (uint8_t) (255.0f * (chroma + m));
-                    p_out->green = (uint8_t) (255.0f * (x + m));
-                    p_out->blue = (uint8_t) (255.0f * m);
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * (x + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * m);
                     break;
                 case 1:
-                    p_out->red = (uint8_t) (255.0f * (x + m));
-                    p_out->green = (uint8_t) (255.0f * (chroma + m));
-                    p_out->blue = (uint8_t) (255.0f * m);
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * (x + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * m);
                     break;
                 case 2:
-                    p_out->red = (uint8_t) (255.0f * m);
-                    p_out->green = (uint8_t) (255.0f * (chroma + m));
-                    p_out->blue = (uint8_t) (255.0f * (x + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * m);
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (x + m));
                     break;
                 case 3:
-                    p_out->red = (uint8_t) (255.0f * m);
-                    p_out->green = (uint8_t) (255.0f * (x + m));
-                    p_out->blue = (uint8_t) (255.0f * (chroma + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * m);
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * (x + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (chroma + m));
                     break;
                 case 4:
-                    p_out->red = (uint8_t) (255.0f * (x + m));
-                    p_out->green = (uint8_t) (255.0f * m);
-                    p_out->blue = (uint8_t) (255.0f * (chroma + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * (x + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * m);
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (chroma + m));
                     break;
                 default:
-                    p_out->red = (uint8_t) (255.0f * (chroma + m));
-                    p_out->green = (uint8_t) (255.0f * m);
-                    p_out->blue = (uint8_t) (255.0f * (x + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * m);
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (x + m));
                     break;
             }
         }
@@ -129,20 +136,20 @@ static void color_convert_hsv(color_space_t from, color_kind_t const * p_in, col
     {
         case COLOR_SPACE_HSL:
         {
-            float s = (float) p_in->hsl.saturation / 100.0f;
-            float l = (float) p_in->hsl.lightness / 100.0f;
+            float s = (float) p_in->hsl.saturation / SATURATION_MAX_F32;
+            float l = (float) p_in->hsl.lightness / LIGHTNESS_MAX_F32;
 
             float v = l + s * fminf(l, 1.0f - l);
 
             p_out->hue = p_in->hsl.hue; // Hue is the same in both HSV and HSL.
-            p_out->value = (uint8_t) (100.0f * v);
+            p_out->value = (uint8_t) (VALUE_MAX_F32 * v);
             if (p_out->value == 0)
             {
                 p_out->saturation = 0;
             }
             else
             {
-                p_out->saturation = (uint8_t) (100.0f * 2.0f * (1.0f - l / v));
+                p_out->saturation = (uint8_t) (SATURATION_MAX_F32 * 2.0f * (1.0f - l / v));
             }
         }
         break;
@@ -159,21 +166,21 @@ static void color_convert_hsv(color_space_t from, color_kind_t const * p_in, col
             {
                 if (M == rgb.red)
                 {
-                    h = fmodf(((float) (rgb.green - rgb.blue)) / ((float) chroma), 6.0);
+                    h = fmodf(((float) (rgb.green - rgb.blue)) / ((float) chroma), 6.0f);
                 }
                 else if (M == rgb.green)
                 {
-                    h = ((float) (rgb.blue - rgb.red)) / ((float) chroma) + 2.0;
+                    h = ((float) (rgb.blue - rgb.red)) / ((float) chroma) + 2.0f;
                 }
                 else if (M == rgb.blue)
                 {
-                    h = ((float) (rgb.red - rgb.green)) / ((float) chroma) + 4.0;
+                    h = ((float) (rgb.red - rgb.green)) / ((float) chroma) + 4.0f;
                 }
             }
             // else: keep default of 0 deg.
 
-            p_out->hue = (uint16_t) (60.0f * h);
-            p_out->value = (uint8_t) ((100 * (uint16_t) M) / 255);  // Convert 0-255 -> 0-100
+            p_out->hue = (uint16_t) (HUE_SECTOR_SIZE_F32 * h);
+            p_out->value = (uint8_t) ((VALUE_MAX * (uint16_t) M) / RGB_MAX);  // Convert 0-255 -> 0-100
 
             if (M == 0) // Value == 0
             {
@@ -181,7 +188,7 @@ static void color_convert_hsv(color_space_t from, color_kind_t const * p_in, col
             }
             else
             {
-                p_out->saturation = (uint8_t) ((100 * (uint16_t) chroma) / ((uint16_t) M)); // No need to convert 0-255 here.
+                p_out->saturation = (uint8_t) ((SATURATION_MAX * (uint16_t) chroma) / ((uint16_t) M)); // No need to convert 0-255 here.
             }
         }
         break;
@@ -203,21 +210,21 @@ static void color_convert_hsl(color_space_t from, color_kind_t const * p_in, col
     {
         case COLOR_SPACE_HSV:
         {
-            float s = (float) p_in->hsv.saturation / 100.0f;
-            float v = (float) p_in->hsv.value / 100.0f;
+            float s = (float) p_in->hsv.saturation / SATURATION_MAX_F32;
+            float v = (float) p_in->hsv.value / VALUE_MAX_F32;
 
             float l = v * (1.0f - s / 2.0f);
 
 
             p_out->hue = p_in->hsv.hue; // Hue is the same in both HSV and HSL.
-            p_out->lightness = (uint8_t) (100.0f * l);
-            if (p_out->lightness == 0 || p_out->lightness == 100)
+            p_out->lightness = (uint8_t) (LIGHTNESS_MAX_F32 * l);
+            if (p_out->lightness == 0 || p_out->lightness == LIGHTNESS_MAX)
             {
                 p_out->saturation = 0;
             }
             else
             {
-                p_out->saturation = (uint8_t) (100.0f * (v - l) / fminf(l, 1.0 - l));
+                p_out->saturation = (uint8_t) (SATURATION_MAX_F32 * (v - l) / fminf(l, 1.0f - l));
             }
 
         }
@@ -235,32 +242,32 @@ static void color_convert_hsl(color_space_t from, color_kind_t const * p_in, col
             {
                 if (M == rgb.red)
                 {
-                    h = fmodf(((float) (rgb.green - rgb.blue)) / ((float) chroma), 6.0);
+                    h = fmodf(((float) (rgb.green - rgb.blue)) / ((float) chroma), 6.0f);
                 }
                 else if (M == rgb.green)
                 {
-                    h = ((float) (rgb.blue - rgb.red)) / ((float) chroma) + 2.0;
+                    h = ((float) (rgb.blue - rgb.red)) / ((float) chroma) + 2.0f;
                 }
                 else if (M == rgb.blue)
                 {
-                    h = ((float) (rgb.red - rgb.green)) / ((float) chroma) + 4.0;
+                    h = ((float) (rgb.red - rgb.green)) / ((float) chroma) + 4.0f;
                 }
             }
             // else: keep default of 0 deg.
 
-            float l = ((float) M + (float) m) / (255.0f * 2.0f);
+            float l = ((float) M + (float) m) / (RGB_MAX_F32 * 2.0f);
 
-            p_out->hue = (uint16_t) (60.0f * h);
-            p_out->lightness = (uint8_t) (100.0f * l);
+            p_out->hue = (uint16_t) (HUE_SECTOR_SIZE_F32 * h);
+            p_out->lightness = (uint8_t) (LIGHTNESS_MAX_F32 * l);
 
-            if (p_out->lightness == 0 || p_out->lightness == 100)
+            if (p_out->lightness == 0 || p_out->lightness == LIGHTNESS_MAX)
             {
                 p_out->saturation = 0;
             }
             else
             {
-                float chroma_f = (float) chroma / 255.0f;
-                p_out->saturation = (uint8_t) (100.0f * chroma_f / (1.0f - fabsf(2.0f * l - 1.0f)));
+                float chroma_f = (float) chroma / RGB_MAX_F32;
+                p_out->saturation = (uint8_t) (SATURATION_MAX_F32 * chroma_f / (1.0f - fabsf(2.0f * l - 1.0f)));
             }
         }
         break;

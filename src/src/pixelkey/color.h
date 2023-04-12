@@ -3,17 +3,30 @@
 
 #include <stdint.h>
 
+/** Maximum value of an RGB color component. */
+#define RGB_MAX            (255U)
+/** Maximum value of an RGB color component as a float-32. */
+#define RGB_MAX_F32        (255.0f)
+
 /** Maximum value of hue. */
-#define HUE_MAX         (359U)
+#define HUE_MAX            (359U)
+/** Maximum value of hue as a float-32. */
+#define HUE_MAX_F32        (359.0f)
 
 /** Maximum value of saturation. */
-#define SATURATION_MAX  (100U)
+#define SATURATION_MAX     (100U)
+/** Maximum value of saturation as a float-32. */
+#define SATURATION_MAX_F32 (100.0f)
 
 /** Maximum value of the value component of HSV. */
-#define VALUE_MAX       (100U)
+#define VALUE_MAX          (100U)
+/** Maximum value of the value component of HSV as a float-32. */
+#define VALUE_MAX_F32      (100.0f)
 
 /** Maximum value of lightness. */
-#define LIGHTNESS_MAX   (100U)
+#define LIGHTNESS_MAX      (100U)
+/** Maximum value of lightness as a float-32. */
+#define LIGHTNESS_MAX_F32  (100.0f)
 
 /** Supported color spaces. */
 typedef enum e_color_space
