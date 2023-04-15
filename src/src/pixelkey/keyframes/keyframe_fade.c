@@ -62,11 +62,15 @@ typedef struct st_keyframe_fade
         timestep_t  color_period; ///< The period to transition between each pair of colors.
         timestep_t  finish_time;  ///< Total number of frames for this keyframe at the current framerate.
         uint8_t     pair_index;   ///< Index of the first color of the currently transitioning pair.
+        point_t     curr_b_point; ///< The current bezier point to render.
     } state;
 } keyframe_fade_t;
 
 static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out);
 static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
+
+static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_axis_t axis, float ratio, color_hsv_t * p_out);
+static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, point_t * p_point);
 
 static const keyframe_base_api_t keyframe_fade_api =
 {
@@ -99,6 +103,28 @@ static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, times
     // Get the time relative to the start of this pair's transition.
     // This is used to index the bezier curve later.
     timestep_t relative_time = time - (p_fade->state.color_period * p_fade->state.pair_index);
+    point_t bezier_point = {0};
+
+    // Calculate the ratio for the interpolation index, then get the bezier point.
+    float t = ((float) relative_time) / ((float) p_fade->state.color_period);
+    cubic_bezier_calc(&p_fade->args.curve, t, &bezier_point);
+
+    // Scale the x by the fading period so it can be directly compared to relative_time.
+    bezier_point.x *= p_fade->state.color_period;
+    if (((float) relative_time) >= bezier_point.x)
+    {
+        // This frame is "ahead" of the curve so update the current curve point.
+        p_fade->state.curr_b_point = bezier_point;
+    }
+    // else: No updated to the curve for this round, this frame is "behind". Fade based on the stored point.
+
+    color_hsv_t blended_color;
+    blend_colors(&p_fade->args.colors[p_fade->state.pair_index],
+                    &p_fade->args.colors[p_fade->state.pair_index + 1],
+                    p_fade->state.fade_axis,
+                    p_fade->state.curr_b_point.y,
+                    &blended_color);
+    color_convert2(COLOR_SPACE_HSV, COLOR_SPACE_RGB, (color_kind_t *) &blended_color, (color_kind_t *)p_color_out);
 
     return time >= p_fade->state.finish_time;
 }
@@ -150,4 +176,73 @@ static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framer
 
     // Set default values.
     p_fade->state.pair_index = 0;
+    p_fade->state.curr_b_point.x = 0.0f;
+    p_fade->state.curr_b_point.y = 0.0f;
+}
+
+/**
+ * Blends two HSV colors based on a ratio between a to b.
+ * @param[in]  p_a   Pointer to color a (ratio = 0).
+ * @param[in]  p_b   Pointer to color b (ratio = 1).
+ * @param      axis  The axis to blend across.
+ * @param      ratio The ratio between color a and color b.
+ * @param[out] p_out Pointer to store the blended color.
+ */
+static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_axis_t axis, float ratio, color_hsv_t * p_out)
+{
+    if (axis & FADE_AXIS_HUE)
+    {
+        float hue_delta = (float) (p_b->hue - p_a->hue);
+        p_out->hue = p_a->hue + ratio * hue_delta;
+    }
+    else
+    {
+        p_out->hue = p_a->hue;
+    }
+
+    if (axis & FADE_AXIS_SAT)
+    {
+        float sat_delta = (float) (p_b->saturation - p_a->saturation);
+        p_out->saturation = p_a->saturation + ratio * sat_delta;
+    }
+    else
+    {
+        p_out->saturation = p_a->saturation;
+    }
+
+    if (axis & FADE_AXIS_VAL)
+    {
+        float val_delta = (float) (p_b->value - p_a->value);
+        p_out->value = p_a->value + ratio * val_delta;
+    }
+    else
+    {
+        p_out->value = p_a->value;
+    }
+}
+
+/**
+ * Calculates a point on a cubic bezier curve at interpolation index, t.
+ * 
+ * This function assumes start (\$P_0\$) and end (\$P_3\$) points of (0,0) and (1,1) respectively.
+ * The equation for the bezier curve is
+ * \$ \vec{B}(t) = (1-t)^3 \vec{P}_0 + 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3 \vec{P}_3, 0 \le t \le 1 \$
+ * or simplified using (0,0) and (1,1) for P_0 and P_3
+ * \$ \vec{B}(t) = 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3, 0 \le t \le 1 \$
+ * 
+ * @param[in]  p_curve Pointer to the bezier control points.
+ * @param      t       Interpolation index at which to calculate a point on the curve; 0 <= t <= 1.
+ * @param[out] p_point Pointer to store the calculated point.
+ */
+static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, point_t * p_point)
+{
+    // Calculate the coefficients first because they have to be used twice.
+    float t_ = 1.0f - t;
+
+    float a1 = 3.0f * t_ * t_ * t;
+    float a2 = 3.0f * t_ * t * t;
+    float a3 = t * t * t;
+
+    p_point->x = a1 * p_curve->p1.x + a2 * p_curve->p2.x + a3;
+    p_point->y = a1 * p_curve->p1.y + a2 * p_curve->p2.y + a3;
 }
