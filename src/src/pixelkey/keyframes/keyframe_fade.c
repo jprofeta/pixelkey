@@ -184,7 +184,7 @@ static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framer
  * Blends two HSV colors based on a ratio between a to b.
  * @param[in]  p_a   Pointer to color a (ratio = 0).
  * @param[in]  p_b   Pointer to color b (ratio = 1).
- * @param      axis  The axis to blend across.
+ * @param      axis  The axes to blend across.
  * @param      ratio The ratio between color a and color b.
  * @param[out] p_out Pointer to store the blended color.
  */
