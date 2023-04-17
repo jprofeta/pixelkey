@@ -6,6 +6,13 @@
 #include "pixelkey.h"
 #include "keyframes.h"
 
+/**
+ * @ingroup pixelkey__keyframes
+ * @defgroup pixelkey__keyframes__fade Fade Keyframe
+ * Keyframe to fade between a list of colors.
+ * @{
+ */
+
 /** Maximum number of colors allowed to be input by the user. */
 #define COLORS_INPUT_MAX_LENGTH (15)
 
@@ -15,14 +22,20 @@
  */
 #define COLORS_MAX_LENGTH  (COLORS_INPUT_MAX_LENGTH + 1)
 
-/** The type of fade to perform. */
+/** 
+ * @private 
+ * The type of fade to perform.
+ */
 typedef enum e_fade_type
 {
     FADE_TYPE_STEP,  ///< Colors are immediately transitioned.
     FADE_TYPE_CUBIC  ///< The transition curve is applied between every pair of colors.
 } fade_type_t;
 
-/** The color axes/channels to fade over. */
+/**
+ * @private
+ * The color axes/channels to fade over.
+ */
 typedef enum e_fade_axis
 {
     FADE_AXIS_NONE = 0,         ///< No axis require fading.
@@ -31,20 +44,30 @@ typedef enum e_fade_axis
     FADE_AXIS_VAL = (1U << 2)   ///< Fade if needed for the Value axis.
 } fade_axis_t;
 
-/** Single point on a cartesian plane. */
+/**
+ * @private
+ * Single point on a cartesian plane.
+ */
 typedef struct st_point
 {
     float x; ///< X-coordinate of the point.
     float y; ///< Y-coordinate of the point.
 } point_t;
 
-/** Pair of control points for a cubic bezier curve where the start is (0,0) and end is (1,1). */
+/**
+ * @private
+ * Pair of control points for a cubic bezier curve where the start is (0,0) and end is (1,1).
+ */
 typedef struct st_cubic_bezier
 {
     point_t p1; ///< First control point, from (0,0).
     point_t p2; ///< Second control point, to (1,1).
 } cubic_bezier_t;
 
+/**
+ * @private
+ * Fade keyframe.
+ */
 typedef struct st_keyframe_fade
 {
     /** Keyframe base; MUST be the first entry in the struct. */
@@ -76,21 +99,34 @@ static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framer
 static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_axis_t axis, float ratio, color_hsv_t * p_out);
 static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, point_t * p_point);
 
+/**
+ * @private
+ * Fade keyframe API function pointers.
+ */
 static const keyframe_base_api_t keyframe_fade_api =
 {
     .render_frame = keyframe_fade_render_frame,
     .render_init = keyframe_fade_render_init,
 };
 
+/**
+ * @private
+ * Default values for fade keyframe structs.
+ */
 static const keyframe_fade_t keyframe_fade_init = 
 {
     .base = { .p_api = &keyframe_fade_api },
 };
 
+/** @private Control points for linear fade. Fades linearly, in equal steps, between the start and end values. */
 static const cubic_bezier_t linear      = { { 0.0f,  0.0f }, { 1.0f,  1.0f } };
+/** @private Control points for ease fade. Quickly fades from the start value, then transitions slower to the end value. */
 static const cubic_bezier_t ease        = { { 0.25f, 0.1f }, { 0.25f, 1.0f } };
+/** @private Control points for ease-in fade. Slow fade at the start then quickly fades to the end value. */
 static const cubic_bezier_t ease_in     = { { 0.42f, 0.0f }, { 1.0f,  1.0f } };
+/** @private Control points for ease-out fade. Quickly fades from the start value then slowly fades to the end value. */
 static const cubic_bezier_t ease_out    = { { 0.0f,  0.0f }, { 0.58f, 1.0f } };
+/** @private Control points for ease-in-out fade. Quickly transitions from the start to the end; faster than normal ease. */
 static const cubic_bezier_t ease_in_out = { { 0.42f, 0.0f }, { 0.58f, 1.0f } };
 
 static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out)
@@ -185,6 +221,7 @@ static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framer
 }
 
 /**
+ * @private
  * Blends two HSV colors based on a ratio between a to b.
  * @param[in]  p_a   Pointer to color a (ratio = 0).
  * @param[in]  p_b   Pointer to color b (ratio = 1).
@@ -227,16 +264,17 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
 }
 
 /**
+ * @private
  * Calculates a point on a cubic bezier curve at interpolation index, t.
  * 
- * This function assumes start (\f$ P_0 \f$) and end (\f$ P_3 \f$) points of \f$ (0,0) \f$ and \f$ (1,1) \f$ respectively.
+ * This function assumes start, \f$ P_0 \f$, and end, \f$ P_3 \f$, points of \f$ (0,0) \f$ and \f$ (1,1) \f$ respectively.
  * The equation for the bezier curve is
  * \f[
- *  \vec{B}(t) = (1-t)^3 \vec{P}_0 + 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3 \vec{P}_3, 0 \le t \le 1
+ *  \vec{B}(t) = (1-t)^3 \vec{P}_0 + 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3 \vec{P}_3, \quad 0 \le t \le 1
  * \f]
- * or simplified using (0,0) and (1,1) for P_0 and P_3
+ * or simplified using the assumptions for \f$ P_0 \f$ and \f$ P_3 \f$
  * \f[
- *  \vec{B}(t) = 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3, 0 \le t \le 1
+ *  \vec{B}(t) = 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3, \quad 0 \le t \le 1
  * \f]
  * 
  * @param[in]  p_curve Pointer to the bezier control points.
@@ -454,3 +492,5 @@ keyframe_base_t * keyframe_fade_parse(char * p_str)
         return &p_fade->base;
     }
 }
+
+/** @} */

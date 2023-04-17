@@ -6,9 +6,20 @@
 #include "pixelkey.h"
 #include "keyframes.h"
 
+/**
+ * @ingroup pixelkey__keyframes
+ * @defgroup pixelkey__keyframes__blink Blink Keyframe
+ * Keyframe to blink between two colors.
+ * @{
+ */
+
 /** Default duty cycle if not specified. */
 #define DUTY_CYCLE_DEFAULT  (50U)
 
+/**
+ * @private
+ * Blink keyframe.
+ */
 typedef struct st_keyframe_blink
 {
     /** Keyframe base; MUST be the first entry in the struct. */
@@ -34,12 +45,20 @@ typedef struct st_keyframe_blink
 static bool keyframe_blink_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out);
 static void keyframe_blink_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
 
+/**
+ * @private
+ * Blink keyframe API function pointers.
+ */
 static const keyframe_base_api_t keyframe_blink_api =
 {
     .render_frame = keyframe_blink_render_frame,
     .render_init = keyframe_blink_render_init,
 };
 
+/**
+ * @private
+ * Default values for blink keyframe structs.
+ */
 static const keyframe_blink_t keyframe_blink_init = 
 {
     .base = { .p_api = &keyframe_blink_api },
@@ -179,3 +198,5 @@ keyframe_base_t * keyframe_blink_parse(char * p_str)
         return &p_blink->base;
     }
 }
+
+/** @} */

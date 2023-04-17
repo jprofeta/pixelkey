@@ -1,6 +1,7 @@
 *.launch
 [dD]ebug
 [rR]elease
+docs/out
 
 e2studio_project.prefs
 

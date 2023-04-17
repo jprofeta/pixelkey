@@ -7,6 +7,11 @@
 #include "pixelkey_errors.h"
 #include "color.h"
 
+/**
+ * @defgroup pixelkey PixelKey
+ * @{
+ */
+
 /** Signifies an argument is not used. */
 #define ARG_NOT_USED(arg) ((void)(arg))
 
@@ -96,5 +101,7 @@ struct st_keyframe_base
         bool                schedule_is_repeating; ///< Indicates the schedule should repeat instead of the frame.
     } modifiers;
 };
+
+/** @} */
 
 #endif // PIXELKEY_H

@@ -1,6 +1,11 @@
 #ifndef PIXELKEY_ERRORS_H
 #define PIXELKEY_ERRORS_H
 
+/**
+ * @addtogroup pixelkey
+ * @{
+ */
+
 /** PixelKey errors. */
 typedef enum e_pixelkey_error
 {
@@ -21,5 +26,7 @@ typedef enum e_pixelkey_error
     PIXELKEY_ERROR_CRC_MISMATCH = 33                ///<
 
 } pixelkey_error_t;
+
+/** @} */
 
 #endif // PIXELKEY_ERRORS_H

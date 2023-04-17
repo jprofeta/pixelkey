@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+/**
+ * @defgroup color Color
+ * Color conversions and types.
+ * @{
+ */
+
 /** Maximum value of an RGB color component. */
 #define RGB_MAX            (255U)
 /** Maximum value of an RGB color component as a float-32. */
@@ -112,4 +118,7 @@ void color_convert2(color_space_t from, color_space_t to, color_kind_t const * p
  * @retval PIXELKEY_ERROR_INVALID_ARGUMENT The color string was malformed or a component was out of range.
  */
 pixelkey_error_t color_parse(char * p_str, color_t * p_color_out);
+
+/** @} */
+
 #endif // COLOR_H

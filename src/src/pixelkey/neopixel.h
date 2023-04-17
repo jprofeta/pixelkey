@@ -4,9 +4,15 @@
 #include <stdint.h>
 
 /**
+ * @defgroup neopixel NeoPixel
+ * Support for NeoPixel LEDs.
+ * @{
+ */
+
+/**
  * @page neopixel_timing NeoPixel Timing Requirements
  * 
- * @section Data codes
+ * @section data_codes Data codes
  * NeoPixels use a NRZ (non-return-to-zero) code with a fixed timing width to transmit color data.
  * 
  * ```
@@ -28,7 +34,7 @@
  *        |                       (80)                        us
  * ```
  * 
- * @section Data transmission
+ * @section data_tx Data transmission
  * Data is transmitted during each refresh cycle. All NeoPixels color codes are transmitted in sequence
  * followed by a reset code. Each subsequent NeoPixel re-transmits any bit codes that follow after 
  * reception of its data.
@@ -89,5 +95,7 @@ typedef struct st_neopixel_data
         uint8_t array[3];   ///< Access channels as a flat array.
     };
 } neopixel_data_t;
+
+/** @} */
 
 #endif // NEOPIXEL_H
