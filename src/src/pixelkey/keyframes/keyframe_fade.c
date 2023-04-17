@@ -1,4 +1,4 @@
-
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -247,4 +247,203 @@ static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, poi
 
     p_point->x = a1 * p_curve->p1.x + a2 * p_curve->p2.x + a3;
     p_point->y = a1 * p_curve->p1.y + a2 * p_curve->p2.y + a3;
+}
+
+keyframe_base_t * keyframe_fade_parse(char * p_str)
+{
+    // Allocate a new keyframe and copy the default values.
+    keyframe_fade_t * p_fade = malloc(sizeof(keyframe_fade_t));
+    memcpy(p_fade, &keyframe_fade_init, sizeof(keyframe_fade_t));
+
+    bool has_error = true;
+    do
+    {
+        char * p_context = NULL;
+        char * p_tok;
+
+        if ((p_tok = strtok_r(p_str, " ", &p_context)) == NULL)
+        {
+            // Error: no arguments.
+            break;
+        }
+
+        // Parse the period first
+        float period = strtof(p_tok, NULL);
+        if (period <= 0.0f)
+        {
+            // Period must be non-zero, positive number.
+            // It is also set to zero on parse failure.
+            break;
+        }
+        p_fade->args.period = period;
+
+        if ((p_tok = strtok_r(NULL, " ", &p_context)) == NULL)
+        {
+            // Error: no more arguments, color list is not provided.
+            break;
+        }
+        // else: parse the color list
+
+        if (*p_tok == '&')
+        {
+            // Special case to push the current color onto the stack.
+            p_fade->args.push_current = true;
+            // Increment to skip the ampersand.
+            p_tok++;
+        }
+
+        // Split the color list by ':'
+        char * p_color_context = NULL;
+        char * p_color_tok = strtok_r(p_tok, ":", &p_color_context);
+        bool color_error = false;
+        while (p_color_tok != NULL)
+        {
+            color_t color, hsv;
+            if (color_parse(p_color_tok, &color) == PIXELKEY_ERROR_NONE)
+            {
+                // Color parsing failed!
+                color_error = true;
+                break;
+            }
+            // else: Add the color to the list
+            color_convert(COLOR_SPACE_HSV, &color, &hsv);
+            if (p_fade->args.colors_len == COLORS_INPUT_MAX_LENGTH)
+            {
+                // Too many colors in the list
+                color_error = true;
+                break;
+            }
+            p_fade->args.colors[p_fade->args.colors_len++] = hsv.hsv;
+        }
+
+        // Exit parsing if an error occurred while parsing the colors.
+        if (color_error)
+        {
+            break;
+        }
+
+        // Parse the fade type if provided.
+        if ((p_tok = strtok_r(NULL, " ", &p_context)) == NULL)
+        {
+            // No more arguments, go ahead and exit.
+            has_error = false;
+            break;
+        }
+
+        if (strcmp(p_tok, "step") == 0)
+        {
+            p_fade->args.fade_type = FADE_TYPE_STEP;
+        }
+        else
+        {
+            p_fade->args.fade_type = FADE_TYPE_CUBIC;
+            if (strcmp(p_tok, "linear") == 0)
+            {
+                p_fade->args.curve = linear;
+            }
+            else if (strcmp(p_tok, "ease") == 0)
+            {
+                p_fade->args.curve = ease;
+            }
+            else if (strcmp(p_tok, "ease-in") == 0)
+            {
+                p_fade->args.curve = ease_in;
+            }
+            else if (strcmp(p_tok, "ease-out") == 0)
+            {
+                p_fade->args.curve = ease_out;
+            }
+            else if (strcmp(p_tok, "ease-in-out") == 0)
+            {
+                p_fade->args.curve = ease_in_out;
+            }
+            else if (memcmp(p_tok, "cubic(", 6) == 0)
+            {
+                // Move p_tok forward beyond the start of "cubic("
+                p_tok  = &p_tok[6];
+
+                // Find the closing parenthesis
+                char * paren = strpbrk(p_tok, ")");
+                if (paren == NULL)
+                {
+                    // Error: no closing parenthesis
+                    break;
+                }
+                // else: replace it with a '\0' so we can tokenize the cubic points.
+                *paren = '\0';
+
+                char * p_point_tok = strtok(p_tok, ",");
+                if (p_point_tok == NULL)
+                {
+                    // Error: no point list.
+                    break;
+                }
+                float coord = strtof(p_tok, NULL);
+                p_fade->args.curve.p1.x = coord;
+
+                // Grab P1.Y
+                p_point_tok = strtok(NULL, ",");
+                if (p_point_tok == NULL)
+                {
+                    // Error: Not enough points in list.
+                    break;
+                }
+                coord = strtof(p_tok, NULL);
+                p_fade->args.curve.p1.y = coord;
+
+                // Grab P2.X
+                p_point_tok = strtok(NULL, ",");
+                if (p_point_tok == NULL)
+                {
+                    // Error: Not enough points in list.
+                    break;
+                }
+                coord = strtof(p_tok, NULL);
+                p_fade->args.curve.p2.x = coord;
+
+                // Grab P2.Y
+                p_point_tok = strtok(NULL, ",");
+                if (p_point_tok == NULL)
+                {
+                    // Error: Not enough points in list.
+                    break;
+                }
+                coord = strtof(p_tok, NULL);
+                p_fade->args.curve.p2.y = coord;
+
+                // Make sure we are at the end of the list.
+                if (strtok(NULL, ",") != NULL)
+                {
+                    // Error: Too many points in list.
+                    break;
+                }
+            }
+            else
+            {
+                // Error: unknown type.
+                break;
+            }
+        }
+
+        // Check to see if more arguments are available and break if so.
+        if (strtok_r(NULL, " ", &p_context) != NULL)
+        {
+            // Error: too many arguments.
+            break;
+        }
+    
+        // Everything checked out so clear the error flag.
+        has_error = false;
+    } while (0);
+    
+    if (has_error)
+    {
+        // Cleanup on error.
+        free(p_fade);
+        return NULL;
+    }
+    else
+    {
+        return &p_fade->base;
+    }
 }

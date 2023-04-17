@@ -14,7 +14,7 @@ Changes the color of a NeoPixel to a constant value.
 Blinks a NeoPixel with a specified period and duty-cycle between two values. The NeoPixel color will be set to color 2 after completion of the blink keyframe. This will repeat until the next keyframe is received unless otherwise specified with a repeat modifier.
 
 ```
-[index] blink <period> [color 1[,<color 2>]] [duty cycle]
+[index] blink <period> [color 1[:<color 2>]] [duty cycle]
 ```
 where
 - **period**: Number of seconds to blink over.
@@ -26,11 +26,11 @@ where
 Transitions a NeoPixel between a list of colors over a specified time period. The NeoPixel color will be set to the last color after completion of the fade keyframe.
 
 ```
-[index] fade <period> [&]<color 1>[,<color 2>,...] [type]
+[index] fade <period> [&]<color 1>[:<color 2>:...] [type]
 ```
 where
 - **period**: Number of seconds over which the keyframe will fade between colors. Maximum of 60 seconds.
-- **color 1,2,...**: List of colors to transition between.
+- **color 1:2:...**: List of colors to transition between.
   - If only one color is specified it will fade from the current color to the specified one.
   - Up to 15 colors allowed.
   - If the first color is prefixed with an ampersand, "`&`", then an additional transition from the current color to color 1 will occur first.

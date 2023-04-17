@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "pixelkey.h"
 #include "keyframes.h"
@@ -9,7 +13,7 @@ typedef struct st_keyframe_set
     /** Parsed arguments. */
     struct
     {
-        color_rgb_t color;  ///< Color to set.
+        color_t color; ///< Color to set.
     } args;
 } keyframe_set_t;
 
@@ -35,19 +39,65 @@ static bool keyframe_set_render_frame(keyframe_base_t * const p_keyframe, timest
     keyframe_set_t * const p_set = (keyframe_set_t * const) p_keyframe;
 
     // Copy the output color.
-    *p_color_out = p_set->args.color;
+    *p_color_out = p_set->args.color.rgb;
 
     return true;   // No frames remaining.
 }
 
 static void keyframe_set_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color)
 {
-    // Do nothing here.
-
-    ARG_NOT_USED(p_keyframe);
     ARG_NOT_USED(framerate);
     ARG_NOT_USED(current_color);
+
+    // Make sure the color is in RGB.
+    keyframe_set_t * const p_set = (keyframe_set_t * const) p_keyframe;
+    if (p_set->args.color.color_space != COLOR_SPACE_RGB)
+    {
+        color_t color_rgb;
+        color_convert(COLOR_SPACE_RGB, &p_set->args.color, &color_rgb);
+
+        // Copy the RGB converted color since it cannot be converted in-place.
+        p_set->args.color = color_rgb;
+    }
 
     return;
 }
 
+keyframe_base_t * keyframe_set_parse(char * p_str)
+{
+    // Allocate a new keyframe and copy the default values.
+    keyframe_set_t * p_set = malloc(sizeof(keyframe_set_t));
+    memcpy(p_set, &keyframe_set_init, sizeof(keyframe_set_t));
+
+    bool has_error = true;
+    do
+    {
+        char * p_context = NULL;
+        char * p_tok = strtok_r(p_str, " ", &p_context);
+        // Check to see if the color parsing failed.
+        if (color_parse(p_tok, &p_set->args.color) != PIXELKEY_ERROR_NONE)
+        {
+            break;
+        }
+
+        // Check to see if more arguments are available and break if so.
+        if (strtok_r(NULL, " ", &p_context) != NULL)
+        {
+            break;
+        }
+
+        // Everything checked out so clear the error flag.
+        has_error = false;
+    } while (0);
+    
+    if (has_error)
+    {
+        // Cleanup on error.
+        free(p_set);
+        return NULL;
+    }
+    else
+    {
+        return &p_set->base;
+    }
+}
