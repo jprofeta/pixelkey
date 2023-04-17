@@ -44,8 +44,8 @@ transfer_info_t g_npdata_transfer_info =
   .transfer_settings_word_b.src_addr_mode = TRANSFER_ADDR_MODE_INCREMENTED,
   .transfer_settings_word_b.size = TRANSFER_SIZE_2_BYTE,
   .transfer_settings_word_b.mode = TRANSFER_MODE_NORMAL,
-  .p_dest = (void*) NULL,
-  .p_src = (void const*) NULL,
+  .p_dest = (void*) &R_GPT5->GTCCR[1],
+  .p_src = (void const*) g_npdata_gpt_buffer,
   .num_blocks = 1,
   .length = 16, };
 const dmac_extended_cfg_t g_npdata_transfer_extend =
@@ -133,8 +133,8 @@ const gpt_extended_cfg_t g_npdata_timer_extend =
         };
 const timer_cfg_t g_npdata_timer_cfg =
 { .mode = TIMER_MODE_PERIODIC,
-/* Actual period: 1.3981013333333334 seconds. Actual duty: 50%. */.period_counts = (uint32_t) 0x10000,
-  .duty_cycle_counts = 0x8000, .source_div = (timer_source_div_t) 10, .channel = 5, .p_callback = NULL,
+/* Actual period: 0.00000125 seconds. Actual duty: 100%. */.period_counts = (uint32_t) 0x3c,
+  .duty_cycle_counts = 0x3c, .source_div = (timer_source_div_t) 0, .channel = 5, .p_callback = NULL,
   /** If NULL then do not add & */
 #if defined(NULL)
     .p_context           = NULL,

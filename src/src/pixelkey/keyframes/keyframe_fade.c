@@ -1,4 +1,6 @@
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "pixelkey.h"
@@ -110,7 +112,7 @@ static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, times
     cubic_bezier_calc(&p_fade->args.curve, t, &bezier_point);
 
     // Scale the x by the fading period so it can be directly compared to relative_time.
-    bezier_point.x *= p_fade->state.color_period;
+    bezier_point.x *= (float) p_fade->state.color_period;
     if (((float) relative_time) >= bezier_point.x)
     {
         // This frame is "ahead" of the curve so update the current curve point.
@@ -193,7 +195,7 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
     if (axis & FADE_AXIS_HUE)
     {
         float hue_delta = (float) (p_b->hue - p_a->hue);
-        p_out->hue = p_a->hue + ratio * hue_delta;
+        p_out->hue = p_a->hue + (uint16_t) (ratio * hue_delta);
     }
     else
     {
@@ -203,7 +205,7 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
     if (axis & FADE_AXIS_SAT)
     {
         float sat_delta = (float) (p_b->saturation - p_a->saturation);
-        p_out->saturation = p_a->saturation + ratio * sat_delta;
+        p_out->saturation = (uint8_t) (p_a->saturation + ratio * sat_delta);
     }
     else
     {
@@ -213,7 +215,7 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
     if (axis & FADE_AXIS_VAL)
     {
         float val_delta = (float) (p_b->value - p_a->value);
-        p_out->value = p_a->value + ratio * val_delta;
+        p_out->value = p_a->value + (uint8_t) (ratio * val_delta);
     }
     else
     {

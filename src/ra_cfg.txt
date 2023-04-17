@@ -245,7 +245,7 @@ FSP Configuration
       General: Name: g_npdata_timer
       General: Channel: 5
       General: Mode: Periodic
-      General: Period: 0x100000000
+      General: Period: 60
       General: Period Unit: Raw Counts
       Output: Custom Waveform: GTIOA: Initial Output Level: Pin Level Low
       Output: Custom Waveform: GTIOA: Cycle End Output Level: Pin Level Retain
@@ -256,7 +256,7 @@ FSP Configuration
       Output: Custom Waveform: GTIOB: Compare Match Output Level: Pin Level Low
       Output: Custom Waveform: GTIOB: Retain Output Level at Count Stop: Disabled
       Output: Custom Waveform: Custom Waveform Enable: Enabled
-      Output: Duty Cycle Percent (only applicable in PWM mode): 50
+      Output: Duty Cycle Percent (only applicable in PWM mode): 100
       Output: GTIOCA Output Enabled: False
       Output: GTIOCA Stop Level: Pin Level Low
       Output: GTIOCB Output Enabled: True
@@ -297,8 +297,8 @@ FSP Configuration
       Destination Address Mode: Fixed
       Source Address Mode: Incremented
       Repeat Area (Unused in Normal Mode): Source
-      Destination Pointer: NULL
-      Source Pointer: NULL
+      Destination Pointer: &R_GPT5->GTCCR[1]
+      Source Pointer: g_npdata_gpt_buffer
       Number of Transfers: 16
       Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 1
       Activation Source: GPT5 COUNTER OVERFLOW (Overflow)
