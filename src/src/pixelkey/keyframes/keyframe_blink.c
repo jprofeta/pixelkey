@@ -64,6 +64,11 @@ static const keyframe_blink_t keyframe_blink_init =
     .base = { .p_api = &keyframe_blink_api },
 };
 
+/**
+ * @private
+ * Renders the frame.
+ * See @ref keyframe_base_api_t::render_frame
+ */
 static bool keyframe_blink_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out)
 {
     keyframe_blink_t * const p_blink = (keyframe_blink_t * const) p_keyframe;
@@ -80,6 +85,11 @@ static bool keyframe_blink_render_frame(keyframe_base_t * const p_keyframe, time
     return time >= p_blink->state.finish_time;
 }
 
+/**
+ * @private
+ * Initialize the keyframe for rendering.
+ * See @ref keyframe_base_api_t::render_init
+ */
 static void keyframe_blink_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color)
 {
     keyframe_blink_t * const p_blink = (keyframe_blink_t * const) p_keyframe;

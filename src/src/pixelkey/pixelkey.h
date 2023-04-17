@@ -48,13 +48,15 @@ typedef uint8_t framerate_t;
 /** Base struct for all keyframes. */
 typedef struct st_keyframe_base keyframe_base_t;    // Defined ahead for use in the api struct.
 
-/** Base API for all keyframe types. */
+/** 
+ * Base API for all keyframe types.
+ */
 typedef struct st_keyframe_base_api
 {
     /**
      * Renders a keyframe for the given time step.
      * @param[in]  p_keyframe  Pointer to the keyframe.
-     * @param[in]  time        Current time step for animation.
+     * @param      time        Current time step for animation.
      * @param[out] p_color_out Pointer to the rendered RGB color for this time step.
      * @return true if the keyframe has completed, false if more frames remain.
      */
@@ -63,8 +65,8 @@ typedef struct st_keyframe_base_api
     /**
      * Initialize the renderer for the keyframe.
      * @param[in] p_keyframe    Pointer to the keyframe.
-     * @param[in] framerate     Framerate for keyframe rendering.
-     * @param[in] current_color The current color being used.
+     * @param     framerate     Framerate for keyframe rendering.
+     * @param     current_color The current color being used.
      */
     void (* render_init)(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
 } keyframe_base_api_t;
