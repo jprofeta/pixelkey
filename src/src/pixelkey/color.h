@@ -104,4 +104,12 @@ void color_convert(color_space_t to, color_t const * p_in, color_t * p_out);
  */
 void color_convert2(color_space_t from, color_space_t to, color_kind_t const * p_in, color_kind_t * p_out);
 
+/**
+ * Parses a color from a string; must be NULL-terminated.
+ * @param[in]  p_str       Pointer to the color string to parse; may be modified.
+ * @param[out] p_color_out Pointer to store the parsed color.
+ * @retval PIXELKEY_ERROR_NONE             Parse was successful.
+ * @retval PIXELKEY_ERROR_INVALID_ARGUMENT The color string was malformed or a component was out of range.
+ */
+pixelkey_error_t color_parse(char * p_str, color_t * p_color_out);
 #endif // COLOR_H

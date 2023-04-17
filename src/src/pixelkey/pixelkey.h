@@ -1,10 +1,10 @@
-
 #ifndef PIXELKEY_H
 #define PIXELKEY_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "pixelkey_errors.h"
 #include "color.h"
 
 /** Signifies an argument is not used. */

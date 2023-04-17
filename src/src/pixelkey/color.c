@@ -1,6 +1,7 @@
-
+#include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include <string.h>
 #include "pixelkey.h"
 
 /** Number of degrees in each sector of the hue component. */
@@ -17,6 +18,36 @@
 /** Minimum of two values. */
 #define min(a,b)    ((a) < (b) ? (a) : (b))
 #endif
+
+/** Maximum expected length of a hexadecimal color. */
+#define COLOR_RGB_HEX_STR_LENGTH    (7U)
+
+static struct named_color
+{
+    char const * name;
+    color_hsv_t  color;
+} named_colors[] = 
+{
+    { "red", { 0, 100, 100 } },
+    { "orange", { 30, 100, 100 } },
+    { "yellow", { 60, 100, 100 } },
+    { "neon", { 90, 100, 100 } },
+    { "green", { 120, 100, 100 } },
+    { "seafoam", { 150, 100, 100 } },
+    { "cyan", { 180, 100, 100 } },
+    { "lightbluw", { 210, 100, 100 } },
+    { "blue", { 240, 100, 100 } },
+    { "purple", { 270, 100, 100 } },
+    { "magenta", { 300, 100, 100 } },
+    { "pink", { 330, 100, 100 } },
+    { "white", { 0, 0, 100 } },
+    { "black", { 0, 0, 0 } },
+    { "off", { 0, 0, 0 } },
+    { NULL, { 0, 0, 0 } }
+};
+
+static int parse_next_hex_byte(char ** p_str);
+static int parse_next_uint(char * p_str, int min, int max);
 
 /**
  * Converts a color to the RGB color space.
@@ -309,4 +340,172 @@ void color_convert2(color_space_t from, color_space_t to, color_kind_t const * p
             color_convert_hsl(from, p_in, &p_out->hsl);
             break;
     }
+}
+
+/**
+ * Parses the next hexadecimal byte from p_str and increments p_str.
+ * @param[in,out] p_str Pointer to a string pointer to parse.
+ * @return The next hexadecimal value parsed from p_str.
+ */
+static int parse_next_hex_byte(char ** p_str)
+{
+    if (p_str == NULL) { return 0; }
+
+    char hex_str[] = { 0, 0, 0 };
+    memcpy(hex_str, *p_str, 2);
+    (*p_str)++;
+    (*p_str)++;
+    return (int) strtoul(hex_str, NULL, 16);
+}
+
+/**
+ * Parses the next integer in a list separated by commas.
+ * @param[in,out] p_str Pointer to the string to parse, or NULL to continue from the last string.
+ * @param         min   Minumum accepted value.
+ * @param         max   Maximum accepted value.
+ * @return the parsed integer or -1 on error or out of range.
+ */
+static int parse_next_uint(char * p_str, int min, int max)
+{
+    char * p_tok = strtok(p_str, ",");
+    if (p_tok == NULL)
+    {
+        return -1;
+    }
+    int pct_value = atoi(p_tok);
+    if (pct_value < min || pct_value > max)
+    {
+        return -1;
+    }
+    return pct_value;
+}
+
+pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
+{
+    switch (*p_str)
+    {
+        case '#':
+        {
+            if (strlen(p_str) < COLOR_RGB_HEX_STR_LENGTH)
+            {
+                return PIXELKEY_ERROR_INVALID_ARGUMENT;
+            }
+
+            p_color_out->color_space = COLOR_SPACE_RGB;
+            p_str++;    // Skip the indicator.
+
+            p_color_out->rgb.red = (uint8_t) parse_next_hex_byte(&p_str);
+            p_color_out->rgb.green = (uint8_t) parse_next_hex_byte(&p_str);
+            p_color_out->rgb.blue = (uint8_t) parse_next_hex_byte(&p_str);
+        }
+        break;
+        case '%':
+        {
+            p_color_out->color_space = COLOR_SPACE_RGB;
+            p_str++;    // Skip the indicator.
+
+            int pct_value = 0;
+
+            pct_value = parse_next_uint(p_str, 0, 100);
+            if (pct_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            p_color_out->rgb.red = (uint8_t) (UINT8_MAX * pct_value / 100);
+
+            pct_value = parse_next_uint(NULL, 0, 100);
+            if (pct_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            p_color_out->rgb.green = (uint8_t) (UINT8_MAX * pct_value / 100);
+
+            pct_value = parse_next_uint(NULL, 0, 100);
+            if (pct_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            p_color_out->rgb.blue = (uint8_t) (UINT8_MAX * pct_value / 100);
+
+            if (strtok(NULL, ",") != NULL)
+            {
+                // Too many color parts.
+                return PIXELKEY_ERROR_INVALID_ARGUMENT;
+            }
+        }
+        break;
+        case '!':
+        {
+            bool is_hsl = false;
+
+            p_str++; // Skip the first indicator.
+            if (*p_str == '!')
+            {
+                // This is an HSL color.
+                p_color_out->color_space = COLOR_SPACE_HSL;
+                p_str++; // Skip the second indicator.
+                is_hsl = true;
+            }
+            else
+            {
+                // This is an HSV color.
+                p_color_out->color_space = COLOR_SPACE_HSV;
+            }
+
+            int parsed_value = parse_next_uint(p_str, 0, 359);
+            if (parsed_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (is_hsl)
+            {
+                p_color_out->hsl.hue = (uint16_t) parsed_value;
+            }
+            else
+            {
+                p_color_out->hsv.hue = (uint16_t) parsed_value;
+            }
+
+            parsed_value = parse_next_uint(NULL, 0, 100);
+            if (parsed_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (is_hsl)
+            {
+                p_color_out->hsl.saturation = (uint8_t) parsed_value;
+            }
+            else
+            {
+                p_color_out->hsv.saturation = (uint8_t) parsed_value;
+            }
+
+            parsed_value = parse_next_uint(NULL, 0, 100);
+            if (parsed_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (is_hsl)
+            {
+                p_color_out->hsl.lightness = (uint8_t) parsed_value;
+            }
+            else
+            {
+                p_color_out->hsv.value = (uint8_t) parsed_value;
+            }
+
+            if (strtok(NULL, ",") != NULL)
+            {
+                // Too many color parts.
+                return PIXELKEY_ERROR_INVALID_ARGUMENT;
+            }
+        }
+        break;
+        default:
+        {
+            // Assume this is a named color.
+
+            bool found_color = false;
+            p_color_out->color_space = COLOR_SPACE_HSV;
+            for (size_t i = 0; !found_color && named_colors[i].name != NULL; i++ )
+            {
+                if (strcmp(p_str, named_colors[i].name) == 0)
+                {
+                    p_color_out->hsv = named_colors[i].color;
+                    found_color = true;
+                }
+            }
+
+            if (!found_color)
+            {
+                // A color with this name wasn't found so either the argument is bad or the color isn't defined.
+                return PIXELKEY_ERROR_INVALID_ARGUMENT;
+            }
+        }
+        break;
+    }
+
+    return PIXELKEY_ERROR_NONE;
 }
