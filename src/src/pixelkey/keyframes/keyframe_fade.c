@@ -15,12 +15,14 @@
  */
 #define COLORS_MAX_LENGTH  (COLORS_INPUT_MAX_LENGTH + 1)
 
+/** The type of fade to perform. */
 typedef enum e_fade_type
 {
     FADE_TYPE_STEP,  ///< Colors are immediately transitioned.
     FADE_TYPE_CUBIC  ///< The transition curve is applied between every pair of colors.
 } fade_type_t;
 
+/** The color axes/channels to fade over. */
 typedef enum e_fade_axis
 {
     FADE_AXIS_NONE = 0,         ///< No axis require fading.
@@ -189,6 +191,7 @@ static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framer
  * @param      axis  The axes to blend across.
  * @param      ratio The ratio between color a and color b.
  * @param[out] p_out Pointer to store the blended color.
+ * 
  */
 static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_axis_t axis, float ratio, color_hsv_t * p_out)
 {
@@ -226,11 +229,15 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
 /**
  * Calculates a point on a cubic bezier curve at interpolation index, t.
  * 
- * This function assumes start (\$P_0\$) and end (\$P_3\$) points of (0,0) and (1,1) respectively.
+ * This function assumes start (\f$ P_0 \f$) and end (\f$ P_3 \f$) points of \f$ (0,0) \f$ and \f$ (1,1) \f$ respectively.
  * The equation for the bezier curve is
- * \$ \vec{B}(t) = (1-t)^3 \vec{P}_0 + 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3 \vec{P}_3, 0 \le t \le 1 \$
+ * \f[
+ *  \vec{B}(t) = (1-t)^3 \vec{P}_0 + 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3 \vec{P}_3, 0 \le t \le 1
+ * \f]
  * or simplified using (0,0) and (1,1) for P_0 and P_3
- * \$ \vec{B}(t) = 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3, 0 \le t \le 1 \$
+ * \f[
+ *  \vec{B}(t) = 3 (1-t)^2 t \vec{P}_1 + 3 (1-t) t^2 \vec{P}_2 + t^3, 0 \le t \le 1
+ * \f]
  * 
  * @param[in]  p_curve Pointer to the bezier control points.
  * @param      t       Interpolation index at which to calculate a point on the curve; 0 <= t <= 1.
