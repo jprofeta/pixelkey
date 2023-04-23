@@ -252,8 +252,8 @@ FSP Configuration
       Output: Custom Waveform: GTIOA: Compare Match Output Level: Pin Level Retain
       Output: Custom Waveform: GTIOA: Retain Output Level at Count Stop: Disabled
       Output: Custom Waveform: GTIOB: Initial Output Level: Pin Level High
-      Output: Custom Waveform: GTIOB: Cycle End Output Level: Pin Level Retain
-      Output: Custom Waveform: GTIOB: Compare Match Output Level: Pin Level Low
+      Output: Custom Waveform: GTIOB: Cycle End Output Level: Pin Level High
+      Output: Custom Waveform: GTIOB: Compare Match Output Level: Pin Level Toggle
       Output: Custom Waveform: GTIOB: Retain Output Level at Count Stop: Disabled
       Output: Custom Waveform: Custom Waveform Enable: Enabled
       Output: Duty Cycle Percent (only applicable in PWM mode): 100
@@ -289,19 +289,19 @@ FSP Configuration
       Extra Features: Output Disable: GTIOCA Disable Setting: Disable Prohibited
       Extra Features: Output Disable: GTIOCB Disable Setting: Disable Prohibited
       
-    Instance "g_npdata_transfer Transfer (r_dmac) GPT5 COUNTER OVERFLOW (Overflow)"
+    Instance "g_npdata_transfer Transfer (r_dmac) GPT5 CAPTURE COMPARE B (Compare match B)"
       Name: g_npdata_transfer
       Channel: 2
       Mode: Normal
-      Transfer Size: 2 Bytes
+      Transfer Size: 4 Bytes
       Destination Address Mode: Fixed
       Source Address Mode: Incremented
       Repeat Area (Unused in Normal Mode): Source
-      Destination Pointer: &R_GPT5->GTCCR[1]
-      Source Pointer: g_npdata_gpt_buffer
+      Destination Pointer: &R_GPT5->GTCCR[3]
+      Source Pointer: NULL
       Number of Transfers: 16
       Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 1
-      Activation Source: GPT5 COUNTER OVERFLOW (Overflow)
+      Activation Source: GPT5 CAPTURE COMPARE B (Compare match B)
       Callback: NULL
       Context: NULL
       Transfer End Interrupt Priority: Disabled

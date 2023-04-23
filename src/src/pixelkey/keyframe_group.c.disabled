@@ -2,9 +2,6 @@
 #include "pixelkey.h"
 #include "keyframes.h"
 
-/** Maximum allowed child keyframes. */
-#define GROUP_CHILDREN_MAX_COUNT    (16)
-
 typedef struct st_keyframe_group
 {
     /** Keyframe base; MUST be the first entry in the struct. */

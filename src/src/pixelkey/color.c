@@ -22,28 +22,45 @@
 /** Maximum expected length of a hexadecimal color. */
 #define COLOR_RGB_HEX_STR_LENGTH    (7U)
 
+/* IMPORTANT: These MUST be in the HSV color space! */
+color_t color_red         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0, 100, 100 } };
+color_t color_orange      = { .color_space = COLOR_SPACE_HSV, .hsv = {  30, 100, 100 } };
+color_t color_yellow      = { .color_space = COLOR_SPACE_HSV, .hsv = {  60, 100, 100 } };
+color_t color_neon        = { .color_space = COLOR_SPACE_HSV, .hsv = {  90, 100, 100 } };
+color_t color_green       = { .color_space = COLOR_SPACE_HSV, .hsv = { 120, 100, 100 } };
+color_t color_seafoam     = { .color_space = COLOR_SPACE_HSV, .hsv = { 150, 100, 100 } };
+color_t color_cyan        = { .color_space = COLOR_SPACE_HSV, .hsv = { 180, 100, 100 } };
+color_t color_lightblue   = { .color_space = COLOR_SPACE_HSV, .hsv = { 210, 100, 100 } };
+color_t color_blue        = { .color_space = COLOR_SPACE_HSV, .hsv = { 240, 100, 100 } };
+color_t color_purple      = { .color_space = COLOR_SPACE_HSV, .hsv = { 270, 100, 100 } };
+color_t color_magenta     = { .color_space = COLOR_SPACE_HSV, .hsv = { 300, 100, 100 } };
+color_t color_pink        = { .color_space = COLOR_SPACE_HSV, .hsv = { 330, 100, 100 } };
+color_t color_white       = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0, 100 } };
+color_t color_black       = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0,   0 } };
+color_t color_off         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0,   0 } };
+
 static struct named_color
 {
-    char const * name;
-    color_hsv_t  color;
+    char const * const        name;
+    color_hsv_t const * const color;
 } named_colors[] = 
 {
-    { "red", { 0, 100, 100 } },
-    { "orange", { 30, 100, 100 } },
-    { "yellow", { 60, 100, 100 } },
-    { "neon", { 90, 100, 100 } },
-    { "green", { 120, 100, 100 } },
-    { "seafoam", { 150, 100, 100 } },
-    { "cyan", { 180, 100, 100 } },
-    { "lightbluw", { 210, 100, 100 } },
-    { "blue", { 240, 100, 100 } },
-    { "purple", { 270, 100, 100 } },
-    { "magenta", { 300, 100, 100 } },
-    { "pink", { 330, 100, 100 } },
-    { "white", { 0, 0, 100 } },
-    { "black", { 0, 0, 0 } },
-    { "off", { 0, 0, 0 } },
-    { NULL, { 0, 0, 0 } }
+    { "red", &color_red.hsv },
+    { "orange", &color_orange.hsv },
+    { "yellow", &color_yellow.hsv },
+    { "neon", &color_neon.hsv },
+    { "green", &color_green.hsv },
+    { "seafoam", &color_seafoam.hsv },
+    { "cyan", &color_cyan.hsv },
+    { "lightblue", &color_lightblue.hsv },
+    { "blue", &color_blue.hsv },
+    { "purple", &color_purple.hsv },
+    { "magenta", &color_magenta.hsv },
+    { "pink", &color_pink.hsv },
+    { "white", &color_white.hsv },
+    { "black", &color_black.hsv },
+    { "off", &color_off.hsv },
+    { NULL, NULL }
 };
 
 static int parse_next_hex_byte(char ** p_str);
@@ -493,7 +510,7 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
             {
                 if (strcmp(p_str, named_colors[i].name) == 0)
                 {
-                    p_color_out->hsv = named_colors[i].color;
+                    p_color_out->hsv = *named_colors[i].color;
                     found_color = true;
                 }
             }

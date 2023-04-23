@@ -94,6 +94,28 @@ typedef struct st_color
 } color_t;
 
 /**
+ * @defgroup named_colors Named Colors
+ * @{
+ */
+extern color_t color_red;
+extern color_t color_orange;
+extern color_t color_yellow;
+extern color_t color_neon;
+extern color_t color_green;
+extern color_t color_seafoam;
+extern color_t color_cyan;
+extern color_t color_lightblue;
+extern color_t color_blue;
+extern color_t color_purple;
+extern color_t color_magenta;
+extern color_t color_pink;
+extern color_t color_white;
+extern color_t color_black;
+extern color_t color_off;
+
+/** @} */
+
+/**
  * Convert a color to a different color space.
  * @param[in]  to    Desired color space to convert to.
  * @param[in]  p_in  Pointer to the color in the original color space.

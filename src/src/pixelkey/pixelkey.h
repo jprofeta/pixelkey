@@ -30,6 +30,9 @@
 /** Indefinite time remaining. */
 #define TIMESTEP_INDEFINITE ((timestep_t) UINT32_MAX)
 
+/** Maximum allowed child keyframes. */
+#define GROUP_CHILDREN_MAX_COUNT    (16)
+
 /** Types of supported keyframe schedules. */
 typedef enum e_schedule_type
 {
@@ -103,6 +106,23 @@ struct st_keyframe_base
         bool                schedule_is_repeating; ///< Indicates the schedule should repeat instead of the frame.
     } modifiers;
 };
+
+/** Storage and state for keyframe groups. */
+typedef struct st_keyframe_group
+{
+    uint8_t children_len;       ///< Number of child keyframes in this group.
+    uint8_t current_child_idx;  ///< Index of the child keyframe being rendered.
+    /** List of child keyframes in this group. */
+    keyframe_base_t * const children[GROUP_CHILDREN_MAX_COUNT];
+
+    /** Modifiers applied to this group. */
+    struct
+    {
+        keyframe_schedule_t schedule;              ///< Schedule times for this keyframe.
+        int32_t             repeat_count;          ///< Total number of times to render the keyframe; negative is indefinite.
+        bool                schedule_is_repeating; ///< Indicates the schedule should repeat instead of the frame.
+    } modifiers;
+} keyframe_group_t;
 
 /** @} */
 

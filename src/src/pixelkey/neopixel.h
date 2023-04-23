@@ -60,7 +60,7 @@
 #define NEOPIXEL_CHANNEL_COUNT  (3U)
 
 /** Total number of bits for a single NeoPixel. */
-#define NEOPIXEL_COLOR_BITS     (NEOPIXEL_CHANNEL_COUNT * sizeof(uint8_t))
+#define NEOPIXEL_COLOR_BITS     (NEOPIXEL_CHANNEL_COUNT * 8U)
 
 /** Period of the 0-NRZ-code high assertion time, in nanoseconds. */
 #define NEOPIXEL_CODE_T0H_NS    (300U)

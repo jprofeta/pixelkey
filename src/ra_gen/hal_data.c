@@ -42,10 +42,10 @@ transfer_info_t g_npdata_transfer_info =
   .transfer_settings_word_b.irq = TRANSFER_IRQ_END,
   .transfer_settings_word_b.chain_mode = TRANSFER_CHAIN_MODE_DISABLED,
   .transfer_settings_word_b.src_addr_mode = TRANSFER_ADDR_MODE_INCREMENTED,
-  .transfer_settings_word_b.size = TRANSFER_SIZE_2_BYTE,
+  .transfer_settings_word_b.size = TRANSFER_SIZE_4_BYTE,
   .transfer_settings_word_b.mode = TRANSFER_MODE_NORMAL,
-  .p_dest = (void*) &R_GPT5->GTCCR[1],
-  .p_src = (void const*) g_npdata_gpt_buffer,
+  .p_dest = (void*) &R_GPT5->GTCCR[3],
+  .p_src = (void const*) NULL,
   .num_blocks = 1,
   .length = 16, };
 const dmac_extended_cfg_t g_npdata_transfer_extend =
@@ -56,7 +56,7 @@ const dmac_extended_cfg_t g_npdata_transfer_extend =
   .irq = FSP_INVALID_VECTOR,
 #endif
   .ipl = (BSP_IRQ_DISABLED),
-  .channel = 2, .p_callback = NULL, .p_context = NULL, .activation_source = ELC_EVENT_GPT5_COUNTER_OVERFLOW, };
+  .channel = 2, .p_callback = NULL, .p_context = NULL, .activation_source = ELC_EVENT_GPT5_CAPTURE_COMPARE_B, };
 const transfer_cfg_t g_npdata_transfer_cfg =
 { .p_info = &g_npdata_transfer_info, .p_extend = &g_npdata_transfer_extend, };
 /* Instance structure to use this module. */
@@ -121,7 +121,7 @@ const gpt_extended_cfg_t g_npdata_timer_extend =
           .gtior_setting.gtior_b.oadf = (uint32_t) GPT_GTIOC_DISABLE_PROHIBITED, .gtior_setting.gtior_b.nfaen =
                   ((uint32_t) GPT_CAPTURE_FILTER_NONE & 1U),
           .gtior_setting.gtior_b.nfcsa = ((uint32_t) GPT_CAPTURE_FILTER_NONE >> 1U), .gtior_setting.gtior_b.gtiob = (1U
-                  << 4U) | (0U << 2U) | (1U << 0U),
+                  << 4U) | (2U << 2U) | (3U << 0U),
           .gtior_setting.gtior_b.obdflt = (uint32_t) GPT_PIN_LEVEL_LOW, .gtior_setting.gtior_b.obhld = 0U, .gtior_setting.gtior_b.obe =
                   (uint32_t) true,
           .gtior_setting.gtior_b.obdf = (uint32_t) GPT_GTIOC_DISABLE_PROHIBITED, .gtior_setting.gtior_b.nfben =

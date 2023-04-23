@@ -262,8 +262,8 @@
       <property id="module.driver.timer.gtior.gtioa.compare_match_output_level" value="module.driver.timer.gtior.gtioa.compare_match_output_level.retain"/>
       <property id="module.driver.timer.gtior.gtioa.count_stop_retain" value="module.driver.timer.gtior.gtioa.count_stop_retain.disabled"/>
       <property id="module.driver.timer.gtior.gtiob.initial_output_level" value="module.driver.timer.gtior.gtiob.initial_output_level.high"/>
-      <property id="module.driver.timer.gtior.gtiob.cycle_end_output_level" value="module.driver.timer.gtior.gtiob.cycle_end_output_level.retain"/>
-      <property id="module.driver.timer.gtior.gtiob.compare_match_output_level" value="module.driver.timer.gtior.gtiob.compare_match_output_level.low"/>
+      <property id="module.driver.timer.gtior.gtiob.cycle_end_output_level" value="module.driver.timer.gtior.gtiob.cycle_end_output_level.high"/>
+      <property id="module.driver.timer.gtior.gtiob.compare_match_output_level" value="module.driver.timer.gtior.gtiob.compare_match_output_level.toggle"/>
       <property id="module.driver.timer.gtior.gtiob.count_stop_retain" value="module.driver.timer.gtior.gtiob.count_stop_retain.disabled"/>
       <property id="module.driver.timer.gtior.custom_waveform_enable" value="module.driver.timer.gtior.custom_waveform_enable.enabled"/>
       <property id="module.driver.timer.duty_cycle" value="100"/>
@@ -303,15 +303,15 @@
       <property id="module.driver.transfer.name" value="g_npdata_transfer"/>
       <property id="module.driver.transfer.channel" value="2"/>
       <property id="module.driver.transfer.mode" value="module.driver.transfer.mode.mode_normal"/>
-      <property id="module.driver.transfer.size" value="module.driver.transfer.size.size_2_byte"/>
+      <property id="module.driver.transfer.size" value="module.driver.transfer.size.size_4_byte"/>
       <property id="module.driver.transfer.dest_addr_mode" value="module.driver.transfer.dest_addr_mode.addr_mode_fixed"/>
       <property id="module.driver.transfer.src_addr_mode" value="module.driver.transfer.src_addr_mode.addr_mode_incremented"/>
       <property id="module.driver.transfer.repeat_area" value="module.driver.transfer.repeat_area.repeat_area_source"/>
-      <property id="module.driver.transfer.p_dest" value="&amp;R_GPT5-&gt;GTCCR[1]"/>
-      <property id="module.driver.transfer.p_src" value="g_npdata_gpt_buffer"/>
+      <property id="module.driver.transfer.p_dest" value="&amp;R_GPT5-&gt;GTCCR[3]"/>
+      <property id="module.driver.transfer.p_src" value="NULL"/>
       <property id="module.driver.transfer.length" value="16"/>
       <property id="module.driver.transfer.num_blocks" value="1"/>
-      <property id="module.driver.transfer.activation_event" value="_signal.event.gpt5.counter.overflow"/>
+      <property id="module.driver.transfer.activation_event" value="_signal.event.gpt5.capture.compare.b"/>
       <property id="module.driver.transfer.p_callback" value="NULL"/>
       <property id="module.driver.transfer.p_context" value="NULL"/>
       <property id="module.driver.transfer.ipl" value="_disabled"/>

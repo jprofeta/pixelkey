@@ -61,7 +61,11 @@ static const keyframe_base_api_t keyframe_blink_api =
  */
 static const keyframe_blink_t keyframe_blink_init = 
 {
-    .base = { .p_api = &keyframe_blink_api },
+    .base = 
+    { 
+        .p_api = &keyframe_blink_api, 
+        .modifiers = { .repeat_count = -1 } // Blink defaults to indefinite repeats.
+    },
 };
 
 /**
