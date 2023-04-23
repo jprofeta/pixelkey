@@ -4,5 +4,9 @@
 docs/out
 
 e2studio_project.prefs
-
+.settings
 .vscode
+
+JLinkLog.log
+*[Dd]ebug.jlink
+*[Rr]elease.jlink
