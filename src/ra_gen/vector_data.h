@@ -6,7 +6,7 @@
         #endif
 /* Number of interrupts allocated */
 #ifndef VECTOR_DATA_IRQ_COUNT
-#define VECTOR_DATA_IRQ_COUNT    (7)
+#define VECTOR_DATA_IRQ_COUNT    (8)
 #endif
 /* ISR prototypes */
 void usbfs_interrupt_handler(void);
@@ -14,6 +14,7 @@ void usbfs_resume_handler(void);
 void usbfs_d0fifo_handler(void);
 void usbfs_d1fifo_handler(void);
 void dmac_int_isr(void);
+void rtc_alarm_periodic_isr(void);
 void rtc_carry_isr(void);
 
 /* Vector table allocations */
@@ -29,8 +30,10 @@ void rtc_carry_isr(void);
 #define DMAC0_INT_IRQn          ((IRQn_Type) 4) /* DMAC0 INT (DMAC transfer end 0) */
 #define VECTOR_NUMBER_DMAC1_INT ((IRQn_Type) 5) /* DMAC1 INT (DMAC transfer end 1) */
 #define DMAC1_INT_IRQn          ((IRQn_Type) 5) /* DMAC1 INT (DMAC transfer end 1) */
-#define VECTOR_NUMBER_RTC_CARRY ((IRQn_Type) 6) /* RTC CARRY (Carry interrupt) */
-#define RTC_CARRY_IRQn          ((IRQn_Type) 6) /* RTC CARRY (Carry interrupt) */
+#define VECTOR_NUMBER_RTC_PERIOD ((IRQn_Type) 6) /* RTC PERIOD (Periodic interrupt) */
+#define RTC_PERIOD_IRQn          ((IRQn_Type) 6) /* RTC PERIOD (Periodic interrupt) */
+#define VECTOR_NUMBER_RTC_CARRY ((IRQn_Type) 7) /* RTC CARRY (Carry interrupt) */
+#define RTC_CARRY_IRQn          ((IRQn_Type) 7) /* RTC CARRY (Carry interrupt) */
 #ifdef __cplusplus
         }
         #endif

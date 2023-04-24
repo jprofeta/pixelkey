@@ -317,8 +317,8 @@ FSP Configuration
       Automatic Adjustment Period: 10 Seconds
       Adjustment Type (Plus-Minus): NONE
       Error Adjustment Value: 0
-      Callback: NULL
+      Callback: hal_rtc_callback
       Alarm Interrupt Priority: Disabled
-      Period Interrupt Priority: Disabled
+      Period Interrupt Priority: Priority 11
       Carry Interrupt Priority: Priority 12
       

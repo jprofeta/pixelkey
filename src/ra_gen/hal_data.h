@@ -21,8 +21,8 @@ extern const rtc_instance_t g_rtc;
 extern rtc_instance_ctrl_t g_rtc_ctrl;
 extern const rtc_cfg_t g_rtc_cfg;
 
-#ifndef NULL
-void NULL(rtc_callback_args_t *p_args);
+#ifndef hal_rtc_callback
+void hal_rtc_callback(rtc_callback_args_t *p_args);
 #endif
 /* Transfer on DMAC Instance. */
 extern const transfer_instance_t g_npdata_transfer;

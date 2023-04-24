@@ -10,7 +10,8 @@
             [3] = usbfs_d1fifo_handler, /* USBFS FIFO 1 (DMA transfer request 1) */
             [4] = dmac_int_isr, /* DMAC0 INT (DMAC transfer end 0) */
             [5] = dmac_int_isr, /* DMAC1 INT (DMAC transfer end 1) */
-            [6] = rtc_carry_isr, /* RTC CARRY (Carry interrupt) */
+            [6] = rtc_alarm_periodic_isr, /* RTC PERIOD (Periodic interrupt) */
+            [7] = rtc_carry_isr, /* RTC CARRY (Carry interrupt) */
         };
         const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENTRIES] =
         {
@@ -20,6 +21,7 @@
             [3] = BSP_PRV_IELS_ENUM(EVENT_USBFS_FIFO_1), /* USBFS FIFO 1 (DMA transfer request 1) */
             [4] = BSP_PRV_IELS_ENUM(EVENT_DMAC0_INT), /* DMAC0 INT (DMAC transfer end 0) */
             [5] = BSP_PRV_IELS_ENUM(EVENT_DMAC1_INT), /* DMAC1 INT (DMAC transfer end 1) */
-            [6] = BSP_PRV_IELS_ENUM(EVENT_RTC_CARRY), /* RTC CARRY (Carry interrupt) */
+            [6] = BSP_PRV_IELS_ENUM(EVENT_RTC_PERIOD), /* RTC PERIOD (Periodic interrupt) */
+            [7] = BSP_PRV_IELS_ENUM(EVENT_RTC_CARRY), /* RTC CARRY (Carry interrupt) */
         };
         #endif

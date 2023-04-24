@@ -42,6 +42,13 @@ typedef enum e_schedule_type
     SCHEDULE_TYPE_INTERVAL,           ///< Schedule is for a variable interval of a start and end time.
 } schedule_type_t;
 
+typedef enum e_keyframe_flag
+{
+    KEYFRAME_FLAG_NONE = 0UL,
+    KEYFRAME_FLAG_INITIALIZED = (1UL << 30),
+    KEYFRAME_FLAG_GROUP = (1UL << 31),
+} keyframe_flag_t;
+
 /** The base unit of time for animating keyframes; resolution of 1 frame. */
 typedef uint32_t timestep_t;
 
@@ -98,6 +105,12 @@ struct st_keyframe_base
 {
     /** Pointer to the base API struct for the keyframe instance. */
     keyframe_base_api_t const * const p_api;
+    /** 
+     * Flags used for identification and rendering. 
+     * Upper 16-bits are reserved for PixelKey processing.
+     * Lower 16-bit may be used in child implementations.
+     * */
+    uint32_t flags;
     /** Modifiers applied to this keyframe. */
     struct
     {
@@ -110,19 +123,30 @@ struct st_keyframe_base
 /** Storage and state for keyframe groups. */
 typedef struct st_keyframe_group
 {
+    /** Keyframe base; MUST be the first entry in the struct. */
+    keyframe_base_t base;
+
     uint8_t children_len;       ///< Number of child keyframes in this group.
     uint8_t current_child_idx;  ///< Index of the child keyframe being rendered.
     /** List of child keyframes in this group. */
     keyframe_base_t * const children[GROUP_CHILDREN_MAX_COUNT];
-
-    /** Modifiers applied to this group. */
-    struct
-    {
-        keyframe_schedule_t schedule;              ///< Schedule times for this keyframe.
-        int32_t             repeat_count;          ///< Total number of times to render the keyframe; negative is indefinite.
-        bool                schedule_is_repeating; ///< Indicates the schedule should repeat instead of the frame.
-    } modifiers;
 } keyframe_group_t;
+
+/**
+ * Performs a render of the current keyframes.
+ * @retval PIXELKEY_ERROR_NONE Frame render was successful.
+ */
+pixelkey_error_t pixelkey_render_frame(void);
+
+/**
+ * Pushes a keyframe into the queue for a given NeoPixel index.
+ * @param     index      Index of NeoPixel.
+ * @param[in] p_keyframe Pointer to keyframe to push.
+ * @retval PIXELKEY_ERROR_NONE               Push was successful
+ * @retval PIXELKEY_ERROR_INDEX_OUT_OF_RANGE Index is higher than maximum available NeoPixel.
+ * @retval PIXELKEY_ERROR_BUFFER_FULL        Buffer if full for the given NeoPixel queue.
+ */
+pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_keyframe);
 
 /** @} */
 
