@@ -136,7 +136,7 @@ typedef struct st_keyframe_group
  * Performs a render of the current keyframes.
  * @retval PIXELKEY_ERROR_NONE Frame render was successful.
  */
-pixelkey_error_t pixelkey_render_frame(void);
+pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer);
 
 /**
  * Pushes a keyframe into the queue for a given NeoPixel index.

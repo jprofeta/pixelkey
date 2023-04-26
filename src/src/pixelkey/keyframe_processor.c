@@ -103,7 +103,7 @@ static void init_keyframe(keyframe_base_t * p_keyframe, color_rgb_t * p_color)
 }
 
 /// @todo Add support for scheduled keyframes.
-pixelkey_error_t pixelkey_render_frame(void)
+pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer)
 {
     // This should be called at the beginning of the frame period, directly after
     // the frame has been written to the neopixels.
@@ -153,26 +153,10 @@ pixelkey_error_t pixelkey_render_frame(void)
         }
     }
 
-    // Write the colors to the GPT buffer
+    // Write the colors to the frame buffer
     for (uint8_t i = 0; i < PIXELKEY_NEOPIXEL_COUNT; i++)
     {
-        // Neopixles use GRB data format for some reason...
-        const neopixel_data_t data = {
-            .gbr = {
-                .green = current_color[i].green,
-                .red = current_color[i].red,
-                .blue = current_color[i].blue
-            }
-        };
-
-        const uint8_t offset_idx = i * NEOPIXEL_COLOR_BITS;
-        for (uint8_t j = 0; j < NEOPIXEL_COLOR_BITS; j++)
-        {
-            const uint8_t byte = j >> 3;
-            const uint8_t bit = (uint8_t) (7 - (j & 0x7));  // MSb first
-
-            g_npdata_gpt_buffer[offset_idx + j] = ((data.array[byte] >> bit) & 0x01) ? NPDATA_GPT_B1 : NPDATA_GPT_B0;
-        }
+        p_frame_buffer[i] = current_color[i];
     }
 
     return PIXELKEY_ERROR_NONE;

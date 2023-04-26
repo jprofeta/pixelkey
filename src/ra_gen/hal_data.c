@@ -38,7 +38,7 @@ transfer_info_t g_npdata_transfer_info =
   .transfer_settings_word_b.chain_mode = TRANSFER_CHAIN_MODE_DISABLED,
   .transfer_settings_word_b.src_addr_mode = TRANSFER_ADDR_MODE_INCREMENTED,
   .transfer_settings_word_b.size = TRANSFER_SIZE_4_BYTE,
-  .transfer_settings_word_b.mode = TRANSFER_MODE_NORMAL,
+  .transfer_settings_word_b.mode = TRANSFER_MODE_REPEAT,
   .p_dest = (void*) &R_GPT5->GTCCR[3],
   .p_src = (void const*) NULL,
   .num_blocks = 1,
@@ -50,8 +50,9 @@ const dmac_extended_cfg_t g_npdata_transfer_extend =
 #else
   .irq = FSP_INVALID_VECTOR,
 #endif
-  .ipl = (BSP_IRQ_DISABLED),
-  .channel = 2, .p_callback = NULL, .p_context = NULL, .activation_source = ELC_EVENT_GPT5_CAPTURE_COMPARE_B, };
+  .ipl = (1),
+  .channel = 2, .p_callback = hal_frame_complete_callback, .p_context = NULL, .activation_source =
+          ELC_EVENT_GPT5_CAPTURE_COMPARE_B, };
 const transfer_cfg_t g_npdata_transfer_cfg =
 { .p_info = &g_npdata_transfer_info, .p_extend = &g_npdata_transfer_extend, };
 /* Instance structure to use this module. */

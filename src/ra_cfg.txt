@@ -130,6 +130,7 @@ FSP Configuration
       VSSUSB 11 USBFS0_VSSUSB - - - - - - - - IO "Read only" - 
     
   User Events
+    DTC COMPLETE (DTC last transfer): hal_build_data_callback
     
   User Event Links
     
@@ -292,7 +293,7 @@ FSP Configuration
     Instance "g_npdata_transfer Transfer (r_dmac) GPT5 CAPTURE COMPARE B (Compare match B)"
       Name: g_npdata_transfer
       Channel: 2
-      Mode: Normal
+      Mode: Repeat
       Transfer Size: 4 Bytes
       Destination Address Mode: Fixed
       Source Address Mode: Incremented
@@ -302,9 +303,9 @@ FSP Configuration
       Number of Transfers: 16
       Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 1
       Activation Source: GPT5 CAPTURE COMPARE B (Compare match B)
-      Callback: NULL
+      Callback: hal_frame_complete_callback
       Context: NULL
-      Transfer End Interrupt Priority: Disabled
+      Transfer End Interrupt Priority: Priority 1
       Interrupt Frequency: Interrupt after all transfers have completed
       Offset value (Valid only when address mode is \'Offset\'): 1
       Source Buffer Size: 1

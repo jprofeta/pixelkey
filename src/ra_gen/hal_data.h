@@ -31,8 +31,8 @@ extern const transfer_instance_t g_npdata_transfer;
 extern dmac_instance_ctrl_t g_npdata_transfer_ctrl;
 extern const transfer_cfg_t g_npdata_transfer_cfg;
 
-#ifndef NULL
-void NULL(dmac_callback_args_t *p_args);
+#ifndef hal_frame_complete_callback
+void hal_frame_complete_callback(dmac_callback_args_t *p_args);
 #endif
 /** Timer on GPT Instance. */
 extern const timer_instance_t g_npdata_timer;
