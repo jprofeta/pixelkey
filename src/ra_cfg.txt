@@ -130,7 +130,8 @@ FSP Configuration
       VSSUSB 11 USBFS0_VSSUSB - - - - - - - - IO "Read only" - 
     
   User Events
-    DTC COMPLETE (DTC last transfer): hal_build_data_callback
+    DTC COMPLETE (DTC last transfer): dtc_complete_isr
+    DMAC2 INT (DMAC transfer end 2): dmac_repeat_isr
     
   User Event Links
     
@@ -252,9 +253,9 @@ FSP Configuration
       Output: Custom Waveform: GTIOA: Cycle End Output Level: Pin Level Retain
       Output: Custom Waveform: GTIOA: Compare Match Output Level: Pin Level Retain
       Output: Custom Waveform: GTIOA: Retain Output Level at Count Stop: Disabled
-      Output: Custom Waveform: GTIOB: Initial Output Level: Pin Level High
+      Output: Custom Waveform: GTIOB: Initial Output Level: Pin Level Low
       Output: Custom Waveform: GTIOB: Cycle End Output Level: Pin Level High
-      Output: Custom Waveform: GTIOB: Compare Match Output Level: Pin Level Toggle
+      Output: Custom Waveform: GTIOB: Compare Match Output Level: Pin Level Low
       Output: Custom Waveform: GTIOB: Retain Output Level at Count Stop: Disabled
       Output: Custom Waveform: Custom Waveform Enable: Enabled
       Output: Duty Cycle Percent (only applicable in PWM mode): 100
@@ -290,7 +291,7 @@ FSP Configuration
       Extra Features: Output Disable: GTIOCA Disable Setting: Disable Prohibited
       Extra Features: Output Disable: GTIOCB Disable Setting: Disable Prohibited
       
-    Instance "g_npdata_transfer Transfer (r_dmac) GPT5 CAPTURE COMPARE B (Compare match B)"
+    Instance "g_npdata_transfer Transfer (r_dmac) GPT5 COUNTER OVERFLOW (Overflow)"
       Name: g_npdata_transfer
       Channel: 2
       Mode: Repeat
@@ -300,12 +301,12 @@ FSP Configuration
       Repeat Area (Unused in Normal Mode): Source
       Destination Pointer: &R_GPT5->GTCCR[3]
       Source Pointer: NULL
-      Number of Transfers: 16
-      Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 1
-      Activation Source: GPT5 CAPTURE COMPARE B (Compare match B)
+      Number of Transfers: 8
+      Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 12
+      Activation Source: GPT5 COUNTER OVERFLOW (Overflow)
       Callback: hal_frame_complete_callback
       Context: NULL
-      Transfer End Interrupt Priority: Priority 1
+      Transfer End Interrupt Priority: Priority 0 (highest)
       Interrupt Frequency: Interrupt after all transfers have completed
       Offset value (Valid only when address mode is \'Offset\'): 1
       Source Buffer Size: 1

@@ -5,7 +5,7 @@
 
 #define PIXELKEY_NEOPIXEL_COUNT         (4U)
 
-#define NPDATA_GPT_BUFFER_LENGTH        (NEOPIXEL_COLOR_BITS)
+#define NPDATA_GPT_BUFFER_LENGTH        (8U)
 
 #define NPDATA_GPT_B1                   (30)
 #define NPDATA_GPT_B0                   (15)

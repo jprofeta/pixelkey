@@ -41,8 +41,8 @@ transfer_info_t g_npdata_transfer_info =
   .transfer_settings_word_b.mode = TRANSFER_MODE_REPEAT,
   .p_dest = (void*) &R_GPT5->GTCCR[3],
   .p_src = (void const*) NULL,
-  .num_blocks = 1,
-  .length = 16, };
+  .num_blocks = 12,
+  .length = 8, };
 const dmac_extended_cfg_t g_npdata_transfer_extend =
 { .offset = 1, .src_buffer_size = 1,
 #if defined(VECTOR_NUMBER_DMAC2_INT)
@@ -50,9 +50,9 @@ const dmac_extended_cfg_t g_npdata_transfer_extend =
 #else
   .irq = FSP_INVALID_VECTOR,
 #endif
-  .ipl = (1),
+  .ipl = (0),
   .channel = 2, .p_callback = hal_frame_complete_callback, .p_context = NULL, .activation_source =
-          ELC_EVENT_GPT5_CAPTURE_COMPARE_B, };
+          ELC_EVENT_GPT5_COUNTER_OVERFLOW, };
 const transfer_cfg_t g_npdata_transfer_cfg =
 { .p_info = &g_npdata_transfer_info, .p_extend = &g_npdata_transfer_extend, };
 /* Instance structure to use this module. */
@@ -116,8 +116,8 @@ const gpt_extended_cfg_t g_npdata_timer_extend =
                   (uint32_t) false,
           .gtior_setting.gtior_b.oadf = (uint32_t) GPT_GTIOC_DISABLE_PROHIBITED, .gtior_setting.gtior_b.nfaen =
                   ((uint32_t) GPT_CAPTURE_FILTER_NONE & 1U),
-          .gtior_setting.gtior_b.nfcsa = ((uint32_t) GPT_CAPTURE_FILTER_NONE >> 1U), .gtior_setting.gtior_b.gtiob = (1U
-                  << 4U) | (2U << 2U) | (3U << 0U),
+          .gtior_setting.gtior_b.nfcsa = ((uint32_t) GPT_CAPTURE_FILTER_NONE >> 1U), .gtior_setting.gtior_b.gtiob = (0U
+                  << 4U) | (2U << 2U) | (1U << 0U),
           .gtior_setting.gtior_b.obdflt = (uint32_t) GPT_PIN_LEVEL_LOW, .gtior_setting.gtior_b.obhld = 0U, .gtior_setting.gtior_b.obe =
                   (uint32_t) true,
           .gtior_setting.gtior_b.obdf = (uint32_t) GPT_GTIOC_DISABLE_PROHIBITED, .gtior_setting.gtior_b.nfben =

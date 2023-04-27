@@ -185,7 +185,8 @@
   </raComponentSelection>
   <raElcConfiguration/>
   <raIcuConfiguration>
-    <interrupt event="event.dtc.complete" isr="hal_build_data_callback"/>
+    <interrupt event="event.dtc.complete" isr="dtc_complete_isr"/>
+    <interrupt event="event.dmac2.int" isr="dmac_repeat_isr"/>
   </raIcuConfiguration>
   <raModuleConfiguration>
     <module id="module.driver.ioport_on_ioport.0">
@@ -267,9 +268,9 @@
       <property id="module.driver.timer.gtior.gtioa.cycle_end_output_level" value="module.driver.timer.gtior.gtioa.cycle_end_output_level.retain"/>
       <property id="module.driver.timer.gtior.gtioa.compare_match_output_level" value="module.driver.timer.gtior.gtioa.compare_match_output_level.retain"/>
       <property id="module.driver.timer.gtior.gtioa.count_stop_retain" value="module.driver.timer.gtior.gtioa.count_stop_retain.disabled"/>
-      <property id="module.driver.timer.gtior.gtiob.initial_output_level" value="module.driver.timer.gtior.gtiob.initial_output_level.high"/>
+      <property id="module.driver.timer.gtior.gtiob.initial_output_level" value="module.driver.timer.gtior.gtiob.initial_output_level.low"/>
       <property id="module.driver.timer.gtior.gtiob.cycle_end_output_level" value="module.driver.timer.gtior.gtiob.cycle_end_output_level.high"/>
-      <property id="module.driver.timer.gtior.gtiob.compare_match_output_level" value="module.driver.timer.gtior.gtiob.compare_match_output_level.toggle"/>
+      <property id="module.driver.timer.gtior.gtiob.compare_match_output_level" value="module.driver.timer.gtior.gtiob.compare_match_output_level.low"/>
       <property id="module.driver.timer.gtior.gtiob.count_stop_retain" value="module.driver.timer.gtior.gtiob.count_stop_retain.disabled"/>
       <property id="module.driver.timer.gtior.custom_waveform_enable" value="module.driver.timer.gtior.custom_waveform_enable.enabled"/>
       <property id="module.driver.timer.duty_cycle" value="100"/>
@@ -315,12 +316,12 @@
       <property id="module.driver.transfer.repeat_area" value="module.driver.transfer.repeat_area.repeat_area_source"/>
       <property id="module.driver.transfer.p_dest" value="&amp;R_GPT5-&gt;GTCCR[3]"/>
       <property id="module.driver.transfer.p_src" value="NULL"/>
-      <property id="module.driver.transfer.length" value="16"/>
-      <property id="module.driver.transfer.num_blocks" value="1"/>
-      <property id="module.driver.transfer.activation_event" value="_signal.event.gpt5.capture.compare.b"/>
+      <property id="module.driver.transfer.length" value="8"/>
+      <property id="module.driver.transfer.num_blocks" value="12"/>
+      <property id="module.driver.transfer.activation_event" value="_signal.event.gpt5.counter.overflow"/>
       <property id="module.driver.transfer.p_callback" value="hal_frame_complete_callback"/>
       <property id="module.driver.transfer.p_context" value="NULL"/>
-      <property id="module.driver.transfer.ipl" value="board.icu.common.irq.priority1"/>
+      <property id="module.driver.transfer.ipl" value="board.icu.common.irq.priority0"/>
       <property id="module.driver.transfer.interrupt" value="module.driver.transfer.interrupt.interrupt_end"/>
       <property id="module.driver.transfer.offset" value="1"/>
       <property id="module.driver.transfer.src.buffer" value="1"/>

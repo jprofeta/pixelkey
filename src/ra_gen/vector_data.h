@@ -14,9 +14,10 @@ void usbfs_resume_handler(void);
 void usbfs_d0fifo_handler(void);
 void usbfs_d1fifo_handler(void);
 void dmac_int_isr(void);
+void dmac_repeat_isr(void);
 void rtc_alarm_periodic_isr(void);
 void rtc_carry_isr(void);
-void hal_build_data_callback(void);
+void dtc_complete_isr(void);
 
 /* Vector table allocations */
 #define VECTOR_NUMBER_USBFS_INT ((IRQn_Type) 0) /* USBFS INT (USBFS interrupt) */

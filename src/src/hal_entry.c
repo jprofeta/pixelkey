@@ -16,7 +16,7 @@ FSP_CPP_HEADER
 void R_BSP_WarmStart(bsp_warm_start_event_t event);
 FSP_CPP_FOOTER
 
-static void write_color_to_buffer(color_rgb_t const * const p_color, volatile uint32_t * p_npdata_buffer);
+static void write_color_to_buffer(color_rgb_t const * const p_color, uint8_t byte_idx, volatile uint32_t * p_npdata_buffer);
 static void init_npdata_buffers(void);
 static void send_frame(void);
 
@@ -35,6 +35,7 @@ static volatile color_rgb_t npdata_frame[PIXELKEY_NEOPIXEL_COUNT] = {0};
 
 /** Current index of the next color to write to npdata_pingpong. */
 static volatile size_t npdata_frame_idx = 0;
+static volatile uint8_t npdata_frame_byte_idx = 0;
 
 /** Block index to write the next NeoPixel color block to. */
 static volatile size_t npdata_pingpong_block = 0;
@@ -56,8 +57,8 @@ static const uint16_t default_npdata_pingpong_xfr_num_blocks = 2U;
 static transfer_info_t g_npdata_pingpong_xfr_info[] =
 {
     {   // Normal 2-block transfer to push a single NeoPixel's worth of data at a time into the GPT buffer.
-        .transfer_settings_word_b.dest_addr_mode = TRANSFER_ADDR_MODE_FIXED,
-        .transfer_settings_word_b.repeat_area = TRANSFER_REPEAT_AREA_SOURCE,
+        .transfer_settings_word_b.dest_addr_mode = TRANSFER_ADDR_MODE_INCREMENTED,
+        .transfer_settings_word_b.repeat_area = TRANSFER_REPEAT_AREA_DESTINATION,
         .transfer_settings_word_b.irq = TRANSFER_IRQ_EACH,
         .transfer_settings_word_b.chain_mode = TRANSFER_CHAIN_MODE_END,
         .transfer_settings_word_b.src_addr_mode = TRANSFER_ADDR_MODE_INCREMENTED,
@@ -65,8 +66,8 @@ static transfer_info_t g_npdata_pingpong_xfr_info[] =
         .transfer_settings_word_b.mode = TRANSFER_MODE_BLOCK,
         .p_dest = (void *) npdata_gpt_buffer,
         .p_src = (void const* ) npdata_pingpong,
-        .num_blocks = 2,
-        .length = NPDATA_GPT_BUFFER_LENGTH,
+        .num_blocks = 6,
+        .length = 8,
     },
     {   // Reset the source address for the block transfer. This will "restart" the first transfer.
         .transfer_settings_word_b.dest_addr_mode = TRANSFER_ADDR_MODE_FIXED,
@@ -112,12 +113,34 @@ const transfer_instance_t g_npdata_pingpong_xfr =
  * ISR and callback functions
  * ****************************************************************************/
 
+void dmac_repeat_isr(void)
+{
+    IRQn_Type irq = R_FSP_CurrentIrqGet();
+
+    /* Clear IRQ to make sure it doesn't fire again after exiting */
+    R_BSP_IrqStatusClear(irq);
+
+    if (R_DMAC2->DMCRB > 0U)
+    {
+        R_DMAC2->DMCNT = 1;
+    }
+    else
+    {
+        g_npdata_timer.p_api->stop(&g_npdata_timer_ctrl);
+    }
+}
+
 /**
  * ISR for handling loading new data into the ping-pong buffer.
  * Trigger is DTC_COMPLETE.
  */
-void hal_build_data_callback(void)
+void dtc_complete_isr(void)
 {
+    IRQn_Type irq = R_FSP_CurrentIrqGet();
+
+    /* Clear IRQ to make sure it doesn't fire again after exiting */
+    R_BSP_IrqStatusClear(irq);
+
     if (npdata_frame_idx > PIXELKEY_NEOPIXEL_COUNT)
     {
         // Out of NeoPixels to write.
@@ -129,10 +152,15 @@ void hal_build_data_callback(void)
     // Copy the color from the frame buffer.
     const color_rgb_t rgb = npdata_frame[npdata_frame_idx];
 
-    write_color_to_buffer(&rgb, npdata_pingpong[npdata_pingpong_block]);
+    write_color_to_buffer(&rgb, npdata_frame_byte_idx, npdata_pingpong[npdata_pingpong_block]);
 
     // Increment the NeoPixel index and the block index.
-    npdata_frame_idx++;
+    npdata_frame_byte_idx++;
+    if (npdata_frame_byte_idx == 3)
+    {
+        npdata_frame_byte_idx = 0;
+        npdata_frame_idx++;
+    }
     npdata_pingpong_block = (npdata_pingpong_block + 1U) & 0x01U;
 }
 
@@ -142,6 +170,15 @@ void hal_build_data_callback(void)
 void hal_frame_complete_callback(dmac_callback_args_t * p_args)
 {
     FSP_PARAMETER_NOT_USED(p_args);
+
+    transfer_properties_t xfr_prop;
+    g_npdata_transfer.p_api->infoGet(&g_npdata_transfer_ctrl, &xfr_prop);
+    if (xfr_prop.block_count_remaining > 0)
+    {
+        // Only stop the data transfer if all the blocks have been written.
+        return;
+    }
+
 
     // Stop the timer and the transfers.
     /// @todo Check to make sure the last bit gets transferred out correctly; may need to wait until the timer cycles once more.
@@ -159,7 +196,7 @@ void hal_frame_complete_callback(dmac_callback_args_t * p_args)
  * @param[in] p_color         Pointer to the color to transform.
  * @param[in] p_npdata_buffer Pointer to the waveform buffer for a single 24-bit NeoPixel burst.
  */
-static void write_color_to_buffer(color_rgb_t const * const p_color, volatile uint32_t * p_npdata_buffer)
+static void write_color_to_buffer(color_rgb_t const * const p_color, uint8_t byte_idx, volatile uint32_t * p_npdata_buffer)
 {
     // Convert it to the NeoPixel data format.
     const neopixel_data_t data = {
@@ -171,12 +208,9 @@ static void write_color_to_buffer(color_rgb_t const * const p_color, volatile ui
     };
 
     // Write each bit's compare value to the buffer.
-    for (uint8_t i = 0; i < NEOPIXEL_COLOR_BITS; i++)
+    for (int8_t i = 7; i >= 0; i--)
     {
-        const uint8_t byte = i >> 3;
-        const uint8_t bit = (uint8_t) (7 - (i & 0x7));  // MSb first
-
-        p_npdata_buffer[i] = ((data.array[byte] >> bit) & 0x01) ? NPDATA_GPT_B1 : NPDATA_GPT_B0;
+        p_npdata_buffer[7 - i] = ((data.array[byte_idx] >> i) & 0x01) ? NPDATA_GPT_B1 : NPDATA_GPT_B0;
     }
 }
 
@@ -186,29 +220,16 @@ static void write_color_to_buffer(color_rgb_t const * const p_color, volatile ui
 static void init_npdata_buffers(void)
 {
     npdata_frame_idx = 0;
+    npdata_frame_byte_idx = 0;
     npdata_pingpong_block = 0;
 
     color_rgb_t rgb = npdata_frame[0];
 
     // Write the first NeoPixel directly to the gpt buffer.
-    write_color_to_buffer(&rgb, npdata_gpt_buffer);
+    write_color_to_buffer(&rgb, 0, npdata_gpt_buffer);
+    write_color_to_buffer(&rgb, 1, npdata_pingpong[0]);
+    write_color_to_buffer(&rgb, 2, npdata_pingpong[1]);
     npdata_frame_idx++;
-
-    // Write the next two NeoPixels to the ping-pong buffer.
-    if (PIXELKEY_NEOPIXEL_COUNT > 1)
-    {
-        rgb = npdata_frame[1];
-        write_color_to_buffer(&rgb, npdata_pingpong[0]);
-        npdata_frame_idx++;
-        npdata_pingpong_block = (npdata_pingpong_block + 1U) & 0x01U;
-    }
-    if (PIXELKEY_NEOPIXEL_COUNT > 2)
-    {
-        rgb = npdata_frame[2];
-        write_color_to_buffer(&rgb, npdata_pingpong[1]);
-        npdata_frame_idx++;
-        npdata_pingpong_block = (npdata_pingpong_block + 1U) & 0x01U;
-    }
 }
 
 /**
@@ -221,14 +242,14 @@ static void send_frame(void)
     if (xfr_prop.block_count_remaining > 0)
     {
         /// @todo Add frame overflow log
-        return;
+        //return;
     }
 
     // Initialize the buffers and state variables.
     init_npdata_buffers();
 
     // Reconfigure the GPT DMAC transfer.
-    g_npdata_transfer.p_api->reset(&g_npdata_transfer_ctrl, (void *)npdata_gpt_buffer, NULL, PIXELKEY_NEOPIXEL_COUNT);
+    g_npdata_transfer.p_api->reset(&g_npdata_transfer_ctrl, (void *)npdata_gpt_buffer, NULL, 12);
 
     // Reconfigure the ping-pong DTC transfer.
     // Make sure the source and block count is correct. Nothing else should be changed by the DTC.
@@ -239,9 +260,13 @@ static void send_frame(void)
     g_npdata_pingpong_xfr.p_api->enable(&g_npdata_pingpong_xfr_ctrl);
 
     // Now enable the DMAC for sending the actual waveform to the GPT.
+    R_DMAC2->DMINT_b.RPTIE = 1;
+    R_DMAC2->DMINT_b.ESIE = 1;
     g_npdata_transfer.p_api->enable(&g_npdata_transfer_ctrl);
 
     // And lastly, enable the GPT to start sending data.
+    R_GPT5->GTCCR[1] = 0x00;
+    R_GPT5->GTCCR[3] = 0x00;
     g_npdata_timer.p_api->start(&g_npdata_timer_ctrl);
 }
 
@@ -295,16 +320,29 @@ void hal_entry(void)
     g_npdata_transfer.p_api->open(&g_npdata_transfer_ctrl, &g_npdata_transfer_cfg);
     g_npdata_pingpong_xfr.p_api->open(&g_npdata_pingpong_xfr_ctrl, &g_npdata_pingpong_xfr_cfg);
 
+    R_BSP_IrqCfgEnable(VECTOR_NUMBER_DTC_COMPLETE, 1, NULL);
+
 #ifdef HARDWARE_TESTS
     /* Initial hardware testing. */
     //transfer_info_t * p_tfr = g_npdata_transfer_cfg.p_info; 
     //p_tfr->p_src = npdata_gpt_buffer;
     //p_tfr->length = NPDATA_GPT_BUFFER_LENGTH;
 
-    set_color(0, &color_red);
-    set_color(1, &color_red);
-    set_color(2, &color_green);
-    set_color(3, &color_white);
+    color_t c = color_red;
+    c.hsv.value = 50;
+    set_color(0, &c);
+
+    c = color_green;
+    c.hsv.value = 50;
+    set_color(1, &c);
+
+    c = color_blue;
+    c.hsv.value = 50;
+    set_color(2, &c);
+
+    c = color_white;
+    c.hsv.value = 50;
+    set_color(3, &c);
 
     send_frame();
 

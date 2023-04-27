@@ -10,10 +10,10 @@
             [3] = usbfs_d1fifo_handler, /* USBFS FIFO 1 (DMA transfer request 1) */
             [4] = dmac_int_isr, /* DMAC0 INT (DMAC transfer end 0) */
             [5] = dmac_int_isr, /* DMAC1 INT (DMAC transfer end 1) */
-            [6] = dmac_int_isr, /* DMAC2 INT (DMAC transfer end 2) */
+            [6] = dmac_repeat_isr, /* DMAC2 INT (DMAC transfer end 2) */
             [7] = rtc_alarm_periodic_isr, /* RTC PERIOD (Periodic interrupt) */
             [8] = rtc_carry_isr, /* RTC CARRY (Carry interrupt) */
-            [9] = hal_build_data_callback, /* DTC COMPLETE (DTC last transfer) */
+            [9] = dtc_complete_isr, /* DTC COMPLETE (DTC last transfer) */
         };
         const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENTRIES] =
         {
