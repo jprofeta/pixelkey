@@ -32,7 +32,7 @@ static void set_color(uint8_t index, color_t * const color)
     color_rgb_t rgb;
     color_convert2(color->color_space, COLOR_SPACE_RGB, (color_kind_t *)color, (color_kind_t *)&rgb);
 
-    g_npdata_frame[index] = rgb;
+    npdata_set_color(index, &rgb);
 }
 
 void hal_rtc_callback(rtc_callback_args_t *p_args)

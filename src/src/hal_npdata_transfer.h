@@ -19,6 +19,7 @@ extern volatile color_rgb_t g_npdata_frame[PIXELKEY_NEOPIXEL_COUNT];
 
 void npdata_open(void);
 void npdata_send_frame(void);
+void npdata_set_color(uint32_t index, color_rgb_t const * const p_color);
 
 /** @} */
 

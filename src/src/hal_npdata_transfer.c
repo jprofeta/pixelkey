@@ -17,7 +17,14 @@
 
 #include "r_dtc.h"
 
-#define NPDATA_SHIFT_REG_MASK   (UINT32_C(1) << (NEOPIXEL_COLOR_BITS - 1))
+/** @internal Default value for @ref npdata_frame_idx. */
+#define NPDATA_FRAME_IDX_DEFAULT    (-1)
+/** @internal Default value for @ref npdata_color_bit. */
+#define NPDATA_COLOR_BIT_DEFAULT    (UINT8_MAX)
+/** @internal Default value for @ref npdata_color_word. */
+#define NPDATA_COLOR_WORD_DEFAULT   (0U)
+/** @internal Mask for selecting the current data bit when converting color bytes to timing data. */
+#define NPDATA_SHIFT_REG_MASK       (UINT32_C(1) << (NEOPIXEL_COLOR_BITS - 1))
 
 volatile color_rgb_t g_npdata_frame[PIXELKEY_NEOPIXEL_COUNT] = {0};
 
@@ -34,13 +41,13 @@ static volatile uint32_t npdata_gpt_buffer[NPDATA_GPT_BUFFER_LENGTH] = {0};
 static volatile uint32_t npdata_secondary_buffer[NPDATA_SECONDARY_BUFFER_COUNT][NPDATA_GPT_BUFFER_LENGTH] = {0};
 
 /** @internal Current index to write to the secondary buffer. */
-static volatile int32_t npdata_frame_idx = -1;
+static volatile int32_t npdata_frame_idx = NPDATA_FRAME_IDX_DEFAULT;
 
 /** @internal Current bit to write to the secondary buffer. */
-static volatile uint8_t npdata_color_bit = UINT8_MAX;
+static volatile uint8_t npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
 
 /** @internal Current full shift-register word for the color being written. */
-static volatile uint32_t npdata_color_word = 0;
+static volatile uint32_t npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
 
 
 
@@ -149,7 +156,7 @@ static const transfer_instance_t npdata_secondary_xfr =
  */
 
 /**
- * DMAC2_INT ISR function.
+ * DMAC2_INT ISR handler.
  * @note This overrides the built-in FSP DMAC ISR.
  * 
  * This is setup to trigger on each repeat size completion.
@@ -189,6 +196,10 @@ void npdata_transfer_callback(dmac_callback_args_t * p_args)
     // Do nothing.
 }
 
+/**
+ * DTC_COMPLETE ISR handler.
+ * Responsible for pushing new data to the secondary buffer.
+ */
 void dtc_complete_isr()
 {
     IRQn_Type irq = R_FSP_CurrentIrqGet();
@@ -265,9 +276,9 @@ void npdata_send_frame(void)
     }
 
     // Initialize the buffers and state variables.
-    npdata_frame_idx = -1;
-    npdata_color_bit = UINT8_MAX;
-    npdata_color_word = 0;
+    npdata_frame_idx = NPDATA_FRAME_IDX_DEFAULT;
+    npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
+    npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
     push_data_to_buffer((uint32_t *) npdata_gpt_buffer);
     for (size_t i = 0; i < NPDATA_SECONDARY_BUFFER_COUNT; i++)
     {
@@ -301,6 +312,22 @@ void npdata_open(void)
     npdata_secondary_xfr.p_api->open(&npdata_secondary_xfr_ctrl, &npdata_secondary_xfr_cfg);
 
     R_BSP_IrqCfgEnable(VECTOR_NUMBER_DTC_COMPLETE, 1, NULL);
+}
+
+/**
+ * Copies a color to the specified index of the frame buffer.
+ * @param     index   The index to write.
+ * @param[in] p_color Pointer to the color to copy.
+ */
+void npdata_set_color(uint32_t index, color_rgb_t const * const p_color)
+{
+    if (index > PIXELKEY_NEOPIXEL_COUNT)
+    {
+        /// @todo Log frame index out of range?
+        return;
+    }
+
+    g_npdata_frame[index] = *p_color;
 }
 
 /** @} */
