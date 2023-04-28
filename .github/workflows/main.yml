@@ -7,15 +7,18 @@ jobs:
   documentation:
     name: Generate doxygen
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v3
+    - run: 'ls -lha'
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@1.9.5
       with:
         # Path to Doxyfile
-        doxyfile-path: docs/Doxyfile
+        doxyfile-path: pixelkey/docs/Doxyfile
         # Working directory
-        working-directory: docs
+        working-directory: pixelkey/docs
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
