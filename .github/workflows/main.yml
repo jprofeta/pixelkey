@@ -11,14 +11,13 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v3
-    - run: 'ls -lha'
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@1.9.5
       with:
         # Path to Doxyfile
-        doxyfile-path: pixelkey/docs/Doxyfile
+        doxyfile-path: 'Doxyfile'
         # Working directory
-        working-directory: pixelkey/docs
+        working-directory: 'docs'
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
