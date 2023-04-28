@@ -8,13 +8,14 @@ jobs:
     name: Generate doxygen
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@1.9.5
       with:
         # Path to Doxyfile
         doxyfile-path: docs/Doxyfile
         # Working directory
-        working-directory: docs/
+        working-directory: docs
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
