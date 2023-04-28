@@ -1,6 +1,6 @@
 # PixelKey
 [![License](https://img.shields.io/badge/license-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Documentation](https://img.shields.io/badge/docs-GitHub--Pages-informational)](https://jprofeta.github.io/pixelkey)
+[![Documentation](https://img.shields.io/badge/docs-GitHub_Pages-informational)](https://jprofeta.github.io/pixelkey)
 
 A simple USB NeoPixel driver.
 
