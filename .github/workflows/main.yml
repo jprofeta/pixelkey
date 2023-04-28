@@ -1,0 +1,22 @@
+on:
+  push:
+    branches:
+      - master
+      - develop
+jobs:
+  documentation:
+    name: Generate doxygen
+    runs-on: ubuntu-latest
+    steps:
+    - name: Doxygen Action
+      uses: mattnotmitt/doxygen-action@1.9.5
+      with:
+        # Path to Doxyfile
+        doxyfile-path: ./docs/Doxyfile
+        # Working directory
+        working-directory: ./docs
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/out
