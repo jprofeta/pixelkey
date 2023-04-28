@@ -4,6 +4,53 @@
  * @{
  */
 
+/**
+ * @page Operation
+ * The mechanism for data transmission to the NeoPixels uses the GPT peripheral available on the RA4M1. A pulse-code
+ * waveform is transmitted at 800&nbsp;kHz. To achieve this, the Capture Compare B channel is utilized.
+ * 
+ * @startuml
+ * hide footbox
+ * 
+ * skinparam lifelineStrategy solid
+ * skinparam sequenceMessageAlign center
+ * skinparam sequence {
+ * ArrowFontBackgroundColor white
+ * }
+ * 
+ * actor FW as fw
+ * control GPT as gpt
+ * queue DMAC as dmac
+ * collections DTC as dtc
+ * 
+ * fw --> gpt : Start
+ * activate gpt
+ * loop PIXELKEY_NEOPIXEL_COUNT * NEOPIXEL_CHANNEL_COUNT times
+ *      loop NPDATA_SECONDARY_BUFFER_COUNT times
+ *          loop NPDATA_GPT_BUFFER_LENGTH times
+ *              gpt --> dmac : GPT5_OVF signal
+ *              activate dmac
+ *              dmac -> gpt : Write next compare value
+ *          end
+ *          dmac --> dtc : DMAC2_INT signal
+ *          activate dtc
+ *          dtc -> dmac : [chain 1] Write next timing block
+ *          dtc --> fw : DTC_COMPLETE signal
+ *          fw <- fw : Write next block to buffer
+ *      end
+ *      dtc -> dtc : [chain 2] Reset chain 1 source
+ *      dtc -> dtc : [chain 3] Reset chain 1 blocks
+ *      dtc --> fw : DTC_COMPLETE signal
+ *      deactivate dtc
+ *      fw <- fw : Write next block to buffer
+ * end
+ * dmac --> fw : DMAC2_INT
+ * deactivate dmac
+ * fw --> gpt : Stop
+ * deactivate gpt
+ * @enduml
+ */
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
