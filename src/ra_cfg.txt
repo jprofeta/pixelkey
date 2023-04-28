@@ -130,8 +130,8 @@ FSP Configuration
       VSSUSB 11 USBFS0_VSSUSB - - - - - - - - IO "Read only" - 
     
   User Events
+    DMAC2 INT (DMAC transfer end 2): dmac2_repeat_isr
     DTC COMPLETE (DTC last transfer): dtc_complete_isr
-    DMAC2 INT (DMAC transfer end 2): dmac_repeat_isr
     
   User Event Links
     
@@ -304,10 +304,10 @@ FSP Configuration
       Number of Transfers: 8
       Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 12
       Activation Source: GPT5 COUNTER OVERFLOW (Overflow)
-      Callback: hal_frame_complete_callback
+      Callback: npdata_transfer_callback
       Context: NULL
       Transfer End Interrupt Priority: Priority 0 (highest)
-      Interrupt Frequency: Interrupt after all transfers have completed
+      Interrupt Frequency: Interrupt after each block, or repeat size is transfered
       Offset value (Valid only when address mode is \'Offset\'): 1
       Source Buffer Size: 1
       

@@ -13,6 +13,7 @@
     <option key="#SELECTED_TOOLCHAIN#" value="gcc-arm-embedded"/>
     <option key="#ToolchainVersion#" value="10.3.1.20210824"/>
   </generalSettings>
+  <raBspConfiguration/>
   <raClockConfiguration>
     <node id="board.clock.xtal.freq" mul="12000000" option="_edit"/>
     <node id="board.clock.pll.source" option="board.clock.pll.source.disabled"/>
@@ -42,7 +43,6 @@
     <node id="board.clock.uclk.source" option="board.clock.uclk.source.hoco"/>
     <node id="board.clock.uclk.display" option="board.clock.clkout.display.value"/>
   </raClockConfiguration>
-  <raModuleConfiguration/>
   <raPinConfiguration>
     <pincfg active="true" name="" symbol="">
       <configSetting altId="debug0.swclk.p300" configurationId="debug0.swclk" isUsedByDriver="true"/>

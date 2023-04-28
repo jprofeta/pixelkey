@@ -34,7 +34,7 @@ dmac_instance_ctrl_t g_npdata_transfer_ctrl;
 transfer_info_t g_npdata_transfer_info =
 { .transfer_settings_word_b.dest_addr_mode = TRANSFER_ADDR_MODE_FIXED,
   .transfer_settings_word_b.repeat_area = TRANSFER_REPEAT_AREA_SOURCE,
-  .transfer_settings_word_b.irq = TRANSFER_IRQ_END,
+  .transfer_settings_word_b.irq = TRANSFER_IRQ_EACH,
   .transfer_settings_word_b.chain_mode = TRANSFER_CHAIN_MODE_DISABLED,
   .transfer_settings_word_b.src_addr_mode = TRANSFER_ADDR_MODE_INCREMENTED,
   .transfer_settings_word_b.size = TRANSFER_SIZE_4_BYTE,
@@ -51,7 +51,7 @@ const dmac_extended_cfg_t g_npdata_transfer_extend =
   .irq = FSP_INVALID_VECTOR,
 #endif
   .ipl = (0),
-  .channel = 2, .p_callback = hal_frame_complete_callback, .p_context = NULL, .activation_source =
+  .channel = 2, .p_callback = npdata_transfer_callback, .p_context = NULL, .activation_source =
           ELC_EVENT_GPT5_COUNTER_OVERFLOW, };
 const transfer_cfg_t g_npdata_transfer_cfg =
 { .p_info = &g_npdata_transfer_info, .p_extend = &g_npdata_transfer_extend, };

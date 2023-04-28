@@ -14,7 +14,7 @@ void usbfs_resume_handler(void);
 void usbfs_d0fifo_handler(void);
 void usbfs_d1fifo_handler(void);
 void dmac_int_isr(void);
-void dmac_repeat_isr(void);
+void dmac2_repeat_isr(void);
 void rtc_alarm_periodic_isr(void);
 void rtc_carry_isr(void);
 void dtc_complete_isr(void);
