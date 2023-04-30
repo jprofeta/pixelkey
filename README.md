@@ -2,7 +2,22 @@
 [![License](https://img.shields.io/badge/license-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Documentation](https://img.shields.io/badge/docs-GitHub_Pages-informational)](https://jprofeta.github.io/pixelkey)
 
-A simple USB NeoPixel driver.
+A simple NeoPixel USB Key powered by an RA4M1.
+
+## To do
+ - [X] Implement frame transmission
+ - [X] Implement task manager
+ - [ ] Create frame render task and link to GPT0
+ - [ ] Test keyframe processor
+ - [X] USB enumeration
+ - [ ] Test USB serial echo
+ - [ ] Implement USB to command buffer
+ - [ ] Implement command parsing and handler
+ - [ ] Add timesync and RTC functionality
+ - [ ] Implement scheduled keyframes
+ - [ ] Implement FW upgrade (maybe)
+ - [ ] Finalize MK2 hardware design
+ - [ ] Add MK2 schematics and layout to repo
 
 ## How to use
 PixelKey enumerates as a virtual COM device. Simple strings terminated by a new-line can configure the device and change the NeoPixel states. Two formats of data are accepted: commands and keyframes. Commands configure the driver, while keyframes describe how the NeoPixels should be controlled.
