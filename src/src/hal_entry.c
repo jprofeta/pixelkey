@@ -35,6 +35,11 @@ static void set_color(uint8_t index, color_t * const color)
     npdata_set_color(index, &rgb);
 }
 
+void hal_frame_timer_callback(timer_callback_args_t * p_args)
+{
+
+}
+
 void hal_rtc_callback(rtc_callback_args_t *p_args)
 {
     switch (p_args->event)
@@ -77,6 +82,9 @@ void hal_entry(void)
     set_color(3, &c);
 
     npdata_send_frame();
+
+    extern void usbcmd_open(void);
+    usbcmd_open();
 
     return;
 #endif

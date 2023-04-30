@@ -86,16 +86,16 @@
       <property id="config.bsp.common.main" value="0x400"/>
       <property id="config.bsp.common.heap" value="0x1000"/>
       <property id="config.bsp.common.vcc" value="3300"/>
-      <property id="config.bsp.common.checking" value="config.bsp.common.checking.disabled"/>
+      <property id="config.bsp.common.checking" value="config.bsp.common.checking.enabled"/>
       <property id="config.bsp.common.assert" value="config.bsp.common.assert.none"/>
       <property id="config.bsp.common.error_log" value="config.bsp.common.error_log.none"/>
       <property id="config.bsp.common.soft_reset" value="config.bsp.common.soft_reset.disabled"/>
-      <property id="config.bsp.common.main_osc_populated" value="config.bsp.common.main_osc_populated.enabled"/>
+      <property id="config.bsp.common.main_osc_populated" value="config.bsp.common.main_osc_populated.disabled"/>
       <property id="config.bsp.common.pfs_protect" value="config.bsp.common.pfs_protect.enabled"/>
       <property id="config.bsp.common.c_runtime_init" value="config.bsp.common.c_runtime_init.enabled"/>
       <property id="config.bsp.common.early_init" value="config.bsp.common.early_init.disabled"/>
       <property id="config.bsp.common.main_osc_clock_source" value="config.bsp.common.main_osc_clock_source.crystal"/>
-      <property id="config.bsp.common.subclock_populated" value="config.bsp.common.subclock_populated.enabled"/>
+      <property id="config.bsp.common.subclock_populated" value="config.bsp.common.subclock_populated.disabled"/>
       <property id="config.bsp.common.subclock_drive" value="config.bsp.common.subclock_drive.standard"/>
       <property id="config.bsp.common.subclock_stabilization_ms" value="1000"/>
     </config>
@@ -218,46 +218,6 @@
       <property id="module.driver.usb_basic.rtos_callback" value="NULL"/>
       <property id="module.driver.usb_basic.other_context" value="NULL"/>
     </module>
-    <module id="module.driver.transfer_on_dmac.493849901">
-      <property id="module.driver.transfer.name" value="g_usb_rx_transfer"/>
-      <property id="module.driver.transfer.channel" value="0"/>
-      <property id="module.driver.transfer.mode" value="module.driver.transfer.mode.mode_normal"/>
-      <property id="module.driver.transfer.size" value="module.driver.transfer.size.size_2_byte"/>
-      <property id="module.driver.transfer.dest_addr_mode" value="module.driver.transfer.dest_addr_mode.addr_mode_fixed"/>
-      <property id="module.driver.transfer.src_addr_mode" value="module.driver.transfer.src_addr_mode.addr_mode_fixed"/>
-      <property id="module.driver.transfer.repeat_area" value="module.driver.transfer.repeat_area.repeat_area_source"/>
-      <property id="module.driver.transfer.p_dest" value="NULL"/>
-      <property id="module.driver.transfer.p_src" value="NULL"/>
-      <property id="module.driver.transfer.length" value="1"/>
-      <property id="module.driver.transfer.num_blocks" value="0"/>
-      <property id="module.driver.transfer.activation_event" value="_signal.event.usbfs.fifo.1"/>
-      <property id="module.driver.transfer.p_callback" value="NULL"/>
-      <property id="module.driver.transfer.p_context" value="NULL"/>
-      <property id="module.driver.transfer.ipl" value="_disabled"/>
-      <property id="module.driver.transfer.interrupt" value="module.driver.transfer.interrupt.interrupt_end"/>
-      <property id="module.driver.transfer.offset" value="1"/>
-      <property id="module.driver.transfer.src.buffer" value="1"/>
-    </module>
-    <module id="module.driver.transfer_on_dmac.723135437">
-      <property id="module.driver.transfer.name" value="g_usb_tx_transfer"/>
-      <property id="module.driver.transfer.channel" value="1"/>
-      <property id="module.driver.transfer.mode" value="module.driver.transfer.mode.mode_normal"/>
-      <property id="module.driver.transfer.size" value="module.driver.transfer.size.size_2_byte"/>
-      <property id="module.driver.transfer.dest_addr_mode" value="module.driver.transfer.dest_addr_mode.addr_mode_fixed"/>
-      <property id="module.driver.transfer.src_addr_mode" value="module.driver.transfer.src_addr_mode.addr_mode_fixed"/>
-      <property id="module.driver.transfer.repeat_area" value="module.driver.transfer.repeat_area.repeat_area_source"/>
-      <property id="module.driver.transfer.p_dest" value="NULL"/>
-      <property id="module.driver.transfer.p_src" value="NULL"/>
-      <property id="module.driver.transfer.length" value="1"/>
-      <property id="module.driver.transfer.num_blocks" value="0"/>
-      <property id="module.driver.transfer.activation_event" value="_signal.event.usbfs.fifo.0"/>
-      <property id="module.driver.transfer.p_callback" value="NULL"/>
-      <property id="module.driver.transfer.p_context" value="NULL"/>
-      <property id="module.driver.transfer.ipl" value="_disabled"/>
-      <property id="module.driver.transfer.interrupt" value="module.driver.transfer.interrupt.interrupt_end"/>
-      <property id="module.driver.transfer.offset" value="1"/>
-      <property id="module.driver.transfer.src.buffer" value="1"/>
-    </module>
     <module id="module.driver.timer_on_gpt.1752256070">
       <property id="module.driver.timer.name" value="g_npdata_timer"/>
       <property id="module.driver.timer.channel" value="5"/>
@@ -339,17 +299,106 @@
       <property id="module.driver.rtc.periodic_ipl" value="board.icu.common.irq.priority11"/>
       <property id="module.driver.rtc.carry_ipl" value="board.icu.common.irq.priority12"/>
     </module>
+    <module id="module.driver.transfer_on_dmac.344221534">
+      <property id="module.driver.transfer.name" value="g_transfer0"/>
+      <property id="module.driver.transfer.channel" value="0"/>
+      <property id="module.driver.transfer.mode" value="module.driver.transfer.mode.mode_normal"/>
+      <property id="module.driver.transfer.size" value="module.driver.transfer.size.size_2_byte"/>
+      <property id="module.driver.transfer.dest_addr_mode" value="module.driver.transfer.dest_addr_mode.addr_mode_fixed"/>
+      <property id="module.driver.transfer.src_addr_mode" value="module.driver.transfer.src_addr_mode.addr_mode_fixed"/>
+      <property id="module.driver.transfer.repeat_area" value="module.driver.transfer.repeat_area.repeat_area_source"/>
+      <property id="module.driver.transfer.p_dest" value="NULL"/>
+      <property id="module.driver.transfer.p_src" value="NULL"/>
+      <property id="module.driver.transfer.length" value="1"/>
+      <property id="module.driver.transfer.num_blocks" value="0"/>
+      <property id="module.driver.transfer.activation_event" value="_signal.event.usbfs.fifo.1"/>
+      <property id="module.driver.transfer.p_callback" value="NULL"/>
+      <property id="module.driver.transfer.p_context" value="NULL"/>
+      <property id="module.driver.transfer.ipl" value="_disabled"/>
+      <property id="module.driver.transfer.interrupt" value="module.driver.transfer.interrupt.interrupt_end"/>
+      <property id="module.driver.transfer.offset" value="1"/>
+      <property id="module.driver.transfer.src.buffer" value="1"/>
+    </module>
+    <module id="module.driver.transfer_on_dmac.1864882188">
+      <property id="module.driver.transfer.name" value="g_transfer1"/>
+      <property id="module.driver.transfer.channel" value="1"/>
+      <property id="module.driver.transfer.mode" value="module.driver.transfer.mode.mode_normal"/>
+      <property id="module.driver.transfer.size" value="module.driver.transfer.size.size_2_byte"/>
+      <property id="module.driver.transfer.dest_addr_mode" value="module.driver.transfer.dest_addr_mode.addr_mode_fixed"/>
+      <property id="module.driver.transfer.src_addr_mode" value="module.driver.transfer.src_addr_mode.addr_mode_fixed"/>
+      <property id="module.driver.transfer.repeat_area" value="module.driver.transfer.repeat_area.repeat_area_source"/>
+      <property id="module.driver.transfer.p_dest" value="NULL"/>
+      <property id="module.driver.transfer.p_src" value="NULL"/>
+      <property id="module.driver.transfer.length" value="1"/>
+      <property id="module.driver.transfer.num_blocks" value="0"/>
+      <property id="module.driver.transfer.activation_event" value="_signal.event.usbfs.fifo.0"/>
+      <property id="module.driver.transfer.p_callback" value="NULL"/>
+      <property id="module.driver.transfer.p_context" value="NULL"/>
+      <property id="module.driver.transfer.ipl" value="_disabled"/>
+      <property id="module.driver.transfer.interrupt" value="module.driver.transfer.interrupt.interrupt_end"/>
+      <property id="module.driver.transfer.offset" value="1"/>
+      <property id="module.driver.transfer.src.buffer" value="1"/>
+    </module>
+    <module id="module.driver.timer_on_gpt.47931743">
+      <property id="module.driver.timer.name" value="g_frame_timer"/>
+      <property id="module.driver.timer.channel" value="0"/>
+      <property id="module.driver.timer.mode" value="module.driver.timer.mode.mode_periodic"/>
+      <property id="module.driver.timer.period" value="1600000"/>
+      <property id="module.driver.timer.unit" value="module.driver.timer.unit.unit_period_raw_counts"/>
+      <property id="module.driver.timer.gtior.gtioa.initial_output_level" value="module.driver.timer.gtior.gtioa.initial_output_level.low"/>
+      <property id="module.driver.timer.gtior.gtioa.cycle_end_output_level" value="module.driver.timer.gtior.gtioa.cycle_end_output_level.retain"/>
+      <property id="module.driver.timer.gtior.gtioa.compare_match_output_level" value="module.driver.timer.gtior.gtioa.compare_match_output_level.retain"/>
+      <property id="module.driver.timer.gtior.gtioa.count_stop_retain" value="module.driver.timer.gtior.gtioa.count_stop_retain.disabled"/>
+      <property id="module.driver.timer.gtior.gtiob.initial_output_level" value="module.driver.timer.gtior.gtiob.initial_output_level.low"/>
+      <property id="module.driver.timer.gtior.gtiob.cycle_end_output_level" value="module.driver.timer.gtior.gtiob.cycle_end_output_level.retain"/>
+      <property id="module.driver.timer.gtior.gtiob.compare_match_output_level" value="module.driver.timer.gtior.gtiob.compare_match_output_level.retain"/>
+      <property id="module.driver.timer.gtior.gtiob.count_stop_retain" value="module.driver.timer.gtior.gtiob.count_stop_retain.disabled"/>
+      <property id="module.driver.timer.gtior.custom_waveform_enable" value="module.driver.timer.gtior.custom_waveform_enable.disabled"/>
+      <property id="module.driver.timer.duty_cycle" value="50"/>
+      <property id="module.driver.timer.gtioca_output_enabled" value="module.driver.timer.gtioca_output_enabled.false"/>
+      <property id="module.driver.timer.gtioca_stop_level" value="module.driver.timer.gtioca_stop_level.pin_level_low"/>
+      <property id="module.driver.timer.gtiocb_output_enabled" value="module.driver.timer.gtiocb_output_enabled.false"/>
+      <property id="module.driver.timer.gtiocb_stop_level" value="module.driver.timer.gtiocb_stop_level.pin_level_low"/>
+      <property id="module.driver.timer.count_up_source" value=""/>
+      <property id="module.driver.timer.count_down_source" value=""/>
+      <property id="module.driver.timer.start_source" value=""/>
+      <property id="module.driver.timer.stop_source" value=""/>
+      <property id="module.driver.timer.clear_source" value=""/>
+      <property id="module.driver.timer.capture_a_source" value=""/>
+      <property id="module.driver.timer.capture_b_source" value=""/>
+      <property id="module.driver.timer.gtioca_filter" value="module.driver.timer.gtioc_filter.gtioc_filter_none"/>
+      <property id="module.driver.timer.gtiocb_filter" value="module.driver.timer.gtioc_filter.gtioc_filter_none"/>
+      <property id="module.driver.timer.p_callback" value="hal_frame_timer_callback"/>
+      <property id="module.driver.timer.ipl" value="board.icu.common.irq.priority5"/>
+      <property id="module.driver.timer.capture_a_ipl" value="_disabled"/>
+      <property id="module.driver.timer.capture_b_ipl" value="_disabled"/>
+      <property id="module.driver.timer.trough_ipl" value="_disabled"/>
+      <property id="module.driver.timer.extra" value="module.driver.timer.extra.disabled"/>
+      <property id="module.driver.timer.poeg_link" value="module.driver.timer.poeg_link.poeg_link_poeg0"/>
+      <property id="module.driver.timer.output_disable" value=""/>
+      <property id="module.driver.timer.adc_trigger" value=""/>
+      <property id="module.driver.timer.dead_time_count_up" value="0"/>
+      <property id="module.driver.timer.dead_time_count_down" value="0"/>
+      <property id="module.driver.timer.adc_a_compare_match" value="0"/>
+      <property id="module.driver.timer.adc_b_compare_match" value="0"/>
+      <property id="module.driver.timer.interrupt_skip.source" value="module.driver.timer.interrupt_skip.source.none"/>
+      <property id="module.driver.timer.interrupt_skip.count" value="module.driver.timer.interrupt_skip.count.count_0"/>
+      <property id="module.driver.timer.interrupt_skip.adc" value="module.driver.timer.interrupt_skip.adc.none"/>
+      <property id="module.driver.timer.gtioca_disable_setting" value="module.driver.timer.gtioca_disable_setting.gtioc_disable_prohibited"/>
+      <property id="module.driver.timer.gtiocb_disable_setting" value="module.driver.timer.gtiocb_disable_setting.gtioc_disable_prohibited"/>
+    </module>
     <context id="_hal.0">
       <stack module="module.driver.ioport_on_ioport.0"/>
       <stack module="module.driver.pcdc_on_usb.210960600">
         <stack module="module.driver.basic_on_usb.799887315" requires="module.driver.basic_on_usb.requires.basic">
-          <stack module="module.driver.transfer_on_dmac.493849901" requires="module.driver.basic_on_usb.requires.transfer_tx"/>
-          <stack module="module.driver.transfer_on_dmac.723135437" requires="module.driver.basic_on_usb.requires.transfer_rx"/>
+          <stack module="module.driver.transfer_on_dmac.344221534" requires="module.driver.basic_on_usb.requires.transfer_tx"/>
+          <stack module="module.driver.transfer_on_dmac.1864882188" requires="module.driver.basic_on_usb.requires.transfer_rx"/>
         </stack>
       </stack>
       <stack module="module.driver.timer_on_gpt.1752256070"/>
       <stack module="module.driver.transfer_on_dmac.477355850"/>
       <stack module="module.driver.rtc_on_rtc.1847540347"/>
+      <stack module="module.driver.timer_on_gpt.47931743"/>
     </context>
     <config id="config.driver.usb_pcdc">
       <property id="config.driver.usb_pcdc.bulk_in" value="config.driver.usb_pcdc.bulk_in.pipe1"/>
@@ -481,6 +530,9 @@
       <configSetting altId="usbfs0.usbdm.p915" configurationId="usbfs0.usbdm"/>
       <configSetting altId="usbfs0.usbdp.p914" configurationId="usbfs0.usbdp"/>
       <configSetting altId="usbfs0.vbus.p407" configurationId="usbfs0.vbus"/>
+      <lockSetting id="usbfs0.usbdm" lock="true"/>
+      <lockSetting id="usbfs0.usbdp" lock="true"/>
+      <lockSetting id="usbfs0.vbus" lock="true"/>
     </pincfg>
   </raPinConfiguration>
 </raConfiguration>

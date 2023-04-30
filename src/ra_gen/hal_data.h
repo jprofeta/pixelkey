@@ -4,16 +4,26 @@
 #include <stdint.h>
 #include "bsp_api.h"
 #include "common_data.h"
+#include "r_gpt.h"
+#include "r_timer_api.h"
 #include "r_rtc.h"
 #include "r_rtc_api.h"
 #include "r_dmac.h"
 #include "r_transfer_api.h"
-#include "r_gpt.h"
-#include "r_timer_api.h"
 #include "r_usb_basic.h"
 #include "r_usb_basic_api.h"
 #include "r_usb_pcdc_api.h"
 FSP_HEADER
+/** Timer on GPT Instance. */
+extern const timer_instance_t g_frame_timer;
+
+/** Access the GPT instance using these structures when calling API functions directly (::p_api is not used). */
+extern gpt_instance_ctrl_t g_frame_timer_ctrl;
+extern const timer_cfg_t g_frame_timer_cfg;
+
+#ifndef hal_frame_timer_callback
+void hal_frame_timer_callback(timer_callback_args_t *p_args);
+#endif
 /* RTC Instance. */
 extern const rtc_instance_t g_rtc;
 
@@ -45,21 +55,21 @@ extern const timer_cfg_t g_npdata_timer_cfg;
 void NULL(timer_callback_args_t *p_args);
 #endif
 /* Transfer on DMAC Instance. */
-extern const transfer_instance_t g_usb_tx_transfer;
+extern const transfer_instance_t g_transfer1;
 
 /** Access the DMAC instance using these structures when calling API functions directly (::p_api is not used). */
-extern dmac_instance_ctrl_t g_usb_tx_transfer_ctrl;
-extern const transfer_cfg_t g_usb_tx_transfer_cfg;
+extern dmac_instance_ctrl_t g_transfer1_ctrl;
+extern const transfer_cfg_t g_transfer1_cfg;
 
 #ifndef NULL
 void NULL(dmac_callback_args_t *p_args);
 #endif
 /* Transfer on DMAC Instance. */
-extern const transfer_instance_t g_usb_rx_transfer;
+extern const transfer_instance_t g_transfer0;
 
 /** Access the DMAC instance using these structures when calling API functions directly (::p_api is not used). */
-extern dmac_instance_ctrl_t g_usb_rx_transfer_ctrl;
-extern const transfer_cfg_t g_usb_rx_transfer_cfg;
+extern dmac_instance_ctrl_t g_transfer0_ctrl;
+extern const transfer_cfg_t g_transfer0_cfg;
 
 #ifndef usb_ip0_d1fifo_callback
 void usb_ip0_d1fifo_callback(dmac_callback_args_t *p_args);

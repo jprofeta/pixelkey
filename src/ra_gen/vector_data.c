@@ -13,7 +13,8 @@
             [6] = dmac2_repeat_isr, /* DMAC2 INT (DMAC transfer end 2) */
             [7] = rtc_alarm_periodic_isr, /* RTC PERIOD (Periodic interrupt) */
             [8] = rtc_carry_isr, /* RTC CARRY (Carry interrupt) */
-            [9] = dtc_complete_isr, /* DTC COMPLETE (DTC last transfer) */
+            [9] = gpt_counter_overflow_isr, /* GPT0 COUNTER OVERFLOW (Overflow) */
+            [10] = dtc_complete_isr, /* DTC COMPLETE (DTC last transfer) */
         };
         const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENTRIES] =
         {
@@ -26,6 +27,7 @@
             [6] = BSP_PRV_IELS_ENUM(EVENT_DMAC2_INT), /* DMAC2 INT (DMAC transfer end 2) */
             [7] = BSP_PRV_IELS_ENUM(EVENT_RTC_PERIOD), /* RTC PERIOD (Periodic interrupt) */
             [8] = BSP_PRV_IELS_ENUM(EVENT_RTC_CARRY), /* RTC CARRY (Carry interrupt) */
-            [9] = BSP_PRV_IELS_ENUM(EVENT_DTC_COMPLETE), /* DTC COMPLETE (DTC last transfer) */
+            [9] = BSP_PRV_IELS_ENUM(EVENT_GPT0_COUNTER_OVERFLOW), /* GPT0 COUNTER OVERFLOW (Overflow) */
+            [10] = BSP_PRV_IELS_ENUM(EVENT_DTC_COMPLETE), /* DTC COMPLETE (DTC last transfer) */
         };
         #endif

@@ -125,8 +125,8 @@ uint8_t g_apl_configuration[USB_PCDC_CD1_LEN + ( USB_PCDC_CD1_LEN % 2)] =
     2,                              /*  4:bNumInterfaces */
     1,                              /*  5:bConfigurationValue */
     0,                              /*  6:iConfiguration */
-    USB_CF_RESERVED | USB_CF_SELFP, /*  7:bmAttributes */
-    (10 / 2),                       /*  8:MAXPower (2mA unit) */
+    USB_CF_RESERVED,                /*  7:bmAttributes */
+    (500 / 2),                      /*  8:MAXPower (2mA unit) */
 
     /* Interface Descriptor */
     USB_ID_BLENGTH,                 /*  0:bLength */
