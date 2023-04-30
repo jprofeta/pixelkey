@@ -25,7 +25,7 @@ void default_task(void) { __BKPT(0); }
 #pragma GCC diagnostic pop
 #endif
 
-#define XTASK(task)     TASK_ID_ ## task = FLAG(TASK_ ## task),
+#define XTASK(task,fn,doc)     TASK_ID_ ## task = FLAG(TASK_ ## task),
 typedef enum e_task_id
 {
     TASK_ID_NONE = 0,
@@ -34,12 +34,12 @@ typedef enum e_task_id
 #undef XTASK
 
 // Declare the task functions.
-#define XTASK(task)     void task_ ## task (void) __attribute__ ((weak, alias ("default_task")));
+#define XTASK(task,fn,doc)     void fn (void) __attribute__ ((weak, alias ("default_task")));
 TASK_LIST
 #undef XTASK
 
 // Make the task list.
-#define XTASK(task)     task_ ## task,
+#define XTASK(task,fn,doc)     fn,
 static const task_fn_t task_fns[TASK_COUNT] =
 {
     TASK_LIST

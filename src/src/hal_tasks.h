@@ -10,18 +10,20 @@
  * @{
  */
 
-/** XMACRO for defining tasks. */
-#define TASK_LIST           \
-    XTASK(USB_HANDLER)      \
-    XTASK(FRAME_RENDER)     \
-    XTASK(CMD_RX)
+/** XMACRO(name,fn,docstring) for defining tasks. */
+#define TASK_LIST                                                              \
+    XTASK(USB_HANDLER, hal_usbcmd_handler, Handles USB events.)                \
+    XTASK(FRAME_RENDER, frame_render, Calculates the next frame.)              \
+    XTASK(CMD_RX, cmd_data_handler, Command string reception and parsing.)
 
-#define XTASK(task)     TASK_ ## task,
+
+#define XTASK(task,fn,doc)     TASK_ ## task /*!< doc See @ref fn. */,
+/** Available tasks. */
 typedef enum e_task
 {
     TASK_LIST
-    TASK_COUNT,
-    TASK_UNDEFINED = -1
+    TASK_COUNT,         ///< Number of available tasks.
+    TASK_UNDEFINED = -1 ///< Task is undefined.
 } task_t;
 #undef XTASK
 
