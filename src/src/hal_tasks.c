@@ -12,20 +12,19 @@
  * @{
  */
 
-/** @internal Create a flag. */
-#define FLAG(i)         (1U << (i))
 /** @internal Create a task_id_t for a given task index. */
 #define TASK_FLAG(i)    ((task_id_t) FLAG(i))
 
 #if DEBUG
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-// Default task if not defined. This is to simplify debugging and development.
+WARNING_SAVE()
+WARNING_DISABLE("missing-prototypes")
+/** @internal Default task if not defined. This is to simplify debugging and development. */
 void default_task(void) { __BKPT(0); }
-#pragma GCC diagnostic pop
+WARNING_RESTORE()
 #endif
 
 #define XTASK(task,fn,doc)     TASK_ID_ ## task = FLAG(TASK_ ## task),
+/** @internal Task flags. */
 typedef enum e_task_id
 {
     TASK_ID_NONE = 0,
@@ -34,20 +33,26 @@ typedef enum e_task_id
 #undef XTASK
 
 // Declare the task functions.
-#define XTASK(task,fn,doc)     void fn (void) __attribute__ ((weak, alias ("default_task")));
+#define XTASK(task,fn,doc)     void fn (void) __attribute__ (( weak, alias ("default_task") ));
 TASK_LIST
 #undef XTASK
 
 // Make the task list.
-#define XTASK(task,fn,doc)     fn,
+#define XTASK(task,fn,doc)     [TASK_ ## task] = fn,
+/** @internal Task function table. */
 static const task_fn_t task_fns[TASK_COUNT] =
 {
     TASK_LIST
 };
 #undef XTASK
 
+/** @internal Tasks waiting to execute. */
 static volatile task_id_t queued_tasks  = TASK_ID_NONE;
+
+/** @internal Tasks pending execution awaiting higher priority tasks. */
 static volatile task_id_t pending_tasks = TASK_ID_NONE;
+
+/** @internal Current running task. */
 static volatile task_t    running_task  = TASK_UNDEFINED;
 
 void tasks_queue(task_t task)

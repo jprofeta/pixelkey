@@ -11,9 +11,9 @@
  */
 
 /** XMACRO(name,fn,docstring) for defining tasks. */
-#define TASK_LIST                                                              \
-    XTASK(USB_HANDLER, hal_usbcmd_handler, Handles USB events.)                \
-    XTASK(FRAME_RENDER, frame_render, Calculates the next frame.)              \
+#define TASK_LIST \
+    XTASK(USB_HANDLER, hal_usbcmd_handler, Handles USB events.) \
+    XTASK(FRAME_RENDER, frame_render, Calculates the next frame.) \
     XTASK(CMD_RX, cmd_data_handler, Command string reception and parsing.)
 
 

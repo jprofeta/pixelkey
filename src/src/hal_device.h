@@ -1,6 +1,8 @@
 #ifndef HAL_DEVICE_H
 #define HAL_DEVICE_H
 
+#include "helper_macros.h"
+
 /**
  * @defgroup hal PixelKey HAL
  * @{
