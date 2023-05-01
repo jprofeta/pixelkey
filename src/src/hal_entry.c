@@ -32,7 +32,7 @@ static void set_color(uint8_t index, color_t * const color)
     color_rgb_t rgb;
     color_convert2(color->color_space, COLOR_SPACE_RGB, (color_kind_t *)color, (color_kind_t *)&rgb);
 
-    npdata_set_color(index, &rgb);
+    npdata_color_set(index, &rgb);
 }
 
 void hal_frame_timer_callback(timer_callback_args_t * p_args)
@@ -81,7 +81,7 @@ void hal_entry(void)
     c.hsv.value = 5;
     set_color(3, &c);
 
-    npdata_send_frame();
+    npdata_frame_send();
 
     extern void usbcmd_open(void);
     usbcmd_open();

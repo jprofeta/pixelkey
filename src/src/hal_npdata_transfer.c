@@ -57,6 +57,7 @@
 
 #include "hal_data.h"
 #include "hal_device.h"
+#include "hal_tasks.h"
 #include "pixelkey.h"
 #include "neopixel.h"
 
@@ -96,7 +97,10 @@ static volatile uint8_t npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
 /** @internal Current full shift-register word for the color being written. */
 static volatile uint32_t npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
 
-
+/**
+ * @name DTC configuration and data
+ * @{
+ */
 
 /** @internal The address of the ping-pong buffer needs to be saved somewhere so it can be reloaded by the DTC. */
 static void const * const default_npdata_secbuff_ptr = (void *) npdata_secondary_buffer;
@@ -104,12 +108,6 @@ static void const * const default_npdata_secbuff_ptr = (void *) npdata_secondary
 /** @internal The number of blocks needs to be saved someplace so it can be reloaded by the DTC. */
 static const uint16_t default_npdata_secbuff_block_count = NPDATA_SECONDARY_BUFFER_COUNT;
 
-
-
-/**
- * @name DTC configuration and data
- * @{
- */
 
 /**
  * @internal
@@ -311,7 +309,7 @@ static void push_data_to_buffer(uint32_t * const p_block)
 /**
  * Kicks off a frame transmission to the attached NeoPixels.
  */
-void npdata_send_frame(void)
+void npdata_frame_send(void)
 {
     // Check for a transmitting frame.
     timer_status_t status;
@@ -347,6 +345,9 @@ void npdata_send_frame(void)
     R_GPT5->GTCCR[1] = 0;
     R_GPT5->GTCCR[3] = 0;
     g_npdata_timer.p_api->start(&g_npdata_timer_ctrl);
+
+    // Queue the task to render the next frame.
+    tasks_queue(TASK_FRAME_RENDER);
 }
 
 /** 
@@ -366,7 +367,7 @@ void npdata_open(void)
  * @param     index   The index to write.
  * @param[in] p_color Pointer to the color to copy.
  */
-void npdata_set_color(uint32_t index, color_rgb_t const * const p_color)
+void npdata_color_set(uint32_t index, color_rgb_t const * const p_color)
 {
     if (index > PIXELKEY_NEOPIXEL_COUNT)
     {
@@ -375,6 +376,25 @@ void npdata_set_color(uint32_t index, color_rgb_t const * const p_color)
     }
 
     g_npdata_frame[index] = *p_color;
+}
+
+/**
+ * Gets the current status of the NeoPixel data transfer.
+ * @retval TRANSFER_STATUS_IDLE     No transfers are active.
+ * @retval TRANSFER_STATUS_WORKING  Data is currently being transferred.
+*/
+transfer_status_t npdata_status_get(void)
+{
+    timer_status_t status;
+    g_npdata_timer.p_api->statusGet(&g_npdata_timer_ctrl, &status);
+    if (status.state == TIMER_STATE_COUNTING)
+    {
+        return TRANSFER_STATUS_WORKING;
+    }
+    else
+    {
+        return TRANSFER_STATUS_IDLE;
+    }
 }
 
 /** @} */

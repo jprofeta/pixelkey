@@ -23,11 +23,11 @@ void default_task(void) { __BKPT(0); }
 WARNING_RESTORE()
 #endif
 
-#define XTASK(task,fn,doc)     TASK_ID_ ## task = FLAG(TASK_ ## task),
+#define XTASK(task,fn,doc)     TASK_ID_ ## task = FLAG(TASK_ ## task) /*!< Flag for @ref TASK_ ## task */,
 /** @internal Task flags. */
 typedef enum e_task_id
 {
-    TASK_ID_NONE = 0,
+    TASK_ID_NONE = 0,   ///< No task is selected.
     TASK_LIST
 } task_id_t;
 #undef XTASK
@@ -39,7 +39,6 @@ TASK_LIST
 
 // Make the task list.
 #define XTASK(task,fn,doc)     [TASK_ ## task] = fn,
-/** @internal Task function table. */
 static const task_fn_t task_fns[TASK_COUNT] =
 {
     TASK_LIST
