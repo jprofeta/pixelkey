@@ -27,6 +27,15 @@ typedef enum e_task
 } task_t;
 #undef XTASK
 
+/** Task status. */
+typedef enum e_task_status
+{
+    TASK_STATUS_IDLE,    ///< The task is idle and not queued to run.
+    TASK_STATUS_QUEUED,  ///< The task has been queued to run.
+    TASK_STATUS_PENDING, ///< The task is pending execution and is awaiting higher priority tasks.
+    TASK_STATUS_RUNNING  ///< The task is currently executing.
+} task_status_t;
+
 typedef void (*task_fn_t)(void);
 
 /**
@@ -41,11 +50,11 @@ void tasks_run(void);
 void tasks_queue(task_t task);
 
 /**
- * Checks if a task is queued to run.
+ * Gets the status of a given task.
  * @param task The task to check.
- * @return true if the task is queued, false otherwise.
+ * @raturn The task status.
  */
-bool tasks_is_queued(task_t task);
+task_status_t tasks_status_get(task_t task);
 
 /** @} */
 
