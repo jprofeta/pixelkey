@@ -7,91 +7,9 @@
 #include "keyframes.h"
 
 /**
- * @ingroup pixelkey__keyframes
- * @defgroup pixelkey__keyframes__fade Fade Keyframe
- * Keyframe to fade between a list of colors.
+ * @addtogroup pixelkey__keyframes__fade
  * @{
  */
-
-/** Maximum number of colors allowed to be input by the user. */
-#define COLORS_INPUT_MAX_LENGTH (15)
-
-/**
- * Maximum number of colors that can be faded in one keyframe.
- * Input + 1 to allow current color to be pushed to the top.
- */
-#define COLORS_MAX_LENGTH  (COLORS_INPUT_MAX_LENGTH + 1)
-
-/** 
- * @private 
- * The type of fade to perform.
- */
-typedef enum e_fade_type
-{
-    FADE_TYPE_STEP,  ///< Colors are immediately transitioned.
-    FADE_TYPE_CUBIC  ///< The transition curve is applied between every pair of colors.
-} fade_type_t;
-
-/**
- * @private
- * The color axes/channels to fade over.
- */
-typedef enum e_fade_axis
-{
-    FADE_AXIS_NONE = 0,         ///< No axis require fading.
-    FADE_AXIS_HUE = (1U << 0),  ///< Fade is needed for the Hue axis.
-    FADE_AXIS_SAT = (1U << 1),  ///< Fade is needed for the Saturation axis.
-    FADE_AXIS_VAL = (1U << 2)   ///< Fade if needed for the Value axis.
-} fade_axis_t;
-
-/**
- * @private
- * Single point on a cartesian plane.
- */
-typedef struct st_point
-{
-    float x; ///< X-coordinate of the point.
-    float y; ///< Y-coordinate of the point.
-} point_t;
-
-/**
- * @private
- * Pair of control points for a cubic bezier curve where the start is (0,0) and end is (1,1).
- */
-typedef struct st_cubic_bezier
-{
-    point_t p1; ///< First control point, from (0,0).
-    point_t p2; ///< Second control point, to (1,1).
-} cubic_bezier_t;
-
-/**
- * @private
- * Fade keyframe.
- */
-typedef struct st_keyframe_fade
-{
-    /** Keyframe base; MUST be the first entry in the struct. */
-    keyframe_base_t base;
-    /** Parsed arguments. */
-    struct
-    {
-        float          period;       ///< Number of seconds to fade over; max of 60 seconds.
-        fade_type_t    fade_type;    ///< The type of transition to perform.
-        cubic_bezier_t curve;        ///< The cubic bezier curve points for non-step transitions.
-        bool           push_current; ///< Push the current color to be the first.
-        uint8_t        colors_len;   ///< Number of colors provided.
-        color_hsv_t    colors[COLORS_MAX_LENGTH]; ///< Array of colors provided by the user.
-    } args;
-    /** Keyframe render state. */
-    struct
-    {
-        fade_axis_t fade_axis;    ///< Which axis of the colors need to be faded.
-        timestep_t  color_period; ///< The period to transition between each pair of colors.
-        timestep_t  finish_time;  ///< Total number of frames for this keyframe at the current framerate.
-        uint8_t     pair_index;   ///< Index of the first color of the currently transitioning pair.
-        point_t     curr_b_point; ///< The current bezier point to render.
-    } state;
-} keyframe_fade_t;
 
 static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out);
 static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
@@ -118,16 +36,16 @@ static const keyframe_fade_t keyframe_fade_init =
     .base = { .p_api = &keyframe_fade_api },
 };
 
-/** @private Control points for linear fade. Fades linearly, in equal steps, between the start and end values. */
-static const cubic_bezier_t linear      = { { 0.0f,  0.0f }, { 1.0f,  1.0f } };
-/** @private Control points for ease fade. Quickly fades from the start value, then transitions slower to the end value. */
-static const cubic_bezier_t ease        = { { 0.25f, 0.1f }, { 0.25f, 1.0f } };
-/** @private Control points for ease-in fade. Slow fade at the start then quickly fades to the end value. */
-static const cubic_bezier_t ease_in     = { { 0.42f, 0.0f }, { 1.0f,  1.0f } };
-/** @private Control points for ease-out fade. Quickly fades from the start value then slowly fades to the end value. */
-static const cubic_bezier_t ease_out    = { { 0.0f,  0.0f }, { 0.58f, 1.0f } };
-/** @private Control points for ease-in-out fade. Quickly transitions from the start to the end; faster than normal ease. */
-static const cubic_bezier_t ease_in_out = { { 0.42f, 0.0f }, { 0.58f, 1.0f } };
+/** Control points for linear fade. Fades linearly, in equal steps, between the start and end values. */
+const cubic_bezier_t cb_linear      = { { 0.0f,  0.0f }, { 1.0f,  1.0f } };
+/** Control points for ease fade. Quickly fades from the start value, then transitions slower to the end value. */
+const cubic_bezier_t cb_ease        = { { 0.25f, 0.1f }, { 0.25f, 1.0f } };
+/** Control points for ease-in fade. Slow fade at the start then quickly fades to the end value. */
+const cubic_bezier_t cb_ease_in     = { { 0.42f, 0.0f }, { 1.0f,  1.0f } };
+/** Control points for ease-out fade. Quickly fades from the start value then slowly fades to the end value. */
+const cubic_bezier_t cb_ease_out    = { { 0.0f,  0.0f }, { 0.58f, 1.0f } };
+/** Control points for ease-in-out fade. Quickly transitions from the start to the end; faster than normal ease. */
+const cubic_bezier_t cb_ease_in_out = { { 0.42f, 0.0f }, { 0.58f, 1.0f } };
 
 static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out)
 {
@@ -294,6 +212,11 @@ static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, poi
     p_point->y = a1 * p_curve->p1.y + a2 * p_curve->p2.y + a3;
 }
 
+/**
+ * Parses a command string into a @ref pixelkey__keyframes__fade.
+ * @param[in] p_str Pointer to the command string.
+ * @return Pointer to the parsed keyframe or NULL on error.
+ */
 keyframe_base_t * keyframe_fade_parse(char * p_str)
 {
     // Allocate a new keyframe and copy the default values.
@@ -352,7 +275,7 @@ keyframe_base_t * keyframe_fade_parse(char * p_str)
             }
             // else: Add the color to the list
             color_convert(COLOR_SPACE_HSV, &color, &hsv);
-            if (p_fade->args.colors_len == COLORS_INPUT_MAX_LENGTH)
+            if (p_fade->args.colors_len == KEYFRAME_FADE_COLORS_INPUT_MAX_LENGTH)
             {
                 // Too many colors in the list
                 color_error = true;
@@ -384,23 +307,23 @@ keyframe_base_t * keyframe_fade_parse(char * p_str)
             p_fade->args.fade_type = FADE_TYPE_CUBIC;
             if (strcmp(p_tok, "linear") == 0)
             {
-                p_fade->args.curve = linear;
+                p_fade->args.curve = cb_linear;
             }
             else if (strcmp(p_tok, "ease") == 0)
             {
-                p_fade->args.curve = ease;
+                p_fade->args.curve = cb_ease;
             }
             else if (strcmp(p_tok, "ease-in") == 0)
             {
-                p_fade->args.curve = ease_in;
+                p_fade->args.curve = cb_ease_in;
             }
             else if (strcmp(p_tok, "ease-out") == 0)
             {
-                p_fade->args.curve = ease_out;
+                p_fade->args.curve = cb_ease_out;
             }
             else if (strcmp(p_tok, "ease-in-out") == 0)
             {
-                p_fade->args.curve = ease_in_out;
+                p_fade->args.curve = cb_ease_in_out;
             }
             else if (memcmp(p_tok, "cubic(", 6) == 0)
             {
@@ -491,6 +414,22 @@ keyframe_base_t * keyframe_fade_parse(char * p_str)
     {
         return &p_fade->base;
     }
+}
+
+/**
+ * Initialize a Fade keyframe with the appropriate keyframe_base_t and state values.
+ * @param[in] p_fade Pointer to the fade keyframe to construct.
+ * @return Pointer to the keyframe base portion of the fade keyframe.
+ */
+keyframe_base_t * keyframe_fade_ctor(keyframe_fade_t * p_fade)
+{
+    // Copy the base struct info (yes some of these fields are marked const... Just do it.)
+    memcpy(&p_fade->base, &keyframe_fade_init.base, sizeof(keyframe_base_t));
+
+    // Zero out the state
+    memset(&p_fade->state, 0, sizeof(p_fade->state));
+
+    return &p_fade->base;
 }
 
 /** @} */

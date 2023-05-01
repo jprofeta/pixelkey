@@ -6,16 +6,10 @@
 #include "pixelkey.h"
 #include "keyframes.h"
 
-typedef struct st_keyframe_set
-{
-    /** Keyframe base; MUST be the first entry in the struct. */
-    keyframe_base_t base;
-    /** Parsed arguments. */
-    struct
-    {
-        color_t color; ///< Color to set.
-    } args;
-} keyframe_set_t;
+/**
+ * @addtogroup pixelkey__keyframes__set
+ * @{
+*/
 
 static bool keyframe_set_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out);
 static void keyframe_set_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
@@ -63,6 +57,11 @@ static void keyframe_set_render_init(keyframe_base_t * const p_keyframe, framera
     return;
 }
 
+/**
+ * Parses a command string into a @ref pixelkey__keyframes__set.
+ * @param[in] p_str Pointer to the command string.
+ * @return Pointer to the parsed keyframe or NULL on error.
+ */
 keyframe_base_t * keyframe_set_parse(char * p_str)
 {
     // Allocate a new keyframe and copy the default values.
@@ -101,3 +100,18 @@ keyframe_base_t * keyframe_set_parse(char * p_str)
         return &p_set->base;
     }
 }
+
+/**
+ * Initialize a Set keyframe with the appropriate keyframe_base_t values.
+ * @param[in] p_set Pointer to the set keyframe to construct.
+ * @return Pointer to the keyframe base portion of the set keyframe.
+ */
+keyframe_base_t * keyframe_set_ctor(keyframe_set_t * p_set)
+{
+    // Copy the base struct info (yes some of these fields are marked const... Just do it.)
+    memcpy(&p_set->base, &keyframe_set_init.base, sizeof(keyframe_base_t));
+
+    return &p_set->base;
+}
+
+/** @} */
