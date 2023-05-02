@@ -8,8 +8,7 @@
 
 #include "neopixel.h"
 #include "pixelkey.h"
-
-#define HARDWARE_TESTS
+#include "keyframes.h"
 
 /* *****************************************************************************
  * Function declarations
@@ -37,7 +36,7 @@ static void set_color(uint8_t index, color_t * const color)
 
 void hal_frame_timer_callback(timer_callback_args_t * p_args)
 {
-
+    npdata_frame_send();
 }
 
 void hal_rtc_callback(rtc_callback_args_t *p_args)
@@ -62,33 +61,38 @@ void hal_entry(void)
 {
     // Configure and open the peripherals
     npdata_open();
+    g_frame_timer.p_api->open(&g_frame_timer_ctrl, &g_frame_timer_cfg);
 
-#ifdef HARDWARE_TESTS
     /* Initial hardware testing. */
-    color_t c = color_red;
-    c.hsv.value = 5;
-    set_color(0, &c);
+    color_t c;
+    keyframe_set_t * p_kf;
+    p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
+    p_kf->args.color = color_red;
+    p_kf->args.color.hsv.value = 5;
+    pixelkey_enqueue_keyframe(0, &p_kf->base);
 
-    c = color_green;
-    c.hsv.value = 5;
-    set_color(1, &c);
+    p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
+    p_kf->args.color = color_green;
+    p_kf->args.color.hsv.value = 5;
+    pixelkey_enqueue_keyframe(1, &p_kf->base);
 
-    c = color_blue;
-    c.hsv.value = 5;
-    set_color(2, &c);
+    p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
+    p_kf->args.color = color_blue;
+    p_kf->args.color.hsv.value = 5;
+    pixelkey_enqueue_keyframe(2, &p_kf->base);
 
-    c = color_white;
-    c.hsv.value = 5;
-    set_color(3, &c);
+    p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
+    p_kf->args.color = color_white;
+    p_kf->args.color.hsv.value = 5;
+    pixelkey_enqueue_keyframe(3, &p_kf->base);
 
-    npdata_frame_send();
+    // Do the frame processing so it is ready on the first timer overflow.
+    extern void pixelkey_task_do_frame(void);
+    pixelkey_task_do_frame();
 
+    // Do USB testing
     extern void usbcmd_open(void);
     usbcmd_open();
-
-    return;
-#endif
-
 }
 
 /*******************************************************************************************************************//**

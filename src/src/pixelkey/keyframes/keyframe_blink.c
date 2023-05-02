@@ -192,11 +192,20 @@ keyframe_base_t * keyframe_blink_parse(char * p_str)
 
 /**
  * Initialize a Blink keyframe with the appropriate keyframe_base_t and state values.
- * @param[in] p_blink Pointer to the blink keyframe to construct.
+ * @param[in] p_blink Pointer to the blink keyframe to construct, or NULL to allocate a new one.
  * @return Pointer to the keyframe base portion of the blink keyframe.
  */
 keyframe_base_t * keyframe_blink_ctor(keyframe_blink_t * p_blink)
 {
+    // If NULL, allocate a new set keyframe.
+    if (p_blink == NULL)
+    {
+        p_blink = malloc(sizeof(keyframe_blink_t));
+
+        // Zero out the arguments since they are unmodified below.
+        memset(&p_blink->args, 0, sizeof(p_blink->args));
+    }
+
     // Copy the base struct info (yes some of these fields are marked const... Just do it.)
     memcpy(&p_blink->base, &keyframe_blink_init.base, sizeof(keyframe_base_t));
 

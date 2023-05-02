@@ -418,11 +418,20 @@ keyframe_base_t * keyframe_fade_parse(char * p_str)
 
 /**
  * Initialize a Fade keyframe with the appropriate keyframe_base_t and state values.
- * @param[in] p_fade Pointer to the fade keyframe to construct.
+ * @param[in] p_fade Pointer to the fade keyframe to construct, or NULL to allocate a new one.
  * @return Pointer to the keyframe base portion of the fade keyframe.
  */
 keyframe_base_t * keyframe_fade_ctor(keyframe_fade_t * p_fade)
 {
+    // If NULL, allocate a new set keyframe.
+    if (p_fade == NULL)
+    {
+        p_fade = malloc(sizeof(keyframe_fade_t));
+
+        // Zero out the arguments since they are unmodified below.
+        memset(&p_fade->args, 0, sizeof(p_fade->args));
+    }
+
     // Copy the base struct info (yes some of these fields are marked const... Just do it.)
     memcpy(&p_fade->base, &keyframe_fade_init.base, sizeof(keyframe_base_t));
 

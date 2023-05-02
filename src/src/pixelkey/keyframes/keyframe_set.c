@@ -103,11 +103,17 @@ keyframe_base_t * keyframe_set_parse(char * p_str)
 
 /**
  * Initialize a Set keyframe with the appropriate keyframe_base_t values.
- * @param[in] p_set Pointer to the set keyframe to construct.
+ * @param[in] p_set Pointer to the set keyframe to construct, or NULL to allocate a new one.
  * @return Pointer to the keyframe base portion of the set keyframe.
  */
 keyframe_base_t * keyframe_set_ctor(keyframe_set_t * p_set)
 {
+    // If NULL, allocate a new set keyframe.
+    if (p_set == NULL)
+    {
+        p_set = malloc(sizeof(keyframe_set_t));
+    }
+
     // Copy the base struct info (yes some of these fields are marked const... Just do it.)
     memcpy(&p_set->base, &keyframe_set_init.base, sizeof(keyframe_base_t));
 
