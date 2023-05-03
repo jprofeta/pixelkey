@@ -7,10 +7,10 @@ A simple NeoPixel USB Key powered by an RA4M1.
 ## To do
  - [X] Implement frame transmission
  - [X] Implement task manager
- - [ ] Create frame render task and link to GPT0
- - [ ] Test keyframe processor
+ - [X] Create frame render task and link to GPT0
+ - [X] Test keyframe processor
  - [X] USB enumeration
- - [ ] Test USB serial echo
+ - [X] Test USB serial echo
  - [ ] Implement USB to command buffer
  - [ ] Implement command parsing and handler
  - [ ] Add timesync and RTC functionality
@@ -18,6 +18,8 @@ A simple NeoPixel USB Key powered by an RA4M1.
  - [ ] Implement FW upgrade (maybe)
  - [ ] Finalize MK2 hardware design
  - [ ] Add MK2 schematics and layout to repo
+ - [ ] Fix fade keyframe beizer curve following
+ - [ ] Add NV memory for initial state and framerate
 
 ## How to use
 PixelKey enumerates as a virtual COM device. Simple strings terminated by a new-line can configure the device and change the NeoPixel states. Two formats of data are accepted: commands and keyframes. Commands configure the driver, while keyframes describe how the NeoPixels should be controlled.
