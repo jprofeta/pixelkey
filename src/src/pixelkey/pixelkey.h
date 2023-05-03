@@ -148,6 +148,12 @@ pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer);
  */
 pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_keyframe);
 
+/**
+ * Sets the framerate used to render keyframes.
+ * @param framerate The framerate to use.
+ */
+void pixelkey_framerate_set(framerate_t framerate);
+
 /** @} */
 
 #endif // PIXELKEY_H

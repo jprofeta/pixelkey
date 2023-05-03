@@ -5,6 +5,7 @@
 #include "hal_data.h"
 #include "hal_device.h"
 #include "hal_npdata_transfer.h"
+#include "hal_tasks.h"
 
 #include "neopixel.h"
 #include "pixelkey.h"
@@ -64,36 +65,60 @@ void hal_entry(void)
     g_frame_timer.p_api->open(&g_frame_timer_ctrl, &g_frame_timer_cfg);
     g_frame_timer.p_api->start(&g_frame_timer_ctrl);
 
+    pixelkey_framerate_set(30);
+
     /* Initial hardware testing. */
     color_t c;
-    keyframe_set_t * p_kf;
-    p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
-    p_kf->args.color = color_red;
-    p_kf->args.color.hsv.value = 5;
-    pixelkey_enqueue_keyframe(0, &p_kf->base);
+    keyframe_base_t * p_kf;
 
-    p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
-    p_kf->args.color = color_magenta;
-    p_kf->args.color.hsv.value = 5;
-    pixelkey_enqueue_keyframe(1, &p_kf->base);
+    keyframe_blink_t * p_kf_blink = (keyframe_blink_t *) keyframe_blink_ctor(NULL);
+    p_kf_blink->args.color1 = color_blue;
+    p_kf_blink->args.color1.hsv.value = 5;
+    p_kf_blink->args.color1_provided = true;
+    p_kf_blink->args.color2 = color_green;
+    p_kf_blink->args.color2.hsv.value = 5;
+    p_kf_blink->args.color2_provided = true;
+    p_kf_blink->args.period = 2.0f;
 
-    p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
-    p_kf->args.color = color_blue;
-    p_kf->args.color.hsv.value = 5;
-    pixelkey_enqueue_keyframe(2, &p_kf->base);
+    keyframe_fade_t * p_kf_fade = (keyframe_fade_t *) keyframe_fade_ctor(NULL);
+    p_kf_fade->args.colors[0] = color_red.hsv;
+    p_kf_fade->args.colors[0].value = 5;
+    p_kf_fade->args.colors[1] = color_green.hsv;
+    p_kf_fade->args.colors[1].value = 5;
+    p_kf_fade->args.colors[2] = color_red.hsv;
+    p_kf_fade->args.colors[2].value = 5;
+    p_kf_fade->args.colors_len = 3;
+    p_kf_fade->args.fade_type = FADE_TYPE_CUBIC;
+    p_kf_fade->args.curve = cb_linear;
+    p_kf_fade->args.period = 6;
+    p_kf_fade->args.push_current = false;
+    p_kf_fade->base.modifiers.repeat_count = -1;
 
-    p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
-    p_kf->args.color = color_white;
-    p_kf->args.color.hsv.value = 5;
-    pixelkey_enqueue_keyframe(3, &p_kf->base);
+    p_kf = keyframe_blink_ctor(NULL);
+    memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
+    pixelkey_enqueue_keyframe(0, p_kf);
+
+    p_kf = keyframe_blink_ctor(NULL);
+    memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
+    pixelkey_enqueue_keyframe(1, p_kf);
+
+    p_kf = keyframe_blink_ctor(NULL);
+    memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
+    pixelkey_enqueue_keyframe(2, p_kf);
+
+    p_kf = keyframe_blink_ctor(NULL);
+    memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
+    pixelkey_enqueue_keyframe(3, p_kf);
 
     // Do the frame processing so it is ready on the first timer overflow.
     extern void pixelkey_task_do_frame(void);
     pixelkey_task_do_frame();
 
+    tasks_run();
+
     // Do USB testing
-    extern void usb_test(void);
-    usb_test();
+    //extern void usb_test(void);
+    //usb_test();
 }
 
 /*******************************************************************************************************************//**

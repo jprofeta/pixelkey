@@ -34,6 +34,13 @@ static const keyframe_base_api_t keyframe_fade_api =
 static const keyframe_fade_t keyframe_fade_init = 
 {
     .base = { .p_api = &keyframe_fade_api },
+    .args =
+    {
+        .colors_len = 0,
+        .push_current = false,
+        .fade_type = FADE_TYPE_STEP,
+        .period = 1
+    }
 };
 
 /** Control points for linear fade. Fades linearly, in equal steps, between the start and end values. */
@@ -219,9 +226,7 @@ static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, poi
  */
 keyframe_base_t * keyframe_fade_parse(char * p_str)
 {
-    // Allocate a new keyframe and copy the default values.
-    keyframe_fade_t * p_fade = malloc(sizeof(keyframe_fade_t));
-    memcpy(p_fade, &keyframe_fade_init, sizeof(keyframe_fade_t));
+    keyframe_fade_t * p_fade = (keyframe_fade_t *) keyframe_fade_ctor(NULL);
 
     bool has_error = true;
     do
@@ -427,17 +432,16 @@ keyframe_base_t * keyframe_fade_ctor(keyframe_fade_t * p_fade)
     if (p_fade == NULL)
     {
         p_fade = malloc(sizeof(keyframe_fade_t));
-
-        // Zero out the arguments since they are unmodified below.
-        memset(&p_fade->args, 0, sizeof(p_fade->args));
+        memcpy(p_fade, &keyframe_fade_init, sizeof(*p_fade));
     }
+    else
+    {
+        // Copy the base struct info (yes some of these fields are marked const... Just do it.)
+        memcpy(&p_fade->base, &keyframe_fade_init.base, sizeof(keyframe_base_t));
 
-    // Copy the base struct info (yes some of these fields are marked const... Just do it.)
-    memcpy(&p_fade->base, &keyframe_fade_init.base, sizeof(keyframe_base_t));
-
-    // Zero out the state
-    memset(&p_fade->state, 0, sizeof(p_fade->state));
-
+        // Zero out the state
+        memset(&p_fade->state, 0, sizeof(p_fade->state));
+    }
     return &p_fade->base;
 }
 

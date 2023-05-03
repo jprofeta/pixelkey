@@ -30,12 +30,12 @@ typedef struct st_keyframe_blink
     /** Parsed arguments. */
     struct
     {
-        color_rgb_t color1;          ///< Color to blink during ON cycle.
-        color_rgb_t color2;          ///< Color to blink during OFF cycle.
-        float       period;          ///< Number of seconds to blink over; max of 60 seconds.
-        uint8_t     duty_cycle;      ///< Blink duty cycle.
-        bool        color1_provided; ///< Specifies if color1 was set during parsing.
-        bool        color2_provided; ///< Specifies if color2 was set during parsing.
+        color_t color1;          ///< Color to blink during ON cycle.
+        color_t color2;          ///< Color to blink during OFF cycle.
+        float   period;          ///< Number of seconds to blink over; max of 60 seconds.
+        uint8_t duty_cycle;      ///< Blink duty cycle.
+        bool    color1_provided; ///< Specifies if color1 was set during parsing.
+        bool    color2_provided; ///< Specifies if color2 was set during parsing.
     } args;
     /** Keyframe render state. */
     struct

@@ -114,7 +114,7 @@ pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer)
         {
             (void)pop(&keyframe_queue[i]);
             current_keyframe[i] = p_kf;
-            current_framecount[i] = 0;
+            current_framecount[i] = 1;
 
             init_keyframe(p_kf, &current_color[i]);
             p_kf->flags |= KEYFRAME_FLAG_INITIALIZED;
@@ -164,7 +164,7 @@ pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer)
 
 pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_keyframe)
 {
-    if (index >= NEOPIXEL_CHANNEL_COUNT)
+    if (index >= PIXELKEY_NEOPIXEL_COUNT)
     {
         return PIXELKEY_ERROR_INDEX_OUT_OF_RANGE;
     }
@@ -174,4 +174,9 @@ pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_ke
     }
 
     return PIXELKEY_ERROR_NONE;
+}
+
+void pixelkey_framerate_set(framerate_t framerate)
+{
+    current_framerate = framerate;
 }

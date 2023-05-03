@@ -33,11 +33,18 @@ static const keyframe_base_api_t keyframe_blink_api =
  */
 static const keyframe_blink_t keyframe_blink_init = 
 {
-    .base = 
+    .base =
     { 
-        .p_api = &keyframe_blink_api, 
+        .p_api = &keyframe_blink_api,
         .modifiers = { .repeat_count = -1 } // Blink defaults to indefinite repeats.
     },
+    .args =
+    {
+        .color2_provided = false,
+        .color1_provided = false,
+        .duty_cycle = 50,
+        .period = 1,
+    }
 };
 
 /**
@@ -51,11 +58,11 @@ static bool keyframe_blink_render_frame(keyframe_base_t * const p_keyframe, time
 
     if (time < p_blink->state.transition_time)
     {
-        *p_color_out = p_blink->args.color1;
+        *p_color_out = p_blink->args.color1.rgb;
     }
     else
     {
-        *p_color_out = p_blink->args.color2;
+        *p_color_out = p_blink->args.color2.rgb;
     }
 
     return time >= p_blink->state.finish_time;
@@ -72,13 +79,30 @@ static void keyframe_blink_render_init(keyframe_base_t * const p_keyframe, frame
 
     if (!p_blink->args.color1_provided)
     {
-        p_blink->args.color1 = current_color;
+        p_blink->args.color1.color_space = COLOR_SPACE_RGB;
+        p_blink->args.color1.rgb = current_color;
+    }
+    else if (p_blink->args.color1.color_space != COLOR_SPACE_RGB)
+    {
+        color_t c1 = {0};
+        color_convert(COLOR_SPACE_RGB,
+                        &p_blink->args.color1,
+                        &c1);
+        p_blink->args.color1 = c1;
     }
 
     if (!p_blink->args.color2_provided)
     {
-        color_rgb_t off = { 0, 0, 0};
+        color_t off = { .color_space = COLOR_SPACE_RGB, .rgb = { 0, 0, 0} };
         p_blink->args.color2 = off;
+    }
+    else if (p_blink->args.color2.color_space != COLOR_SPACE_RGB)
+    {
+        color_t c2 = {0};
+        color_convert(COLOR_SPACE_RGB,
+                        &p_blink->args.color2,
+                        &c2);
+        p_blink->args.color2 = c2;
     }
 
     p_blink->state.finish_time = (timestep_t) (p_blink->args.period * ((float) framerate));
@@ -93,8 +117,7 @@ static void keyframe_blink_render_init(keyframe_base_t * const p_keyframe, frame
 keyframe_base_t * keyframe_blink_parse(char * p_str)
 {
     // Allocate a new keyframe and copy the default values.
-    keyframe_blink_t * p_blink = malloc(sizeof(keyframe_blink_t));
-    memcpy(p_blink, &keyframe_blink_init, sizeof(keyframe_blink_t));
+    keyframe_blink_t * p_blink = (keyframe_blink_t *) keyframe_blink_ctor(NULL);
 
     bool has_error = true;
     do
@@ -127,27 +150,22 @@ keyframe_base_t * keyframe_blink_parse(char * p_str)
         // else: Parse the color list
         char * p_color_context = NULL;
         char * p_color_tok = strtok_r(p_tok, ":", &p_color_context);
-        color_t color, rgb;
-        if (color_parse(p_color_tok, &color) == PIXELKEY_ERROR_NONE)
+        if (color_parse(p_color_tok, &p_blink->args.color1) == PIXELKEY_ERROR_NONE)
         {
             // Color parsing failed!
             break;
         }
-        color_convert(COLOR_SPACE_RGB, &color, &rgb);
-        p_blink->args.color1 = rgb.rgb;
         p_blink->args.color1_provided = true;
 
         // See if a second color was provided.
         p_color_tok = strtok_r(NULL, ":", &p_color_context);
         if (p_color_tok != NULL)
         {
-            if (color_parse(p_color_tok, &color) == PIXELKEY_ERROR_NONE)
+            if (color_parse(p_color_tok, &p_blink->args.color2) == PIXELKEY_ERROR_NONE)
             {
                 // Color parsing failed!
                 break;
             }
-            color_convert(COLOR_SPACE_RGB, &color, &rgb);
-            p_blink->args.color2 = rgb.rgb;
             p_blink->args.color2_provided = true;
         }
 
@@ -201,16 +219,16 @@ keyframe_base_t * keyframe_blink_ctor(keyframe_blink_t * p_blink)
     if (p_blink == NULL)
     {
         p_blink = malloc(sizeof(keyframe_blink_t));
-
-        // Zero out the arguments since they are unmodified below.
-        memset(&p_blink->args, 0, sizeof(p_blink->args));
+        memcpy(p_blink, &keyframe_blink_init, sizeof(*p_blink));
     }
+    else
+    {
+        // Copy the base struct info (yes some of these fields are marked const... Just do it.)
+        memcpy(&p_blink->base, &keyframe_blink_init.base, sizeof(keyframe_base_t));
 
-    // Copy the base struct info (yes some of these fields are marked const... Just do it.)
-    memcpy(&p_blink->base, &keyframe_blink_init.base, sizeof(keyframe_base_t));
-
-    // Zero out the state
-    memset(&p_blink->state, 0, sizeof(p_blink->state));
+        // Zero out the state
+        memset(&p_blink->state, 0, sizeof(p_blink->state));
+    }
 
     return &p_blink->base;
 }
