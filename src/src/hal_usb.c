@@ -15,14 +15,12 @@
 
 uint8_t g_buf[512] = {0};
 
-#define LINE_CODING_LENGTH      (sizeof(usb_pcdc_linecoding_t))
-
 usb_pcdc_linecoding_t g_line_coding = {0};
 
 static fsp_err_t    usb__err;
 static usb_pipe_t   usb__pipe_info;
 
-void usbcmd_open(void)
+void usb_test(void)
 {
     g_usb.p_api->open(&g_usb_ctrl, &g_usb_cfg);
 
@@ -51,12 +49,14 @@ void usbcmd_open(void)
                 if (USB_PCDC_SET_LINE_CODING == (event_info.setup.request_type & USB_BREQUEST))
                 {
                     /* Configure virtual UART settings */
-                    usb__err = g_usb.p_api->periControlDataGet(&g_usb_ctrl, (uint8_t *) &g_line_coding, sizeof(g_line_coding));
+                    usb__err = g_usb.p_api->periControlDataGet(&g_usb_ctrl, (uint8_t *) &g_line_coding, event_info.setup.request_length);
+                    //usb__err = g_usb.p_api->periControlStatusSet(&g_usb_ctrl, USB_SETUP_STATUS_ACK);
                 }
                 else if (USB_PCDC_GET_LINE_CODING == (event_info.setup.request_type & USB_BREQUEST))
                 {
                     /* Send virtual UART settings back to host */
-                    usb__err = g_usb.p_api->periControlDataSet(&g_usb_ctrl, (uint8_t *) &g_line_coding, sizeof(g_line_coding));
+                    usb__err = g_usb.p_api->periControlDataSet(&g_usb_ctrl, (uint8_t *) &g_line_coding, event_info.setup.request_length);
+                    //usb__err = g_usb.p_api->periControlStatusSet(&g_usb_ctrl, USB_SETUP_STATUS_ACK);
                 }
                 else
                 {
@@ -76,12 +76,5 @@ void usbcmd_open(void)
             __BKPT(0);
             usb__err = FSP_SUCCESS;
         }
-
-        R_BSP_SoftwareDelay(1, BSP_DELAY_UNITS_MILLISECONDS);
     }
-}
-
-void usbcmd_start(void)
-{
-    
 }

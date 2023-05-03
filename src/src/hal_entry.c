@@ -62,6 +62,7 @@ void hal_entry(void)
     // Configure and open the peripherals
     npdata_open();
     g_frame_timer.p_api->open(&g_frame_timer_ctrl, &g_frame_timer_cfg);
+    g_frame_timer.p_api->start(&g_frame_timer_ctrl);
 
     /* Initial hardware testing. */
     color_t c;
@@ -72,7 +73,7 @@ void hal_entry(void)
     pixelkey_enqueue_keyframe(0, &p_kf->base);
 
     p_kf = (keyframe_set_t *) keyframe_set_ctor(NULL);
-    p_kf->args.color = color_green;
+    p_kf->args.color = color_magenta;
     p_kf->args.color.hsv.value = 5;
     pixelkey_enqueue_keyframe(1, &p_kf->base);
 
@@ -91,8 +92,8 @@ void hal_entry(void)
     pixelkey_task_do_frame();
 
     // Do USB testing
-    extern void usbcmd_open(void);
-    usbcmd_open();
+    extern void usb_test(void);
+    usb_test();
 }
 
 /*******************************************************************************************************************//**
