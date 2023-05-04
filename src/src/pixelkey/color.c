@@ -610,7 +610,7 @@ void color_gamma_correct(color_rgb_t * p_in, color_rgb_t * p_out)
  *  C_\gamma = 255 * \left( \frac{C}{255} \right)^\gamma + \frac{1}{2}
  * @f]
  */
-void color_build_gamma_table(float gamma)
+void color_gamma_build(float gamma)
 {
     for (size_t i = 0; i < sizeof(gamma_table)/sizeof(gamma_table[0]); i++)
     {

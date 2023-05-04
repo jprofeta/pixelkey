@@ -54,7 +54,7 @@ void hal_entry(void)
 {
     // Setup initial data first.
     pixelkey_framerate_set(30);
-    color_build_gamma_table(NEOPIXEL_GAMMA_CORRECTION_DEFAULT);
+    color_gamma_build(NEOPIXEL_GAMMA_CORRECTION_DEFAULT);
 
     // Configure and open the peripherals
     npdata_open();

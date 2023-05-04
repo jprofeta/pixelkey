@@ -133,7 +133,7 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out);
 
 void color_gamma_correct(color_rgb_t * p_in, color_rgb_t * p_out);
 
-void color_build_gamma_table(float gamma);
+void color_gamma_build(float gamma);
 
 /** @} */
 
