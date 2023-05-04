@@ -605,7 +605,10 @@ void color_gamma_correct(color_rgb_t * p_in, color_rgb_t * p_out)
  * Updates the gamma table with the provided correction factor.
  * @param gamma The gamma correction factor to use.
  * 
- * Builds the gamma table using the equation @f$ C_\gamma = 255 * \(\frac{C}/{255}\)^\gamma + \frac{1}{2} @f$.
+ * Builds the gamma table using the equation 
+ * @f[
+ *  C_\gamma = 255 * \left( \frac{C}/{255} \right)^\gamma + \frac{1}{2}
+ * @f]
  */
 void color_build_gamma_table(float gamma)
 {
