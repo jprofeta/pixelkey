@@ -35,6 +35,8 @@
 /** Create an uint64 flag. */
 #define FLAG64(i)    (UINT64_C(1) << i)
 
+
+
 /** @} */
 
 #endif

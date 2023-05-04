@@ -1,6 +1,7 @@
 #ifndef COLOR_H
 #define COLOR_H
 
+#include <assert.h>
 #include <stdint.h>
 
 /**
@@ -66,6 +67,10 @@ typedef struct st_color_hsl
     uint8_t  lightness;  ///< Lightness component; ranges from 0-100.
 } color_hsl_t;
 
+/**
+ * Union for the three color space representations.
+ * @note Layout must match the union in color_t.
+ */
 typedef union u_color_kind
 {
     /** Values in the RGB (red-green-blue) color space. */
@@ -93,52 +98,37 @@ typedef struct st_color
     color_space_t color_space;
 } color_t;
 
+static_assert(offsetof(color_t, rgb) == offsetof(color_kind_t, rgb), "The layout of color_kind_t must match that of color_t.");
+static_assert(offsetof(color_t, hsv) == offsetof(color_kind_t, hsv), "The layout of color_kind_t must match that of color_t.");
+static_assert(offsetof(color_t, hsl) == offsetof(color_kind_t, hsl), "The layout of color_kind_t must match that of color_t.");
+static_assert(offsetof(color_t, rgb) == 0, "The color representations must be at the top of the color_t struct.");
+
 /**
  * @defgroup named_colors Named Colors
  * @{
  */
-extern color_t color_red;
-extern color_t color_orange;
-extern color_t color_yellow;
-extern color_t color_neon;
-extern color_t color_green;
-extern color_t color_seafoam;
-extern color_t color_cyan;
-extern color_t color_lightblue;
-extern color_t color_blue;
-extern color_t color_purple;
-extern color_t color_magenta;
-extern color_t color_pink;
-extern color_t color_white;
-extern color_t color_black;
-extern color_t color_off;
+extern const color_t color_red;
+extern const color_t color_orange;
+extern const color_t color_yellow;
+extern const color_t color_neon;
+extern const color_t color_green;
+extern const color_t color_seafoam;
+extern const color_t color_cyan;
+extern const color_t color_lightblue;
+extern const color_t color_blue;
+extern const color_t color_purple;
+extern const color_t color_magenta;
+extern const color_t color_pink;
+extern const color_t color_white;
+extern const color_t color_black;
+extern const color_t color_off;
 
 /** @} */
 
-/**
- * Convert a color to a different color space.
- * @param[in]  to    Desired color space to convert to.
- * @param[in]  p_in  Pointer to the color in the original color space.
- * @param[out] p_out Pointer to the color for the desired color space.
- */
 void color_convert(color_space_t to, color_t const * p_in, color_t * p_out);
 
-/**
- * Convert a color to a different color space.
- * @param[in]  from  Color space to convert from.
- * @param[in]  to    Desired color space to convert to.
- * @param[in]  p_in  Pointer to the color in the original color space.
- * @param[out] p_out Pointer to the color for the desired color space.
- */
 void color_convert2(color_space_t from, color_space_t to, color_kind_t const * p_in, color_kind_t * p_out);
 
-/**
- * Parses a color from a string; must be NULL-terminated.
- * @param[in]  p_str       Pointer to the color string to parse; may be modified.
- * @param[out] p_color_out Pointer to store the parsed color.
- * @retval PIXELKEY_ERROR_NONE             Parse was successful.
- * @retval PIXELKEY_ERROR_INVALID_ARGUMENT The color string was malformed or a component was out of range.
- */
 pixelkey_error_t color_parse(char * p_str, color_t * p_color_out);
 
 /** @} */

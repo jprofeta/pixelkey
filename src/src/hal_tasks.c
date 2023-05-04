@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -8,7 +7,9 @@
 #include "hal_tasks.h"
 
 /**
- * @addtogroup hal__tasks
+ * @file
+ * @defgroup hal__tasks__internal Task Manager Internals
+ * @ingroup hal__tasks
  * @{
  */
 
@@ -54,12 +55,21 @@ static volatile task_id_t pending_tasks = TASK_ID_NONE;
 /** @internal Current running task. */
 static volatile task_t    running_task  = TASK_UNDEFINED;
 
+/**
+ * Queue a task for execution.
+ * @param task The task to queue.
+ */
 void tasks_queue(task_t task)
 {
     task_id_t task_id = TASK_FLAG(task);
     queued_tasks = (task_id_t) (queued_tasks | task_id);
 }
 
+/**
+ * Gets the status of a given task.
+ * @param task The task to check.
+ * @return The task status.
+ */
 task_status_t tasks_status_get(task_t task)
 {
     task_id_t task_id = TASK_FLAG(task);
@@ -81,6 +91,10 @@ task_status_t tasks_status_get(task_t task)
     }
 }
 
+/**
+ * Main task runner loop.
+ * Priority, round-robin task manager. Never exits.
+ */
 void tasks_run(void)
 {
     FSP_CRITICAL_SECTION_DEFINE;

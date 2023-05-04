@@ -14,13 +14,15 @@
 #include "hal_device.h"
 #include "pixelkey.h"
 
+/**
+ * Status of the NeoPixel data transfer.
+ */
 typedef enum e_transfer_status
 {
-    TRANSFER_STATUS_IDLE,
-    TRANSFER_STATUS_WORKING
+    TRANSFER_STATUS_IDLE,   ///< No active transfer.
+    TRANSFER_STATUS_WORKING ///< A transfer is currently active.
 } transfer_status_t;
 
-/** NeoPixel frame buffer. */
 extern volatile color_rgb_t g_npdata_frame[PIXELKEY_NEOPIXEL_COUNT];
 
 void npdata_open(void);

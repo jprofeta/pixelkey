@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @defgroup color__internals Color Internals
+ * @ingroup color
+ * @{
+ */
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
@@ -23,26 +30,55 @@
 #define COLOR_RGB_HEX_STR_LENGTH    (7U)
 
 /* IMPORTANT: These MUST be in the HSV color space! */
-color_t color_red         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0, 100, 100 } };
-color_t color_orange      = { .color_space = COLOR_SPACE_HSV, .hsv = {  30, 100, 100 } };
-color_t color_yellow      = { .color_space = COLOR_SPACE_HSV, .hsv = {  60, 100, 100 } };
-color_t color_neon        = { .color_space = COLOR_SPACE_HSV, .hsv = {  90, 100, 100 } };
-color_t color_green       = { .color_space = COLOR_SPACE_HSV, .hsv = { 120, 100, 100 } };
-color_t color_seafoam     = { .color_space = COLOR_SPACE_HSV, .hsv = { 150, 100, 100 } };
-color_t color_cyan        = { .color_space = COLOR_SPACE_HSV, .hsv = { 180, 100, 100 } };
-color_t color_lightblue   = { .color_space = COLOR_SPACE_HSV, .hsv = { 210, 100, 100 } };
-color_t color_blue        = { .color_space = COLOR_SPACE_HSV, .hsv = { 240, 100, 100 } };
-color_t color_purple      = { .color_space = COLOR_SPACE_HSV, .hsv = { 270, 100, 100 } };
-color_t color_magenta     = { .color_space = COLOR_SPACE_HSV, .hsv = { 300, 100, 100 } };
-color_t color_pink        = { .color_space = COLOR_SPACE_HSV, .hsv = { 330, 100, 100 } };
-color_t color_white       = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0, 100 } };
-color_t color_black       = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0,   0 } };
-color_t color_off         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0,   0 } };
+/** Red: #FF0000. */
+const color_t color_red         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0, 100, 100 } };
 
-static struct named_color
+/** Orange: #FF0000. */
+const color_t color_orange      = { .color_space = COLOR_SPACE_HSV, .hsv = {  30, 100, 100 } };
+
+/** Yellow: #FF8000. */
+const color_t color_yellow      = { .color_space = COLOR_SPACE_HSV, .hsv = {  60, 100, 100 } };
+
+/** Neon: #80FF00. */
+const color_t color_neon        = { .color_space = COLOR_SPACE_HSV, .hsv = {  90, 100, 100 } };
+
+/** Green: #00FF00. */
+const color_t color_green       = { .color_space = COLOR_SPACE_HSV, .hsv = { 120, 100, 100 } };
+
+/** Seafoam: #00FF80. */
+const color_t color_seafoam     = { .color_space = COLOR_SPACE_HSV, .hsv = { 150, 100, 100 } };
+
+/** Cyan: #00FFFF. */
+const color_t color_cyan        = { .color_space = COLOR_SPACE_HSV, .hsv = { 180, 100, 100 } };
+
+/** Light Blue: #0080FF. */
+const color_t color_lightblue   = { .color_space = COLOR_SPACE_HSV, .hsv = { 210, 100, 100 } };
+
+/** Blue: #0000FF. */
+const color_t color_blue        = { .color_space = COLOR_SPACE_HSV, .hsv = { 240, 100, 100 } };
+
+/** Purple: #8000FF. */
+const color_t color_purple      = { .color_space = COLOR_SPACE_HSV, .hsv = { 270, 100, 100 } };
+
+/** Magenta: #FF00FF. */
+const color_t color_magenta     = { .color_space = COLOR_SPACE_HSV, .hsv = { 300, 100, 100 } };
+
+/** Pink: #FF0080. */
+const color_t color_pink        = { .color_space = COLOR_SPACE_HSV, .hsv = { 330, 100, 100 } };
+
+/** White: #FFFFFF. */
+const color_t color_white       = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0, 100 } };
+
+/** Black: #000000. */
+const color_t color_black       = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0,   0 } };
+
+/** Off: #000000. */
+const color_t color_off         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0,   0 } };
+
+static const struct named_color
 {
-    char const * const        name;
-    color_hsv_t const * const color;
+    char const * const        name;  ///< Color name stringz.
+    color_hsv_t const * const color; ///< Pointer to HSV color.
 } named_colors[] = 
 {
     { "red", &color_red.hsv },
@@ -61,7 +97,7 @@ static struct named_color
     { "black", &color_black.hsv },
     { "off", &color_off.hsv },
     { NULL, NULL }
-};
+}; /**< List of named colors. Pointers are NULL terminated at end of the list. */
 
 static int parse_next_hex_byte(char ** p_str);
 static int parse_next_uint(char * p_str, int min, int max);
@@ -325,6 +361,12 @@ static void color_convert_hsl(color_space_t from, color_kind_t const * p_in, col
     }
 }
 
+/**
+ * Convert a color to a different color space.
+ * @param      to    Desired color space to convert to.
+ * @param[in]  p_in  Pointer to the color in the original color space.
+ * @param[out] p_out Pointer to the color for the desired color space.
+ */
 void color_convert(color_space_t to, color_t const * p_in, color_t * p_out)
 {
     p_out->color_space = to;
@@ -343,6 +385,13 @@ void color_convert(color_space_t to, color_t const * p_in, color_t * p_out)
     }
 }
 
+/**
+ * Convert a color to a different color space.
+ * @param      from  Color space to convert from.
+ * @param      to    Desired color space to convert to.
+ * @param[in]  p_in  Pointer to the color in the original color space.
+ * @param[out] p_out Pointer to the color for the desired color space.
+ */
 void color_convert2(color_space_t from, color_space_t to, color_kind_t const * p_in, color_kind_t * p_out)
 {
     switch (to)
@@ -397,6 +446,13 @@ static int parse_next_uint(char * p_str, int min, int max)
     return pct_value;
 }
 
+/**
+ * Parses a color from a string; must be NULL-terminated.
+ * @param[in]  p_str       Pointer to the color string to parse; may be modified.
+ * @param[out] p_color_out Pointer to store the parsed color.
+ * @retval PIXELKEY_ERROR_NONE             Parse was successful.
+ * @retval PIXELKEY_ERROR_INVALID_ARGUMENT The color string was malformed or a component was out of range.
+ */
 pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
 {
     switch (*p_str)
@@ -526,3 +582,5 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
 
     return PIXELKEY_ERROR_NONE;
 }
+
+/** @} */

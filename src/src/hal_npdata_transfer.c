@@ -1,6 +1,8 @@
 
 /**
- * @addtogroup hal__npdata
+ * @file
+ * @defgroup hal__npdata__internals NeoPixel Data Transfer Internals
+ * @ingroup hal__npdata
  * @{
  */
 
@@ -74,13 +76,10 @@
 /** @internal Mask for selecting the current data bit when converting color bytes to timing data. */
 #define NPDATA_SHIFT_REG_MASK       (UINT32_C(1) << (NEOPIXEL_COLOR_BITS - 1))
 
+/** NeoPixel frame buffer. */
 volatile color_rgb_t g_npdata_frame[PIXELKEY_NEOPIXEL_COUNT] = {0};
 
 static void push_data_to_buffer(uint32_t * const p_block);
-
-/* *****************************************************************************
- * Static variables
- * ****************************************************************************/
 
 /** @internal GPT compare buffer for generating NeoPixel timing waveforms. */
 static volatile uint32_t npdata_gpt_buffer[NPDATA_GPT_BUFFER_LENGTH] = {0};

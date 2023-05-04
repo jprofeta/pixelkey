@@ -38,22 +38,10 @@ typedef enum e_task_status
 
 typedef void (*task_fn_t)(void);
 
-/**
- * Main task runner loop.
- */
 void tasks_run(void);
 
-/**
- * Queue a task for execution.
- * @param task The task to queue.
- */
 void tasks_queue(task_t task);
 
-/**
- * Gets the status of a given task.
- * @param task The task to check.
- * @raturn The task status.
- */
 task_status_t tasks_status_get(task_t task);
 
 /** @} */

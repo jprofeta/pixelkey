@@ -1,4 +1,11 @@
 
+/**
+ * @file
+ * @defgroup pixelkey__keyframe_proc__internals PixelKey Keyframe Processor Internals
+ * @ingroup pixelkey
+ * @{
+ */
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -102,7 +109,12 @@ static void init_keyframe(keyframe_base_t * p_keyframe, color_rgb_t * p_color)
     p_keyframe->flags |= KEYFRAME_FLAG_INITIALIZED;
 }
 
-/// @todo Add support for scheduled keyframes.
+/**
+ * Performs a render of the current keyframes.
+ * @retval PIXELKEY_ERROR_NONE Frame render was successful.
+ * 
+ * @todo Add support for scheduled keyframes.
+ */
 pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer)
 {
     // This should be called at the beginning of the frame period, directly after
@@ -162,6 +174,14 @@ pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer)
     return PIXELKEY_ERROR_NONE;
 }
 
+/**
+ * Pushes a keyframe into the queue for a given NeoPixel index.
+ * @param     index      Index of NeoPixel.
+ * @param[in] p_keyframe Pointer to keyframe to push.
+ * @retval PIXELKEY_ERROR_NONE               Push was successful
+ * @retval PIXELKEY_ERROR_INDEX_OUT_OF_RANGE Index is higher than maximum available NeoPixel.
+ * @retval PIXELKEY_ERROR_BUFFER_FULL        Buffer if full for the given NeoPixel queue.
+ */
 pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_keyframe)
 {
     if (index >= PIXELKEY_NEOPIXEL_COUNT)
@@ -176,7 +196,13 @@ pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_ke
     return PIXELKEY_ERROR_NONE;
 }
 
+/**
+ * Sets the framerate used to render keyframes.
+ * @param framerate The framerate to use.
+ */
 void pixelkey_framerate_set(framerate_t framerate)
 {
     current_framerate = framerate;
 }
+
+/** @} */

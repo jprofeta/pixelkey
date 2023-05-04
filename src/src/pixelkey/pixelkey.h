@@ -18,9 +18,9 @@
 /** Minimum supported frame rate, frames per second. */
 #define FRAMERATE_MIN  (1U)
 
-/** 
- *  Maximum supported frame rate, frames per second.
- *  This is based on the resolutions for the RTC peripheral.
+/**
+ * Maximum supported frame rate, frames per second.
+ * This is based on the resolutions for the RTC peripheral.
  */
 #define FRAMERATE_MAX  (128U)
 
@@ -36,17 +36,18 @@
 /** Types of supported keyframe schedules. */
 typedef enum e_schedule_type
 {
-    SCHEDULE_TYPE_NONE,               ///< No schedule.
-    SCHEDULE_TYPE_FIXED,              ///< Schedule is fixed at a specific time.
-    SCHEDULE_TYPE_RELATIVE,           ///< Schedule is for a relative time in the future.
-    SCHEDULE_TYPE_INTERVAL,           ///< Schedule is for a variable interval of a start and end time.
+    SCHEDULE_TYPE_NONE,     ///< No schedule.
+    SCHEDULE_TYPE_FIXED,    ///< Schedule is fixed at a specific time.
+    SCHEDULE_TYPE_RELATIVE, ///< Schedule is for a relative time in the future.
+    SCHEDULE_TYPE_INTERVAL, ///< Schedule is for a variable interval of a start and end time.
 } schedule_type_t;
 
+/** Management flags for keyframes. */
 typedef enum e_keyframe_flag
 {
-    KEYFRAME_FLAG_NONE = 0UL,
-    KEYFRAME_FLAG_INITIALIZED = (1UL << 30),
-    KEYFRAME_FLAG_GROUP = (1UL << 31),
+    KEYFRAME_FLAG_NONE = 0UL,                ///< No flags are set.
+    KEYFRAME_FLAG_INITIALIZED = (1UL << 30), ///< The keyframe has been initialized.
+    KEYFRAME_FLAG_GROUP = (1UL << 31),       ///< The keyframe is a group keyframe.
 } keyframe_flag_t;
 
 /** The base unit of time for animating keyframes; resolution of 1 frame. */
@@ -132,26 +133,10 @@ typedef struct st_keyframe_group
     keyframe_base_t * const children[GROUP_CHILDREN_MAX_COUNT];
 } keyframe_group_t;
 
-/**
- * Performs a render of the current keyframes.
- * @retval PIXELKEY_ERROR_NONE Frame render was successful.
- */
 pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer);
 
-/**
- * Pushes a keyframe into the queue for a given NeoPixel index.
- * @param     index      Index of NeoPixel.
- * @param[in] p_keyframe Pointer to keyframe to push.
- * @retval PIXELKEY_ERROR_NONE               Push was successful
- * @retval PIXELKEY_ERROR_INDEX_OUT_OF_RANGE Index is higher than maximum available NeoPixel.
- * @retval PIXELKEY_ERROR_BUFFER_FULL        Buffer if full for the given NeoPixel queue.
- */
 pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_keyframe);
 
-/**
- * Sets the framerate used to render keyframes.
- * @param framerate The framerate to use.
- */
 void pixelkey_framerate_set(framerate_t framerate);
 
 /** @} */
