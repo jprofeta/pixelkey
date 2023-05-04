@@ -80,21 +80,21 @@ static const struct named_color
     color_t const * const color; ///< Pointer to color.
 } named_colors[] = 
 {
-    { "red", &color_red },
-    { "orange", &color_orange },
-    { "yellow", &color_yellow },
-    { "neon", &color_neon },
-    { "green", &color_green },
-    { "seafoam", &color_seafoam },
-    { "cyan", &color_cyan },
+    { "red",       &color_red },
+    { "orange",    &color_orange },
+    { "yellow",    &color_yellow },
+    { "neon",      &color_neon },
+    { "green",     &color_green },
+    { "seafoam",   &color_seafoam },
+    { "cyan",      &color_cyan },
     { "lightblue", &color_lightblue },
-    { "blue", &color_blue },
-    { "purple", &color_purple },
-    { "magenta", &color_magenta },
-    { "pink", &color_pink },
-    { "white", &color_white },
-    { "black", &color_black },
-    { "off", &color_off },
+    { "blue",      &color_blue },
+    { "purple",    &color_purple },
+    { "magenta",   &color_magenta },
+    { "pink",      &color_pink },
+    { "white",     &color_white },
+    { "black",     &color_black },
+    { "off",       &color_off },
     { NULL, NULL }
 }; /**< List of named colors. Pointers are NULL terminated at end of the list. */
 
