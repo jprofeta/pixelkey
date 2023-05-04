@@ -20,7 +20,7 @@
 // Allow missing prototypes in this file.
 // The prototypes are auto-generated from the task list when they are used in hal_tasks.c.
 // The idea is that they should not be called by anyone other than the task manager.
-WARNING_DISABLE("missing-prototypes");
+WARNING_DISABLE("missing-prototypes")
 
 /**
  * Renders and queues a frame to be transferred at the next frame interval.
