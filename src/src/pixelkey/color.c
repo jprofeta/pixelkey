@@ -607,7 +607,7 @@ void color_gamma_correct(color_rgb_t * p_in, color_rgb_t * p_out)
  * 
  * Builds the gamma table using the equation 
  * @f[
- *  C_\gamma = 255 * \left( \frac{C}/{255} \right)^\gamma + \frac{1}{2}
+ *  C_\gamma = 255 * \left( \frac{C}{255} \right)^\gamma + \frac{1}{2}
  * @f]
  */
 void color_build_gamma_table(float gamma)
