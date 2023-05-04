@@ -29,7 +29,6 @@
 /** Maximum expected length of a hexadecimal color. */
 #define COLOR_RGB_HEX_STR_LENGTH    (7U)
 
-/* IMPORTANT: These MUST be in the HSV color space! */
 /** Red: #FF0000. */
 const color_t color_red         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0, 100, 100 } };
 
@@ -77,25 +76,25 @@ const color_t color_off         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0
 
 static const struct named_color
 {
-    char const * const        name;  ///< Color name stringz.
-    color_hsv_t const * const color; ///< Pointer to HSV color.
+    char const * const    name;  ///< Color name stringZ.
+    color_t const * const color; ///< Pointer to color.
 } named_colors[] = 
 {
-    { "red", &color_red.hsv },
-    { "orange", &color_orange.hsv },
-    { "yellow", &color_yellow.hsv },
-    { "neon", &color_neon.hsv },
-    { "green", &color_green.hsv },
-    { "seafoam", &color_seafoam.hsv },
-    { "cyan", &color_cyan.hsv },
-    { "lightblue", &color_lightblue.hsv },
-    { "blue", &color_blue.hsv },
-    { "purple", &color_purple.hsv },
-    { "magenta", &color_magenta.hsv },
-    { "pink", &color_pink.hsv },
-    { "white", &color_white.hsv },
-    { "black", &color_black.hsv },
-    { "off", &color_off.hsv },
+    { "red", &color_red },
+    { "orange", &color_orange },
+    { "yellow", &color_yellow },
+    { "neon", &color_neon },
+    { "green", &color_green },
+    { "seafoam", &color_seafoam },
+    { "cyan", &color_cyan },
+    { "lightblue", &color_lightblue },
+    { "blue", &color_blue },
+    { "purple", &color_purple },
+    { "magenta", &color_magenta },
+    { "pink", &color_pink },
+    { "white", &color_white },
+    { "black", &color_black },
+    { "off", &color_off },
     { NULL, NULL }
 }; /**< List of named colors. Pointers are NULL terminated at end of the list. */
 
@@ -561,12 +560,11 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
             // Assume this is a named color.
 
             bool found_color = false;
-            p_color_out->color_space = COLOR_SPACE_HSV;
             for (size_t i = 0; !found_color && named_colors[i].name != NULL; i++ )
             {
                 if (strcmp(p_str, named_colors[i].name) == 0)
                 {
-                    p_color_out->hsv = *named_colors[i].color;
+                    *p_color_out = *named_colors[i].color;
                     found_color = true;
                 }
             }
