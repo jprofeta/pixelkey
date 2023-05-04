@@ -1,8 +1,10 @@
 /**
+ * @file
  * @defgroup pixelkey__tasks PixelKey Tasks
  * @ingroup pixelkey
  * @{
  */
+
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -14,6 +16,11 @@
 #include "neopixel.h"
 
 #include "hal_npdata_transfer.h"
+
+// Allow missing prototypes in this file.
+// The prototypes are auto-generated from the task list when they are used in hal_tasks.c.
+// The idea is that they should not be called by anyone other than the task manager.
+WARNING_DISABLE("missing-prototypes");
 
 /**
  * Renders and queues a frame to be transferred at the next frame interval.
@@ -36,7 +43,7 @@ void pixelkey_task_do_frame(void)
     }
 
     // Copy the rendered frame to the frame buffer.
-    memcpy(g_npdata_frame, temp_frame, sizeof(g_npdata_frame));
+    memcpy((void *)g_npdata_frame, temp_frame, sizeof(g_npdata_frame));
 }
 
 /**

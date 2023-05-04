@@ -10,11 +10,14 @@
  * @{
  */
 
-/** XMACRO(name,fn,docstring) for defining tasks. */
+/**
+ * XMACRO(name,fn,docstring) for defining tasks.
+ * @note Tasks should be defined in order of priority (highest first).
+ */
 #define TASK_LIST \
-    XTASK(USB_HANDLER, hal_usbcmd_handler, Handles USB events.) \
     XTASK(FRAME_RENDER, pixelkey_task_do_frame, Calculates the next frame.) \
-    XTASK(CMD_RX, pixelkey_task_command_rx, Command string reception and parsing.)
+    XTASK(CMD_RX, pixelkey_task_command_rx, Command string reception and verification.) \
+    XTASK(CMD_HANDLER, pixelkey_task_command_handler, Command parsing and handling.)
 
 
 #define XTASK(task,fn,doc)     TASK_ ## task /*!< doc See @ref fn. */,
