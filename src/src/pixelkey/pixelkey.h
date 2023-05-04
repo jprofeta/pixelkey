@@ -9,6 +9,10 @@
 
 /**
  * @defgroup pixelkey PixelKey
+ * PixelKey generic processes.
+ * 
+ * The PixelKey processes are designed to be processor agnostic. All implementation
+ * specific details should be contained in @ref hal.
  * @{
  */
 

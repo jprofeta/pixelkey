@@ -2,13 +2,13 @@
 #define HAL_DEVICE_H
 
 #include "helper_macros.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 /**
  * @defgroup hal PixelKey HAL
  * @{
  */
-
-#include <stdint.h>
 
 /** Number of NeoPixels present on the PCB. */
 #define PIXELKEY_NEOPIXEL_COUNT         (4U)
@@ -26,6 +26,8 @@
 
 /** Number of keyframes allowed to be queued. */
 #define PIXELKEY_KEYFRAME_QUEUE_LENGTH  (4)
+
+void hal_usb_idle(void);
 
 /** @} */
 

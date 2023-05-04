@@ -20,7 +20,7 @@
 WARNING_SAVE()
 WARNING_DISABLE("missing-prototypes")
 /** @internal Default task if not defined. This is to simplify debugging and development. */
-void default_task(void) { __BKPT(0); }
+void default_task(void) { BKPT(); }
 WARNING_RESTORE()
 #endif
 
@@ -94,8 +94,9 @@ task_status_t tasks_status_get(task_t task)
 /**
  * Main task runner loop.
  * Priority, round-robin task manager. Never exits.
+ * @param[in] idle_task Idle function executed when no tasks are queued, specify NULL to ignore.
  */
-void tasks_run(void)
+void tasks_run(task_fn_t idle_task)
 {
     FSP_CRITICAL_SECTION_DEFINE;
 
@@ -110,33 +111,41 @@ void tasks_run(void)
         // Restore interrupts.
         FSP_CRITICAL_SECTION_EXIT;
 
-        task_id_t current_task = TASK_FLAG(0);
-
-        // Loop through the tasks, executing as we go.
-        for (int i = 0; i < TASK_COUNT; i++)
+        // If there are pending tasks, execute them. Otherwise run the idle function.
+        if (pending_tasks)
         {
-            if ((pending_tasks & current_task) != 0)
-            {
-                // Clear this task in the queue list.
-                pending_tasks &= ~current_task;
+            task_id_t current_task = TASK_FLAG(0);
 
-                // Run this task.
-                running_task = (task_t) i;
-                task_fns[i]();
-                running_task = TASK_UNDEFINED;
-            }
-
-            current_task <<= 1;
-            if ((queued_tasks & (current_task - 1)) != 0)
+            // Loop through the tasks, executing as we go.
+            for (int i = 0; i < TASK_COUNT; i++)
             {
-                // A higher priority task has been queued or this tasks has been re-queued.
-                // Exit to refresh the task list.
-                // But first re-queue any lower priority tasks.
-                FSP_CRITICAL_SECTION_ENTER;
-                queued_tasks = (task_id_t) (queued_tasks | (pending_tasks & ~(current_task - 1)));
-                FSP_CRITICAL_SECTION_EXIT;
-                break;
+                if ((pending_tasks & current_task) != 0)
+                {
+                    // Clear this task in the queue list.
+                    pending_tasks &= ~current_task;
+
+                    // Run this task.
+                    running_task = (task_t) i;
+                    task_fns[i]();
+                    running_task = TASK_UNDEFINED;
+                }
+
+                current_task <<= 1;
+                if ((queued_tasks & (current_task - 1)) != 0)
+                {
+                    // A higher priority task has been queued or this tasks has been re-queued.
+                    // Exit to refresh the task list.
+                    // But first re-queue any lower priority tasks.
+                    FSP_CRITICAL_SECTION_ENTER;
+                    queued_tasks = (task_id_t) (queued_tasks | (pending_tasks & ~(current_task - 1)));
+                    FSP_CRITICAL_SECTION_EXIT;
+                    break;
+                }
             }
+        }
+        else if (idle_task != NULL)
+        {
+            idle_task();
         }
     }
 }

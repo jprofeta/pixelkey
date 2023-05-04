@@ -27,14 +27,6 @@ FSP_CPP_FOOTER
  * Static functions
  * ****************************************************************************/
 
-static void set_color(uint8_t index, color_t * const color)
-{
-    color_rgb_t rgb;
-    color_convert2(color->color_space, COLOR_SPACE_RGB, (color_kind_t *)color, (color_kind_t *)&rgb);
-
-    npdata_color_set(index, &rgb);
-}
-
 void hal_frame_timer_callback(timer_callback_args_t * p_args)
 {
     npdata_frame_send();
@@ -64,6 +56,8 @@ void hal_entry(void)
     npdata_open();
     g_frame_timer.p_api->open(&g_frame_timer_ctrl, &g_frame_timer_cfg);
     g_frame_timer.p_api->start(&g_frame_timer_ctrl);
+
+    g_usb.p_api->open(&g_usb_ctrl, &g_usb_cfg);
 
     pixelkey_framerate_set(30);
 
@@ -114,11 +108,7 @@ void hal_entry(void)
     extern void pixelkey_task_do_frame(void);
     pixelkey_task_do_frame();
 
-    tasks_run();
-
-    // Do USB testing
-    //extern void usb_test(void);
-    //usb_test();
+    tasks_run(hal_usb_idle);
 }
 
 /*******************************************************************************************************************//**

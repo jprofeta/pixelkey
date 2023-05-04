@@ -38,7 +38,7 @@ typedef enum e_task_status
 
 typedef void (*task_fn_t)(void);
 
-void tasks_run(void);
+void tasks_run(task_fn_t idle_task);
 
 void tasks_queue(task_t task);
 
