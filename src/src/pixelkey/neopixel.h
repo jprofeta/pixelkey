@@ -80,6 +80,9 @@
 /** Minumum period, in nanoseconds, of the reset code. */
 #define NEOPIXEL_CODE_TRST_NS   (80000U)
 
+/** Default gamma correction factor for NeoPixels. From: https://learn.adafruit.com/led-tricks-gamma-correction/the-longer-fix. */
+#define NEOPIXEL_GAMMA_CORRECTION_DEFAULT   (2.8f)
+
 /** Individual data block for a NeoPixel: 24-bit color green-red-blue sent MSb first. */
 typedef struct st_neopixel_data
 {

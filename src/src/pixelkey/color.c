@@ -98,6 +98,9 @@ static const struct named_color
     { NULL, NULL }
 }; /**< List of named colors. Pointers are NULL terminated at end of the list. */
 
+/** Lookup table for gamma correction values. */
+static uint8_t gamma_table[RGB_MAX + 1] = {0};
+
 static int parse_next_hex_byte(char ** p_str);
 static int parse_next_uint(char * p_str, int min, int max);
 
@@ -579,6 +582,37 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
     }
 
     return PIXELKEY_ERROR_NONE;
+}
+
+/**
+ * Applies gamma correction to an RGB color.
+ * @param[in,out] p_in  The color to correct.
+ * @param[out]    p_out Pointer to write the corrected color, if NULL p_in is edited in place.
+ */
+void color_gamma_correct(color_rgb_t * p_in, color_rgb_t * p_out)
+{
+    if (p_out == NULL)
+    {
+        p_out = p_in;
+    }
+
+    p_out->red = gamma_table[p_in->red];
+    p_out->green = gamma_table[p_in->green];
+    p_out->blue = gamma_table[p_in->blue];
+}
+
+/**
+ * Updates the gamma table with the provided correction factor.
+ * @param gamma The gamma correction factor to use.
+ * 
+ * Builds the gamma table using the equation @f$ C_\gamma = 255 * \(\frac{C}/{255}\)^\gamma + \frac{1}{2} @f$.
+ */
+void color_build_gamma_table(float gamma)
+{
+    for (size_t i = 0; i < sizeof(gamma_table)/sizeof(gamma_table[0]); i++)
+    {
+        gamma_table[i] = (uint8_t)(RGB_MAX_F32 * powf(((float) i)/RGB_MAX_F32, gamma) + 0.5);
+    }
 }
 
 /** @} */

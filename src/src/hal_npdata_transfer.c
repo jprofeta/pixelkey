@@ -289,6 +289,7 @@ static void push_data_to_buffer(uint32_t * const p_block)
         npdata_frame_idx++;
 
         color_rgb_t color = g_npdata_frame[npdata_frame_idx];
+        color_gamma_correct(&color, NULL);
 
         // NeoPixel data is transferred green-red-blue...
         npdata_color_word = (((uint32_t) color.green) << 16)

@@ -131,6 +131,10 @@ void color_convert2(color_space_t from, color_space_t to, color_kind_t const * p
 
 pixelkey_error_t color_parse(char * p_str, color_t * p_color_out);
 
+void color_gamma_correct(color_rgb_t * p_in, color_rgb_t * p_out);
+
+void color_build_gamma_table(float gamma);
+
 /** @} */
 
 #endif // COLOR_H

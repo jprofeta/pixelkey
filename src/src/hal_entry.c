@@ -52,14 +52,16 @@ void hal_rtc_callback(rtc_callback_args_t *p_args)
  **********************************************************************************************************************/
 void hal_entry(void)
 {
+    // Setup initial data first.
+    pixelkey_framerate_set(30);
+    color_build_gamma_table(NEOPIXEL_GAMMA_CORRECTION_DEFAULT);
+
     // Configure and open the peripherals
     npdata_open();
     g_frame_timer.p_api->open(&g_frame_timer_ctrl, &g_frame_timer_cfg);
     g_frame_timer.p_api->start(&g_frame_timer_ctrl);
 
     g_usb.p_api->open(&g_usb_ctrl, &g_usb_cfg);
-
-    pixelkey_framerate_set(30);
 
     /* Initial hardware testing. */
     color_t c;
