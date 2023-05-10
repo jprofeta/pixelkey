@@ -53,7 +53,7 @@ void hal_rtc_callback(rtc_callback_args_t *p_args)
 void hal_entry(void)
 {
     // Setup initial data first.
-    pixelkey_framerate_set(30);
+    pixelkey_frameproc_init(30);
     color_gamma_build(NEOPIXEL_GAMMA_CORRECTION_DEFAULT);
 
     // Configure and open the peripherals

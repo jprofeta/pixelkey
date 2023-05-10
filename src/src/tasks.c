@@ -43,7 +43,8 @@ void pixelkey_task_do_frame(void)
     }
 
     // Copy the rendered frame to the frame buffer.
-    memcpy((void *)g_npdata_frame, temp_frame, sizeof(g_npdata_frame));
+    /// @todo Change this to a copy function in npdata?
+    memcpy((void *)npdata_frame_buffer_get(), temp_frame, NPDATA_FRAME_BUFFER_SIZE);
 }
 
 /**

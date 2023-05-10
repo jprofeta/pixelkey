@@ -226,6 +226,11 @@ static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, poi
  */
 keyframe_base_t * keyframe_fade_parse(char * p_str)
 {
+    if (p_str == NULL)
+    {
+        return NULL;
+    }
+
     keyframe_fade_t * p_fade = (keyframe_fade_t *) keyframe_fade_ctor(NULL);
 
     bool has_error = true;
@@ -272,7 +277,7 @@ keyframe_base_t * keyframe_fade_parse(char * p_str)
         while (p_color_tok != NULL)
         {
             color_t color, hsv;
-            if (color_parse(p_color_tok, &color) == PIXELKEY_ERROR_NONE)
+            if (!color_parse(p_color_tok, &color))
             {
                 // Color parsing failed!
                 color_error = true;

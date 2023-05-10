@@ -41,6 +41,9 @@
 #   define BKPT()
 #endif
 
+/** Signifies an argument is not used. */
+#define ARG_NOT_USED(arg) ((void)(arg))
+
 /** @} */
 
 #endif

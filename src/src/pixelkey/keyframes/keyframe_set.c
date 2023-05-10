@@ -64,6 +64,11 @@ static void keyframe_set_render_init(keyframe_base_t * const p_keyframe, framera
  */
 keyframe_base_t * keyframe_set_parse(char * p_str)
 {
+    if (p_str == NULL)
+    {
+        return NULL;
+    }
+
     // Allocate a new keyframe and copy the default values.
     keyframe_set_t * p_set = malloc(sizeof(keyframe_set_t));
     memcpy(p_set, &keyframe_set_init, sizeof(keyframe_set_t));
@@ -74,7 +79,7 @@ keyframe_base_t * keyframe_set_parse(char * p_str)
         char * p_context = NULL;
         char * p_tok = strtok_r(p_str, " ", &p_context);
         // Check to see if the color parsing failed.
-        if (color_parse(p_tok, &p_set->args.color) != PIXELKEY_ERROR_NONE)
+        if (!color_parse(p_tok, &p_set->args.color))
         {
             break;
         }

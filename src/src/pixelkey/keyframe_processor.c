@@ -14,80 +14,16 @@
 #include "pixelkey.h"
 #include "neopixel.h"
 
-typedef struct st_keyframe_queue
-{
-    uint8_t           head;
-    uint8_t           tail;
-    keyframe_base_t * buffer[PIXELKEY_KEYFRAME_QUEUE_LENGTH];
-} keyframe_queue_t;
+#include "ring_buffer.h"
 
 static color_rgb_t       current_color[PIXELKEY_NEOPIXEL_COUNT] = {0};
-static keyframe_queue_t  keyframe_queue[PIXELKEY_NEOPIXEL_COUNT] = {0};
+
+keyframe_base_t *        keyframe_queue_buffer[PIXELKEY_NEOPIXEL_COUNT][PIXELKEY_KEYFRAME_QUEUE_LENGTH];
+ring_buffer_t            keyframe_queue[PIXELKEY_NEOPIXEL_COUNT] = {0};
+
 static keyframe_base_t * current_keyframe[PIXELKEY_NEOPIXEL_COUNT] = {0};
 static timestep_t        current_framecount[PIXELKEY_NEOPIXEL_COUNT] = {0};
 static framerate_t       current_framerate = 0;
-
-/**
- * Check if a keyframe queue is empty.
- * @param[in] p_queue Pointer to the queue.
- * @return true on empty, or false if not empty.
- */
-static bool is_empty(keyframe_queue_t * const p_queue)
-{
-    return (p_queue->head == p_queue->tail);
-}
-
-/**
- * Push a keyframe onto a keyframe queue.
- * @param[in] p_queue Pointer to the queue.
- * @param[in] p_keyframe Pointer to the keyframe to enqueue.
- * @return true on success, or false if the queue was full.
- */
-static bool push(keyframe_queue_t * p_queue, keyframe_base_t * p_keyframe)
-{
-    if (p_queue->head == ((p_queue->tail + 1) % PIXELKEY_KEYFRAME_QUEUE_LENGTH))
-    {
-        return false;
-    }
-
-    p_queue->buffer[p_queue->tail] = p_keyframe;
-    p_queue->tail = (uint8_t) (((p_queue->tail + 1) % PIXELKEY_KEYFRAME_QUEUE_LENGTH));
-
-    return true;
-}
-
-/**
- * Pop the first entry from a keyframe queue.
- * @param[in] p_queue Pointer to the queue.
- * @return pointer to the popped keyframe or NULL if empty.
- */
-static keyframe_base_t * pop(keyframe_queue_t * p_queue)
-{
-    if (p_queue->head == p_queue->tail)
-    {
-        return NULL;
-    }
-
-    keyframe_base_t * p_keyframe = p_queue->buffer[p_queue->head];
-    p_queue->head = (uint8_t) ((p_queue->head + 1) % PIXELKEY_KEYFRAME_QUEUE_LENGTH);
-
-    return p_keyframe;
-}
-
-/**
- * Peek at a keyframe queue.
- * @param[in] p_queue Pointer to the queue.
- * @return pointer to the next available keyframe or NULL if empty.
- */
-static keyframe_base_t * peek(keyframe_queue_t * p_queue)
-{
-    if (p_queue->head == p_queue->tail)
-    {
-        return NULL;
-    }
-
-    return p_queue->buffer[p_queue->head];
-}
 
 /**
  * Initialize a keyframe or keyframe group.
@@ -121,10 +57,10 @@ pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer)
     // the frame has been written to the neopixels.
     for (uint8_t i = 0; i < PIXELKEY_NEOPIXEL_COUNT; i++)
     {
-        keyframe_base_t * p_kf = peek(&keyframe_queue[i]);
+        keyframe_base_t * p_kf = (keyframe_base_t *) ring_buffer_peek(&keyframe_queue[i]);
         if (p_kf != NULL)
         {
-            (void)pop(&keyframe_queue[i]);
+            ring_buffer_pop(&keyframe_queue[i], NULL);
             current_keyframe[i] = p_kf;
             current_framecount[i] = 1;
 
@@ -188,7 +124,7 @@ pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_ke
     {
         return PIXELKEY_ERROR_INDEX_OUT_OF_RANGE;
     }
-    if (!push(&keyframe_queue[index], p_keyframe))
+    if (!ring_buffer_push(&keyframe_queue[index], p_keyframe))
     {
         return PIXELKEY_ERROR_BUFFER_FULL;
     }
@@ -203,6 +139,20 @@ pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_ke
 void pixelkey_framerate_set(framerate_t framerate)
 {
     current_framerate = framerate;
+}
+
+/**
+ * Initializes the keyframe processor.
+ * @param framerate The initial framerate to use.
+*/
+void pixelkey_frameproc_init(framerate_t framerate)
+{
+    current_framerate = framerate;
+
+    for (size_t i = 0; i < PIXELKEY_NEOPIXEL_COUNT; i++)
+    {
+        ring_buffer_init(&keyframe_queue[i], &keyframe_queue_buffer[i], PIXELKEY_KEYFRAME_QUEUE_LENGTH);
+    }
 }
 
 /** @} */

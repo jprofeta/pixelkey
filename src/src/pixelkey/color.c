@@ -9,7 +9,8 @@
 #include <stdint.h>
 #include <math.h>
 #include <string.h>
-#include "pixelkey.h"
+
+#include "color.h"
 
 /** Number of degrees in each sector of the hue component. */
 #define HUE_SECTOR_SIZE     (60U)
@@ -452,18 +453,22 @@ static int parse_next_uint(char * p_str, int min, int max)
  * Parses a color from a string; must be NULL-terminated.
  * @param[in]  p_str       Pointer to the color string to parse; may be modified.
  * @param[out] p_color_out Pointer to store the parsed color.
- * @retval PIXELKEY_ERROR_NONE             Parse was successful.
- * @retval PIXELKEY_ERROR_INVALID_ARGUMENT The color string was malformed or a component was out of range.
+ * @return true on success, false on failure.
  */
-pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
+bool color_parse(char * p_str, color_t * p_color_out)
 {
+    if (p_str == NULL)
+    {
+        return false;
+    }
+
     switch (*p_str)
     {
         case '#':
         {
             if (strlen(p_str) < COLOR_RGB_HEX_STR_LENGTH)
             {
-                return PIXELKEY_ERROR_INVALID_ARGUMENT;
+                return false;
             }
 
             p_color_out->color_space = COLOR_SPACE_RGB;
@@ -482,21 +487,21 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
             int pct_value = 0;
 
             pct_value = parse_next_uint(p_str, 0, 100);
-            if (pct_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (pct_value < 0) { return false; }
             p_color_out->rgb.red = (uint8_t) (UINT8_MAX * pct_value / 100);
 
             pct_value = parse_next_uint(NULL, 0, 100);
-            if (pct_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (pct_value < 0) { return false; }
             p_color_out->rgb.green = (uint8_t) (UINT8_MAX * pct_value / 100);
 
             pct_value = parse_next_uint(NULL, 0, 100);
-            if (pct_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (pct_value < 0) { return false; }
             p_color_out->rgb.blue = (uint8_t) (UINT8_MAX * pct_value / 100);
 
             if (strtok(NULL, ",") != NULL)
             {
                 // Too many color parts.
-                return PIXELKEY_ERROR_INVALID_ARGUMENT;
+                return false;
             }
         }
         break;
@@ -519,7 +524,7 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
             }
 
             int parsed_value = parse_next_uint(p_str, 0, 359);
-            if (parsed_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (parsed_value < 0) { return false; }
             if (is_hsl)
             {
                 p_color_out->hsl.hue = (uint16_t) parsed_value;
@@ -530,7 +535,7 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
             }
 
             parsed_value = parse_next_uint(NULL, 0, 100);
-            if (parsed_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (parsed_value < 0) { return false; }
             if (is_hsl)
             {
                 p_color_out->hsl.saturation = (uint8_t) parsed_value;
@@ -541,7 +546,7 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
             }
 
             parsed_value = parse_next_uint(NULL, 0, 100);
-            if (parsed_value < 0) { return PIXELKEY_ERROR_INVALID_ARGUMENT; }
+            if (parsed_value < 0) { return false; }
             if (is_hsl)
             {
                 p_color_out->hsl.lightness = (uint8_t) parsed_value;
@@ -554,34 +559,29 @@ pixelkey_error_t color_parse(char * p_str, color_t * p_color_out)
             if (strtok(NULL, ",") != NULL)
             {
                 // Too many color parts.
-                return PIXELKEY_ERROR_INVALID_ARGUMENT;
+                return false;
             }
         }
         break;
         default:
         {
             // Assume this is a named color.
-
-            bool found_color = false;
-            for (size_t i = 0; !found_color && named_colors[i].name != NULL; i++ )
+            for (size_t i = 0; named_colors[i].name != NULL; i++ )
             {
                 if (strcmp(p_str, named_colors[i].name) == 0)
                 {
                     *p_color_out = *named_colors[i].color;
-                    found_color = true;
+                    return true;
                 }
             }
 
-            if (!found_color)
-            {
-                // A color with this name wasn't found so either the argument is bad or the color isn't defined.
-                return PIXELKEY_ERROR_INVALID_ARGUMENT;
-            }
+            // The color isn't in the named color list.
+            return false;
         }
         break;
     }
 
-    return PIXELKEY_ERROR_NONE;
+    return true;
 }
 
 /**

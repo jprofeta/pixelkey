@@ -4,6 +4,7 @@
 #include "helper_macros.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 /**
  * @defgroup hal PixelKey HAL
@@ -26,6 +27,12 @@
 
 /** Number of keyframes allowed to be queued. */
 #define PIXELKEY_KEYFRAME_QUEUE_LENGTH  (4)
+
+/** Command input buffer length. */
+#define PIXELKEY_INPUT_COMMAND_BUFFER_LENGTH    (256)
+
+/** Total number of commands that can be queued. */
+#define PIXELKEY_COMMAND_BUFFER_LENGTH  (8)
 
 void hal_usb_idle(void);
 

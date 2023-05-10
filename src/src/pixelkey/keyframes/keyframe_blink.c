@@ -116,6 +116,11 @@ static void keyframe_blink_render_init(keyframe_base_t * const p_keyframe, frame
  */
 keyframe_base_t * keyframe_blink_parse(char * p_str)
 {
+    if (p_str == NULL)
+    {
+        return NULL;
+    }
+
     // Allocate a new keyframe and copy the default values.
     keyframe_blink_t * p_blink = (keyframe_blink_t *) keyframe_blink_ctor(NULL);
 
@@ -150,7 +155,7 @@ keyframe_base_t * keyframe_blink_parse(char * p_str)
         // else: Parse the color list
         char * p_color_context = NULL;
         char * p_color_tok = strtok_r(p_tok, ":", &p_color_context);
-        if (color_parse(p_color_tok, &p_blink->args.color1) == PIXELKEY_ERROR_NONE)
+        if (!color_parse(p_color_tok, &p_blink->args.color1))
         {
             // Color parsing failed!
             break;
@@ -161,12 +166,19 @@ keyframe_base_t * keyframe_blink_parse(char * p_str)
         p_color_tok = strtok_r(NULL, ":", &p_color_context);
         if (p_color_tok != NULL)
         {
-            if (color_parse(p_color_tok, &p_blink->args.color2) == PIXELKEY_ERROR_NONE)
+            if (!color_parse(p_color_tok, &p_blink->args.color2))
             {
                 // Color parsing failed!
                 break;
             }
             p_blink->args.color2_provided = true;
+        }
+
+        // Make sure no additional colors are provided.
+        p_color_tok = strtok_r(NULL, ":", &p_color_context);
+        if (p_color_tok != NULL)
+        {
+            break;
         }
 
         // Lastly check to see if a duty cycle was provided.

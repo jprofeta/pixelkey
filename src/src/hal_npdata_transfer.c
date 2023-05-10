@@ -307,6 +307,15 @@ static void push_data_to_buffer(uint32_t * const p_block)
 }
 
 /**
+ * Gets a pointer to the frame buffer.
+ * @warning Do not write to the frame buffer while @ref npdata_status_get() returns @ref TRANSFER_STATUS_WORKING.
+ */
+volatile color_rgb_t * npdata_frame_buffer_get(void)
+{
+    return g_npdata_frame;
+}
+
+/**
  * Kicks off a frame transmission to the attached NeoPixels.
  */
 void npdata_frame_send(void)

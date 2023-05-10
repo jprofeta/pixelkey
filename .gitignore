@@ -2,6 +2,7 @@
 [dD]ebug
 [rR]elease
 docs/out
+build
 
 e2studio_project.prefs
 .settings

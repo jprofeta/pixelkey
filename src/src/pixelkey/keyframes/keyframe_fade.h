@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "pixelkey.h"
+#include "color.h"
+#include "keyframes.h"
 
 /**
  * @ingroup pixelkey__keyframes

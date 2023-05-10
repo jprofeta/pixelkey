@@ -3,6 +3,8 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 /**
  * @defgroup color Color
@@ -129,7 +131,7 @@ void color_convert(color_space_t to, color_t const * p_in, color_t * p_out);
 
 void color_convert2(color_space_t from, color_space_t to, color_kind_t const * p_in, color_kind_t * p_out);
 
-pixelkey_error_t color_parse(char * p_str, color_t * p_color_out);
+bool color_parse(char * p_str, color_t * p_color_out);
 
 void color_gamma_correct(color_rgb_t * p_in, color_rgb_t * p_out);
 
