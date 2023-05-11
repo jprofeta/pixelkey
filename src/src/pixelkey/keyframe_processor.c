@@ -51,7 +51,7 @@ static void init_keyframe(keyframe_base_t * p_keyframe, color_rgb_t * p_color)
  * 
  * @todo Add support for scheduled keyframes.
  */
-pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer)
+pixelkey_error_t pixelkey_keyframeproc_render_frame(color_rgb_t * p_frame_buffer)
 {
     // This should be called at the beginning of the frame period, directly after
     // the frame has been written to the neopixels.
@@ -118,7 +118,7 @@ pixelkey_error_t pixelkey_render_frame(color_rgb_t * p_frame_buffer)
  * @retval PIXELKEY_ERROR_INDEX_OUT_OF_RANGE Index is higher than maximum available NeoPixel.
  * @retval PIXELKEY_ERROR_BUFFER_FULL        Buffer if full for the given NeoPixel queue.
  */
-pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_keyframe)
+pixelkey_error_t pixelkey_keyframeproc_push(uint8_t index, keyframe_base_t * p_keyframe)
 {
     if (index >= PIXELKEY_NEOPIXEL_COUNT)
     {
@@ -136,7 +136,7 @@ pixelkey_error_t pixelkey_enqueue_keyframe(uint8_t index, keyframe_base_t * p_ke
  * Sets the framerate used to render keyframes.
  * @param framerate The framerate to use.
  */
-void pixelkey_framerate_set(framerate_t framerate)
+void pixelkey_keyframeproc_framerate_set(framerate_t framerate)
 {
     current_framerate = framerate;
 }

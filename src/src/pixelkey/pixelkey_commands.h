@@ -134,6 +134,9 @@ typedef struct st_cmd_list
     struct st_cmd_list * p_next; ///< Pointer to the next command list element.
 } cmd_list_t;
 
+void pixelkey_cmd_list_free(cmd_list_t * p_cmd_list);
+pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_list);
+
 /** @} */
 
 #endif

@@ -92,19 +92,19 @@ void hal_entry(void)
 
     p_kf = keyframe_blink_ctor(NULL);
     memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
-    pixelkey_enqueue_keyframe(0, p_kf);
+    pixelkey_keyframeproc_push(0, p_kf);
 
     p_kf = keyframe_blink_ctor(NULL);
     memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
-    pixelkey_enqueue_keyframe(1, p_kf);
+    pixelkey_keyframeproc_push(1, p_kf);
 
     p_kf = keyframe_blink_ctor(NULL);
     memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
-    pixelkey_enqueue_keyframe(2, p_kf);
+    pixelkey_keyframeproc_push(2, p_kf);
 
     p_kf = keyframe_blink_ctor(NULL);
     memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
-    pixelkey_enqueue_keyframe(3, p_kf);
+    pixelkey_keyframeproc_push(3, p_kf);
 
     // Do the frame processing so it is ready on the first timer overflow.
     extern void pixelkey_task_do_frame(void);
