@@ -7,12 +7,12 @@
 
 #include "serial.h"
 
-static serial_t const * p_attached_serial_comms = NULL;
+static serial_api_t const * p_attached_serial_comms = NULL;
 
 /**
  * Gets the currently registered serial instance.
  */
-serial_t const * serial(void)
+serial_api_t const * serial(void)
 {
     return p_attached_serial_comms;
 }
@@ -21,7 +21,7 @@ serial_t const * serial(void)
  * Register a serial instance to be used.
  * @param[in] p_instance Pointer to the serial instance to register.
  */
-void serial_register(serial_t const * p_instance)
+void serial_register(serial_api_t const * p_instance)
 {
     p_attached_serial_comms = p_instance;
 }

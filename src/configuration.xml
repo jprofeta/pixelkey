@@ -182,6 +182,14 @@
       <description>Data Transfer Controller</description>
       <originalPack>Renesas.RA.4.2.0.pack</originalPack>
     </component>
+    <component apiversion="" class="HAL Drivers" condition="" group="all" subgroup="r_crc" variant="" vendor="Renesas" version="4.2.0">
+      <description>Cyclic Redundancy Check</description>
+      <originalPack>Renesas.RA.4.2.0.pack</originalPack>
+    </component>
+    <component apiversion="" class="HAL Drivers" condition="" group="all" subgroup="r_flash_lp" variant="" vendor="Renesas" version="4.2.0">
+      <description>Flash Memory Low Power</description>
+      <originalPack>Renesas.RA.4.2.0.pack</originalPack>
+    </component>
   </raComponentSelection>
   <raElcConfiguration/>
   <raIcuConfiguration>
@@ -387,6 +395,18 @@
       <property id="module.driver.timer.gtioca_disable_setting" value="module.driver.timer.gtioca_disable_setting.gtioc_disable_prohibited"/>
       <property id="module.driver.timer.gtiocb_disable_setting" value="module.driver.timer.gtiocb_disable_setting.gtioc_disable_prohibited"/>
     </module>
+    <module id="module.driver.flash_on_flash_lp.1335049006">
+      <property id="module.driver.flash.name" value="g_flash0"/>
+      <property id="module.driver.flash.data_flash_bgo" value="module.driver.flash.data_flash_bgo.disabled"/>
+      <property id="module.driver.flash.p_callback" value="NULL"/>
+      <property id="module.driver.flash.ipl" value="_disabled"/>
+    </module>
+    <module id="module.driver.crc_on_crc.1048169147">
+      <property id="module.driver.crc.name" value="g_crc0"/>
+      <property id="module.driver.crc.crc_polynomial" value="module.driver.crc.crc_polynomial.gps_crc_ccitt"/>
+      <property id="module.driver.crc.crc_bit_order" value="module.driver.crc.crc_bit_order.lms_msb"/>
+      <property id="module.driver.crc.snoop_address" value="module.driver.crc.snoop_address.no_address"/>
+    </module>
     <context id="_hal.0">
       <stack module="module.driver.ioport_on_ioport.0"/>
       <stack module="module.driver.pcdc_on_usb.210960600">
@@ -399,6 +419,8 @@
       <stack module="module.driver.transfer_on_dmac.477355850"/>
       <stack module="module.driver.rtc_on_rtc.1847540347"/>
       <stack module="module.driver.timer_on_gpt.47931743"/>
+      <stack module="module.driver.flash_on_flash_lp.1335049006"/>
+      <stack module="module.driver.crc_on_crc.1048169147"/>
     </context>
     <config id="config.driver.usb_pcdc">
       <property id="config.driver.usb_pcdc.bulk_in" value="config.driver.usb_pcdc.bulk_in.pipe1"/>
@@ -426,12 +448,20 @@
       <property id="config.driver.usb_basic.compliance_mode" value="config.driver.usb_basic.compliance_mode.disable"/>
       <property id="config.driver.usb_basic.tpl_table" value="NULL"/>
     </config>
+    <config id="config.driver.crc">
+      <property id="config.driver.crc.checking" value="config.driver.crc.checking.system"/>
+    </config>
     <config id="config.driver.dtc">
       <property id="config.driver.dtc.param_checking_enable" value="config.driver.dtc.param_checking_enable.bsp"/>
       <property id="config.driver.dtc.vector_table" value=".fsp_dtc_vector_table"/>
     </config>
     <config id="config.driver.dmac">
       <property id="config.driver.dmac.param_checking_enable" value="config.driver.dmac.param_checking_enable.bsp"/>
+    </config>
+    <config id="config.driver.flash_lp">
+      <property id="config.driver.flash_lp.param_checking_enable" value="config.flash_lp.param_checking_enable.bsp"/>
+      <property id="config.driver.flash_lp.param_code_flash_programming_enable" value="config.driver.flash_lp.param_code_flash_programming_enable.disabled"/>
+      <property id="config.driver.flash_lp.param_data_flash_programming_enable" value="config.driver.flash_lp.param_data_flash_programming_enable.enabled"/>
     </config>
     <config id="config.driver.gpt">
       <property id="config.driver.gpt.param_checking_enable" value="config.driver.gpt.param_checking_enable.bsp"/>

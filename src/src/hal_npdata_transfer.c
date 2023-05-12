@@ -62,6 +62,7 @@
 #include "hal_tasks.h"
 #include "pixelkey.h"
 #include "neopixel.h"
+#include "config.h"
 
 #include "hal_npdata_transfer.h"
 
@@ -290,9 +291,10 @@ static void push_data_to_buffer(uint32_t * const p_block)
 
         color_rgb_t color = g_npdata_frame[npdata_frame_idx];
 
-#if !defined(PIXELKEY_DISABLE_GAMMA_CORRECTION) || PIXELKEY_DISABLE_GAMMA_CORRECTION == 0
-        color_gamma_correct(&color, NULL);
-#endif
+        if (config_get_or_default()->flags_b.gamma_enabled)
+        {
+            color_gamma_correct(&color, NULL);
+        }
 
         // NeoPixel data is transferred green-red-blue...
         npdata_color_word = (((uint32_t) color.green) << 16)

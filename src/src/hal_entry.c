@@ -7,6 +7,7 @@
 #include "hal_npdata_transfer.h"
 #include "hal_tasks.h"
 
+#include "config.h"
 #include "serial.h"
 #include "neopixel.h"
 #include "pixelkey.h"
@@ -20,7 +21,8 @@ FSP_CPP_HEADER
 void R_BSP_WarmStart(bsp_warm_start_event_t event);
 FSP_CPP_FOOTER
 
-extern const serial_t g_usb_serial;
+extern const serial_api_t g_usb_serial;
+extern const config_api_t g_config;
 
 /* *****************************************************************************
  * Static variables
@@ -55,9 +57,24 @@ void hal_rtc_callback(rtc_callback_args_t *p_args)
  **********************************************************************************************************************/
 void hal_entry(void)
 {
+    // Make sure NV is configured.
+    config_register(&g_config);
+    config_data_t * p_data = NULL;
+    if (config()->read(&p_data) != PIXELKEY_ERROR_NONE)
+    {
+        // Try to write the default values.
+        if (config()->write(config_default()) != PIXELKEY_ERROR_NONE)
+        {
+            // Something went wrong...
+            BKPT();
+        }
+    }
+
+    config_data_t const * const p_config = config_get_or_default();
+
     // Setup initial data first.
-    pixelkey_frameproc_init(30);
-    color_gamma_build(NEOPIXEL_GAMMA_CORRECTION_DEFAULT);
+    pixelkey_frameproc_init(p_config->framerate);
+    color_gamma_build(p_config->gamma_factor);
 
     // Configure and open the peripherals
     npdata_open();

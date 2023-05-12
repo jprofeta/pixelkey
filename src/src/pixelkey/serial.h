@@ -42,10 +42,10 @@ typedef struct st_serial
      * @retval PIXELKEY_ERROR_COMMUNICATION_ERROR   Communications error occurred.
      */
     pixelkey_error_t (*flush)();
-} serial_t;
+} serial_api_t;
 
-serial_t const * serial(void);
-void serial_register(serial_t const * p_instance);
+serial_api_t const * serial(void);
+void serial_register(serial_api_t const * p_instance);
 
 /** @} */
 

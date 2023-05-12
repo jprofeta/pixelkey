@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include "bsp_api.h"
 #include "common_data.h"
+#include "r_crc.h"
+#include "r_crc_api.h"
+#include "r_flash_lp.h"
+#include "r_flash_api.h"
 #include "r_gpt.h"
 #include "r_timer_api.h"
 #include "r_rtc.h"
@@ -14,6 +18,19 @@
 #include "r_usb_basic_api.h"
 #include "r_usb_pcdc_api.h"
 FSP_HEADER
+extern const crc_instance_t g_crc0;
+extern crc_instance_ctrl_t g_crc0_ctrl;
+extern const crc_cfg_t g_crc0_cfg;
+/* Flash on Flash LP Instance. */
+extern const flash_instance_t g_flash0;
+
+/** Access the Flash LP instance using these structures when calling API functions directly (::p_api is not used). */
+extern flash_lp_instance_ctrl_t g_flash0_ctrl;
+extern const flash_cfg_t g_flash0_cfg;
+
+#ifndef NULL
+void NULL(flash_callback_args_t *p_args);
+#endif
 /** Timer on GPT Instance. */
 extern const timer_instance_t g_frame_timer;
 

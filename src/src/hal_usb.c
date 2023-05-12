@@ -19,6 +19,7 @@
 #include "neopixel.h"
 #include "pixelkey.h"
 #include "serial.h"
+#include "config.h"
 
 #include "r_usb_basic.h"
 #include "r_usb_basic_api.h"
@@ -53,6 +54,7 @@ static usb_op_state_t op_state = USB_OP_STATE_OFFLINE;
 /** The currently configured line coding. Unused for this application but required for USB CDC. */
 static usb_pcdc_linecoding_t line_coding = {0};
 
+static usb_pcdc_ctrllinestate_t line_state = {0};
 
 /** Number of bytes received. */
 static size_t rx_length = 0;
@@ -65,7 +67,7 @@ static uint8_t rx_buffer[USB_BUFFER_LENGTH] __attribute__ (( aligned (2) )) = {0
 static uint8_t tx_buffer[USB_BUFFER_LENGTH] __attribute__ (( aligned (2) )) = {0};
 
 /** Serial instance for USB. */
-const serial_t g_usb_serial = {
+const serial_api_t g_usb_serial = {
     .read =  usb_serial_read,
     .write = usb_serial_write,
     .flush = usb_serial_flush,
@@ -123,6 +125,12 @@ void hal_usb_idle(void)
             {
                 /* Send virtual UART settings back to host */
                 err_code = g_usb.p_api->periControlDataSet(&g_usb_ctrl, (uint8_t *) &line_coding, event_info.setup.request_length);
+            }
+            else if (USB_PCDC_SET_CONTROL_LINE_STATE == (event_info.setup.request_type & USB_BREQUEST))
+            {
+                /* Line state is not sent as a data field, but as the control value instead.*/
+                line_state = *((usb_pcdc_ctrllinestate_t *)&event_info.setup.request_value);
+                err_code = g_usb.p_api->periControlStatusSet(&g_usb_ctrl, USB_SETUP_STATUS_ACK);
             }
             else
             {
@@ -205,8 +213,10 @@ static void rx_end(usb_event_info_t const * const p_event_info)
     if (p_event_info->data_size != 0)
     {
         // Since this could be used in terminal, echo the received data back to the host.
-        /// @todo Once settings are available, change this to a configuration check.
-        g_usb.p_api->write(&g_usb_ctrl, rx_buffer, p_event_info->data_size, USB_CLASS_PCDC);
+        if (line_state.brts || config_get_or_default()->flags_b.echo_enabled)
+        {
+            g_usb.p_api->write(&g_usb_ctrl, rx_buffer, p_event_info->data_size, USB_CLASS_PCDC);
+        }
         rx_length = p_event_info->data_size;
 
         tasks_queue(TASK_CMD_RX);
@@ -260,7 +270,7 @@ static void tx_end(void)
 }
 
 /**
- * Provides a read method for the @ref serial_t API.
+ * Provides a read method for the @ref serial_api_t API.
  * @param[in]     p_buffer      Pointer to the buffer to store read data.
  * @param[in,out] p_read_length Pointer to the maximum read length, updated afterwards with the actual read length.
  * @retval PIXELKEY_ERROR_COMMUNICATION_ERROR The USB connection is offline or has yet to be enumerated.
@@ -289,7 +299,7 @@ static pixelkey_error_t usb_serial_read(uint8_t * p_buffer, size_t * p_read_leng
 }
 
 /**
- * Provides a write method for the @ref serial_t API.
+ * Provides a write method for the @ref serial_api_t API.
  * @param[in] p_buffer     Pointer to the buffer of data to write.
  * @param     write_length Total number of bytes to write.
  * @retval PIXELKEY_ERROR_COMMUNICATION_ERROR The USB connection is offline or has yet to be enumerated.
@@ -322,7 +332,7 @@ static pixelkey_error_t usb_serial_write(uint8_t * p_buffer, size_t write_length
 }
 
 /**
- * Provides a flush method for the @ref serial_t API.
+ * Provides a flush method for the @ref serial_api_t API.
  * @retval PIXELKEY_ERROR_COMMUNICATION_ERROR The USB connection is offline or has yet to be enumerated.
  * @retval PIXELKEY_ERROR_NONE                Write was performed successfully.
  */

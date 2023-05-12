@@ -173,6 +173,14 @@ FSP Configuration
     Parameter Checking: Default (BSP)
     Set Source Clock in Open: Enabled
     
+  Module "Flash (r_flash_lp)"
+    Parameter Checking: Default (BSP)
+    Code Flash Programming: Disabled
+    Data Flash Programming: Enabled
+    
+  Module "CRC (r_crc)"
+    Parameter Checking: Default (BSP)
+    
   HAL
     Instance "g_ioport I/O Port (r_ioport)"
       Name: g_ioport
@@ -371,4 +379,16 @@ FSP Configuration
       Extra Features: Interrupt Skipping (Channels with GTITC only): Skip ADC Events: None
       Extra Features: Output Disable: GTIOCA Disable Setting: Disable Prohibited
       Extra Features: Output Disable: GTIOCB Disable Setting: Disable Prohibited
+      
+    Instance "g_flash0 Flash (r_flash_lp)"
+      Name: g_flash0
+      Data Flash Background Operation: Disabled
+      Callback: NULL
+      Flash Ready Interrupt Priority: Disabled
+      
+    Instance "g_crc0 CRC (r_crc)"
+      Name: g_crc0
+      CRC Polynomial: CRC-CCITT
+      Bit Order: MSB
+      Snoop Address: NONE
       
