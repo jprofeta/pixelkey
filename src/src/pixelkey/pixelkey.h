@@ -28,6 +28,7 @@ pixelkey_error_t pixelkey_keyframeproc_render_frame(color_rgb_t * p_frame_buffer
 pixelkey_error_t pixelkey_keyframeproc_push(uint8_t index, keyframe_base_t * p_keyframe);
 
 void pixelkey_commandproc_init(void);
+pixelkey_error_t pixelkey_commandproc_push(cmd_t * p_cmd);
 
 /** @} */
 

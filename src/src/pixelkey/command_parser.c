@@ -49,6 +49,7 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
     {
         return PIXELKEY_ERROR_OUT_OF_MEMORY;
     }
+    memset(*p_cmd_list, 0, sizeof(cmd_list_t));
 
     // Current command list node 
     cmd_list_t * p_list = *p_cmd_list;
@@ -68,8 +69,9 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
             parse_error = PIXELKEY_ERROR_OUT_OF_MEMORY;
             break;
         }
+        memset(p_cmd, 0, sizeof(cmd_t));
+
         p_list->p_cmd = p_cmd;
-        p_cmd->type = CMD_TYPE_UNDEFINED;
 
         if (*cmd_tok == CMD_PREFIX)
         {
@@ -165,6 +167,7 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
             }
             else
             {
+                memset(p_list->p_next, 0, sizeof(cmd_list_t));
                 p_list = p_list->p_next;
             }
         }
@@ -452,7 +455,7 @@ static pixelkey_error_t parse_time_set(char * arg_ctx, cmd_t * p_cmd)
         return PIXELKEY_ERROR_OUT_OF_MEMORY;
     }
     cmd_args_time_set_t * p_args = p_cmd->p_args;
-    memset(&p_args->time_bcd, 0, sizeof(p_args->time_bcd));
+    memset(p_args, 0, sizeof(*p_args));
 
     lower(next_arg);
 

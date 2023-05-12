@@ -7,6 +7,7 @@
 #include "hal_npdata_transfer.h"
 #include "hal_tasks.h"
 
+#include "serial.h"
 #include "neopixel.h"
 #include "pixelkey.h"
 #include "keyframes.h"
@@ -18,6 +19,8 @@
 FSP_CPP_HEADER
 void R_BSP_WarmStart(bsp_warm_start_event_t event);
 FSP_CPP_FOOTER
+
+extern const serial_t g_usb_serial;
 
 /* *****************************************************************************
  * Static variables
@@ -63,26 +66,29 @@ void hal_entry(void)
 
     g_usb.p_api->open(&g_usb_ctrl, &g_usb_cfg);
 
+    // Register the USB serial.
+    serial_register(&g_usb_serial);
+
     /* Initial hardware testing. */
     color_t c;
     keyframe_base_t * p_kf;
 
     keyframe_blink_t * p_kf_blink = (keyframe_blink_t *) keyframe_blink_ctor(NULL);
     p_kf_blink->args.color1 = color_blue;
-    p_kf_blink->args.color1.hsv.value = 5;
+    p_kf_blink->args.color1.hsv.value = 15;
     p_kf_blink->args.color1_provided = true;
     p_kf_blink->args.color2 = color_green;
-    p_kf_blink->args.color2.hsv.value = 5;
+    p_kf_blink->args.color2.hsv.value = 15;
     p_kf_blink->args.color2_provided = true;
     p_kf_blink->args.period = 2.0f;
 
     keyframe_fade_t * p_kf_fade = (keyframe_fade_t *) keyframe_fade_ctor(NULL);
     p_kf_fade->args.colors[0] = color_red.hsv;
-    p_kf_fade->args.colors[0].value = 5;
+    p_kf_fade->args.colors[0].value = 25;
     p_kf_fade->args.colors[1] = color_green.hsv;
-    p_kf_fade->args.colors[1].value = 5;
+    p_kf_fade->args.colors[1].value = 25;
     p_kf_fade->args.colors[2] = color_red.hsv;
-    p_kf_fade->args.colors[2].value = 5;
+    p_kf_fade->args.colors[2].value = 25;
     p_kf_fade->args.colors_len = 3;
     p_kf_fade->args.fade_type = FADE_TYPE_CUBIC;
     p_kf_fade->args.curve = cb_linear;

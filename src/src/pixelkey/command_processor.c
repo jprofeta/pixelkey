@@ -38,7 +38,12 @@ void pixelkey_commandproc_init(void)
  */
 pixelkey_error_t pixelkey_commandproc_push(cmd_t * p_cmd)
 {
+    if (!ring_buffer_push(&cmd_buffer, p_cmd))
+    {
+        return PIXELKEY_ERROR_BUFFER_FULL;
+    }
     
+    return PIXELKEY_ERROR_NONE;
 }
 
 /** @} */

@@ -5,7 +5,11 @@
  * @{
  */
 
+#include <stdlib.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "hal_data.h"
 #include "hal_device.h"
@@ -14,23 +18,59 @@
 
 #include "neopixel.h"
 #include "pixelkey.h"
+#include "serial.h"
 
 #include "r_usb_basic.h"
 #include "r_usb_basic_api.h"
 #include "r_usb_basic_cfg.h"
 
-#define USB_READ_LENGTH     (64)
+/** Buffer length for USB operations, must be a multiple of 64. */
+#define USB_BUFFER_LENGTH     (64)
 
-/** Write index of the input buffer. */
-static size_t input_buffer_idx = 0;
+/** USB operational state. */
+typedef enum e_usb_op_state
+{
+    USB_OP_STATE_OFFLINE,           ///< USB is offline or not yet enumerated.
+    USB_OP_STATE_ONLINE,            ///< USB is online and enumerated, possibly idle.
+    USB_OP_STATE_CONTROL_SEQUENCE,  ///< Control sequence processing is active.
+    USB_OP_STATE_READ,              ///< Read data processing is active.
+    USB_OP_STATE_WRITE              ///< Write data processing is active.
+} usb_op_state_t;
 
-/** Input buffer for received command data over USB. */
-static uint8_t input_buffer[PIXELKEY_INPUT_COMMAND_BUFFER_LENGTH] = {0};
+static void input_buffer_shift(uint32_t count, uint32_t length);
+static bool rx_start(void);
+static void rx_end(usb_event_info_t const * const p_event_info);
+static bool tx_start(void);
+static void tx_end(void);
+
+static pixelkey_error_t usb_serial_read(uint8_t * p_buffer, size_t * p_read_length);
+static pixelkey_error_t usb_serial_write(uint8_t * p_buffer, size_t write_length);
+static pixelkey_error_t usb_serial_flush(void);
+
+/** Current operational state of the USB. */
+static usb_op_state_t op_state = USB_OP_STATE_OFFLINE;
 
 /** The currently configured line coding. Unused for this application but required for USB CDC. */
 static usb_pcdc_linecoding_t line_coding = {0};
 
-static void input_buffer_shift(uint32_t count, uint32_t length);
+
+/** Number of bytes received. */
+static size_t rx_length = 0;
+/** Number of bytes to transmit. */
+static size_t tx_length = 0;
+
+/** RX data buffer. */
+static uint8_t rx_buffer[USB_BUFFER_LENGTH] __attribute__ (( aligned (2) )) = {0};
+/** TX data buffer. */
+static uint8_t tx_buffer[USB_BUFFER_LENGTH] __attribute__ (( aligned (2) )) = {0};
+
+/** Serial instance for USB. */
+const serial_t g_usb_serial = {
+    .read =  usb_serial_read,
+    .write = usb_serial_write,
+    .flush = usb_serial_flush,
+};
+
 
 /**
  * Idle function to check the status of the USB comms and handle CDC specific messaging.
@@ -55,15 +95,25 @@ void hal_usb_idle(void)
     switch (event)
     {
         case USB_STATUS_CONFIGURED:
+        {
+            op_state = USB_OP_STATE_ONLINE;
+        }
+        break;
+        case USB_STATUS_READ_COMPLETE:
+        {
+            rx_end(&event_info);    // Changes the op_state
+        }
+        break;
         case USB_STATUS_WRITE_COMPLETE:
         {
-            // We have data that was received. Kick off the task to get it.
-            tasks_queue(TASK_CMD_RX);
+            tx_end();   // Changes the op_state
         }
         break;
         /* Receive Class Request */
         case USB_STATUS_REQUEST:
         {
+            op_state = USB_OP_STATE_CONTROL_SEQUENCE;
+
             if (USB_PCDC_SET_LINE_CODING == (event_info.setup.request_type & USB_BREQUEST))
             {
                 /* Configure virtual UART settings */
@@ -81,8 +131,29 @@ void hal_usb_idle(void)
             }
         }
         break;
+        case USB_STATUS_REQUEST_COMPLETE:
+        {
+            op_state = USB_OP_STATE_ONLINE;
+        }
+        break;
         case USB_STATUS_SUSPEND:
         case USB_STATUS_DETACH:
+        {
+            op_state = USB_OP_STATE_OFFLINE;
+        }
+        break;
+        case USB_STATUS_NONE:
+        {
+            if (op_state == USB_OP_STATE_ONLINE)
+            {
+                // Try to transmit any data if available, and if not try to receive some.
+                if (!tx_start())
+                {
+                    rx_start();
+                }
+            }
+            break;
+        }
         default:
             break;
     }
@@ -95,96 +166,180 @@ void hal_usb_idle(void)
     }
 }
 
-void hal_task_command_rx(void)
+/**
+ * Starts read processing.
+ */
+static bool rx_start(void)
 {
-    uint8_t read_buffer[64] __attribute__ (( aligned (2) )) = {0};
-
-    uint32_t read_length = PIXELKEY_INPUT_COMMAND_BUFFER_LENGTH - input_buffer_idx;
-    if (read_length > 64)
+    if (rx_length > 0)
     {
-        // Clip to 64 byte max read (length of read_buffer).
-        read_length = 64;
+        // Don't receive any more data until the existing has been read.
+        // There was comments about ensuring a 64-byte read so unless a larger buffer is provided only read once.
+        return false;
     }
-    fsp_err_t err = g_usb.p_api->read(&g_usb_ctrl, read_buffer, read_length, USB_CLASS_PCDC);
-    if (err != FSP_SUCCESS)
+
+    fsp_err_t err = g_usb.p_api->read(&g_usb_ctrl, rx_buffer, USB_BUFFER_LENGTH, USB_CLASS_PCDC);
+    if (err == FSP_ERR_USB_BUSY)
+    {
+        // Do nothing there. The USB is currently doing something else and cannot read.
+        return false;
+    }
+    else if (err != FSP_SUCCESS)
     {
         /// @todo Log USB error from data read.
         BKPT();
-        return;
+        return false;
     }
 
-    // Make sure the read has finished and get the length.
-    usb_event_info_t event_info;
-    usb_status_t     event;
-
-    // !IMPORTANT! This function does NOT conform to the API! The first argument
-    //             is overloaded to be type usb_event_info_t not usb_ctrl_t!
-    err = g_usb.p_api->eventGet(&event_info, &event);
-    if (err != FSP_SUCCESS)
-    {
-        /// @todo Log USB error from event get
-        BKPT();
-        return;
-    }
-    if (event != USB_STATUS_READ_COMPLETE)
-    {
-        /// @todo Log read incomplete error.
-        BKPT();
-        return;
-    }
-
-    if (event_info.data_size != 0)
-    {
-#if DEBUG && defined(ECHO_USB)
-        g_usb.p_api->write(&g_usb_ctrl, read_buffer, event_info.data_size, USB_CLASS_PCDC);
-        usb_event_info_t echo_event_info;
-        usb_status_t     echo_event;
-        g_usb.p_api->eventGet(&echo_event_info, &echo_event);
-        if (echo_event != USB_STATUS_WRITE_COMPLETE)
-        {
-            /// @todo Log echo failed.
-            BKPT();
-        }
-#endif
-
-        // Copy from the read buffer to the input buffer.
-        memcpy(&input_buffer[input_buffer_idx], read_buffer, event_info.data_size);
-
-        // Scan the input for NEW-LINE symbols.
-        for (size_t i = event_info.data_size; i > 0; i--)
-        {
-            if (input_buffer[input_buffer_idx] == (uint8_t) '\n')
-            {
-                input_buffer[input_buffer_idx] = (uint8_t) '\0';
-
-                // Parse the command string. This will queue amy multi-command inputs and start the handler task.
-                //pixelkey_command_parse((char *)input_buffer);
-
-                // Shift the input buffer down to remove the parsed command string.
-                input_buffer_shift(input_buffer_idx + 1, input_buffer_idx + i);
-
-                // Reset the buffer index and continue the scan.
-                input_buffer_idx = 0;
-            }
-            else
-            {
-                input_buffer_idx++;
-            }
-        }
-    }
+    // Keep it in the online state since there is no way to determine if a read did not take
+    // place in the current USB driver.
+    op_state = USB_OP_STATE_ONLINE;
+    return true;
 }
 
 /**
- * Shifts the input buffer down once a command is parsed.
- * @param count  Number of elements to remove.
- * @param length Current length of the input buffer
+ * Finishes read processing on USB_STATUS_READ_COMPLETE event.
  */
-static void input_buffer_shift(uint32_t count, uint32_t length)
+static void rx_end(usb_event_info_t const * const p_event_info)
 {
-    for (uint32_t i = 0, j = count; j < length; i++, j++)
+    if (p_event_info->data_size != 0)
     {
-        input_buffer[i] = input_buffer[j];
+        // Since this could be used in terminal, echo the received data back to the host.
+        /// @todo Once settings are available, change this to a configuration check.
+        g_usb.p_api->write(&g_usb_ctrl, rx_buffer, p_event_info->data_size, USB_CLASS_PCDC);
+        rx_length = p_event_info->data_size;
+
+        tasks_queue(TASK_CMD_RX);
     }
+
+    op_state = USB_OP_STATE_ONLINE;
+}
+
+/**
+ * Starts write processing.
+ */
+static bool tx_start(void)
+{
+    if (tx_length == 0)
+    {
+        // No data to transmit.
+        return false;
+    }
+
+    fsp_err_t err = g_usb.p_api->write(&g_usb_ctrl, tx_buffer, tx_length, USB_CLASS_PCDC);
+    if (err == FSP_ERR_USB_BUSY)
+    {
+        // Do nothing there. The USB is currently doing something else and cannot write.
+        return false;
+    }
+    else if (err != FSP_SUCCESS)
+    {
+        /// @todo Log USB error from data read.
+        BKPT();
+        return false;
+    }
+
+    op_state = USB_OP_STATE_WRITE;
+    return true;
+}
+
+/**
+ * Finishes write processing on USB_STATUS_WRITE_COMPLETE event.
+ */
+static void tx_end(void)
+{
+    if (op_state != USB_OP_STATE_WRITE)
+    {
+        // Only handle the end of writes generated from the buffer.
+        // Other writes like echos should not modify the state.
+        return;
+    }
+
+    tx_length = 0;
+    op_state = USB_OP_STATE_ONLINE;
+}
+
+/**
+ * Provides a read method for the @ref serial_t API.
+ * @param[in]     p_buffer      Pointer to the buffer to store read data.
+ * @param[in,out] p_read_length Pointer to the maximum read length, updated afterwards with the actual read length.
+ * @retval PIXELKEY_ERROR_COMMUNICATION_ERROR The USB connection is offline or has yet to be enumerated.
+ * @retval PIXELKEY_ERROR_NONE                Read was performed successfully.
+ */
+static pixelkey_error_t usb_serial_read(uint8_t * p_buffer, size_t * p_read_length)
+{
+    if (op_state == USB_OP_STATE_OFFLINE)
+    {
+        return PIXELKEY_ERROR_COMMUNICATION_ERROR;
+    }
+
+    if (rx_length > 0)
+    {
+        size_t bytes_to_read = (rx_length < *p_read_length) ? rx_length : *p_read_length;
+        memcpy(p_buffer, rx_buffer, bytes_to_read);
+        *p_read_length = bytes_to_read;
+        rx_length -= bytes_to_read;
+    }
+    else
+    {
+        *p_read_length = 0;
+    }
+
+    return PIXELKEY_ERROR_NONE;
+}
+
+/**
+ * Provides a write method for the @ref serial_t API.
+ * @param[in] p_buffer     Pointer to the buffer of data to write.
+ * @param     write_length Total number of bytes to write.
+ * @retval PIXELKEY_ERROR_COMMUNICATION_ERROR The USB connection is offline or has yet to be enumerated.
+ * @retval PIXELKEY_ERROR_BUFFER_FULL         Writing the requested amount of data will overrun the transmit buffer.
+ * @retval PIXELKEY_ERROR_NONE                Write was performed successfully.
+ */
+static pixelkey_error_t usb_serial_write(uint8_t * p_buffer, size_t write_length)
+{
+    if (op_state == USB_OP_STATE_OFFLINE)
+    {
+        return PIXELKEY_ERROR_COMMUNICATION_ERROR;
+    }
+
+    while (op_state == USB_OP_STATE_WRITE)
+    {
+        // Run the state machine if another write is taking place.
+        hal_usb_idle();
+    }
+
+    // Too many bytes to write.
+    if (tx_length + write_length > USB_BUFFER_LENGTH)
+    {
+        return PIXELKEY_ERROR_BUFFER_FULL;
+    }
+
+    memcpy(&tx_buffer[tx_length], p_buffer, write_length);
+    tx_length += write_length;
+
+    return PIXELKEY_ERROR_NONE;
+}
+
+/**
+ * Provides a flush method for the @ref serial_t API.
+ * @retval PIXELKEY_ERROR_COMMUNICATION_ERROR The USB connection is offline or has yet to be enumerated.
+ * @retval PIXELKEY_ERROR_NONE                Write was performed successfully.
+ */
+static pixelkey_error_t usb_serial_flush(void)
+{
+    if (op_state == USB_OP_STATE_OFFLINE)
+    {
+        return PIXELKEY_ERROR_COMMUNICATION_ERROR;
+    }
+
+    while (tx_length > 0)
+    {
+        // Run the state machine until the tx_length returns to zero.
+        hal_usb_idle();
+    }
+
+    return PIXELKEY_ERROR_NONE;
 }
 
 /** @} */

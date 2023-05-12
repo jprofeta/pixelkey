@@ -289,7 +289,10 @@ static void push_data_to_buffer(uint32_t * const p_block)
         npdata_frame_idx++;
 
         color_rgb_t color = g_npdata_frame[npdata_frame_idx];
+
+#if !defined(PIXELKEY_DISABLE_GAMMA_CORRECTION) || PIXELKEY_DISABLE_GAMMA_CORRECTION == 0
         color_gamma_correct(&color, NULL);
+#endif
 
         // NeoPixel data is transferred green-red-blue...
         npdata_color_word = (((uint32_t) color.green) << 16)

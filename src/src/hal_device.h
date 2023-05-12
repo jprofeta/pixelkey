@@ -34,6 +34,10 @@
 /** Total number of commands that can be queued. */
 #define PIXELKEY_COMMAND_BUFFER_LENGTH  (8)
 
+#define PIXELKEY_DISABLE_GAMMA_CORRECTION (1)
+
+#define ECHO_USB 1
+
 void hal_usb_idle(void);
 
 /** @} */
