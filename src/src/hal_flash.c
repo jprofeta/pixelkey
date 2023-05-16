@@ -22,7 +22,7 @@
 extern char const __Data_Flash_Start;
 
 static pixelkey_error_t flash_config_write(config_data_t const * const p_config_data);
-static pixelkey_error_t flash_config_read(config_data_t const ** pp_config_data);
+static pixelkey_error_t flash_config_read(config_data_t ** pp_config_data);
 
 /** Pointer to the configuration struct at the start of the Data Flash section. */
 static config_data_t const * const p_nv_config = (config_data_t *)((void *)&__Data_Flash_Start);
@@ -40,7 +40,7 @@ static pixelkey_error_t flash_config_write(config_data_t const * const p_config_
 {
     // Copy the config struct locally so we can CRC and set the length.
     config_data_t data = *p_config_data;
-    data.length = sizeof(config_data_t);
+    data.header.length = sizeof(config_data_t);
 
     if (FSP_SUCCESS != g_crc0.p_api->open(&g_crc0_ctrl, &g_crc0_cfg))
     {
@@ -48,13 +48,13 @@ static pixelkey_error_t flash_config_write(config_data_t const * const p_config_
     }
     crc_input_t crc_in =
     {
-        .p_input_buffer = &data.length,
-        .num_bytes = p_nv_config->length - sizeof(data.crc),
+        .p_input_buffer = &data.header.length,
+        .num_bytes = p_nv_config->header.length - sizeof(data.header.crc),
         .crc_seed = 0,
     };
     uint32_t crc = 0;
     g_crc0.p_api->calculate(&g_crc0_ctrl, &crc_in, &crc);
-    data.crc = crc & UINT16_MAX;  // Mask to make sure there are only 16-bits.
+    data.header.crc = crc & UINT16_MAX;  // Mask to make sure there are only 16-bits.
 
     g_crc0.p_api->close(&g_crc0_ctrl);
 
@@ -76,12 +76,13 @@ static pixelkey_error_t flash_config_write(config_data_t const * const p_config_
     }
 
     g_flash0.p_api->close(&g_flash0_ctrl);
+    nv_crc = data.header.crc;
     return PIXELKEY_ERROR_NONE;
 }
 
-static pixelkey_error_t flash_config_read(config_data_t const ** pp_config_data)
+static pixelkey_error_t flash_config_read(config_data_t ** pp_config_data)
 {
-    if (p_nv_config->crc == UINT16_MAX && p_nv_config->length == UINT8_MAX)
+    if (p_nv_config->header.crc == UINT16_MAX && p_nv_config->header.length == UINT8_MAX)
     {
         return PIXELKEY_ERROR_NV_NOT_INITIALIZED;
     }
@@ -94,8 +95,8 @@ static pixelkey_error_t flash_config_read(config_data_t const ** pp_config_data)
         }
         crc_input_t crc_in =
         {
-            .p_input_buffer = (void *)&p_nv_config->length,
-            .num_bytes = p_nv_config->length - sizeof(p_nv_config->crc),
+            .p_input_buffer = (void *)&p_nv_config->header.length,
+            .num_bytes = p_nv_config->header.length - sizeof(p_nv_config->header.crc),
             .crc_seed = 0,
         };
         uint32_t crc = 0;
@@ -105,7 +106,7 @@ static pixelkey_error_t flash_config_read(config_data_t const ** pp_config_data)
         g_crc0.p_api->close(&g_crc0_ctrl);
     }
 
-    if(nv_crc != (uint32_t)p_nv_config->crc)
+    if (nv_crc != (uint32_t)p_nv_config->header.crc)
     {
         return PIXELKEY_ERROR_NV_CRC_MISMATCH;
     }

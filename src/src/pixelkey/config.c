@@ -8,8 +8,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "hal_device.h"
+#include "helper_macros.h"
 #include "pixelkey_errors.h"
 #include "neopixel.h"
 
@@ -21,7 +23,12 @@ static config_api_t const * registered_api = NULL;
 /** Default configuration data. */
 static config_data_t const config_data_default = 
 {
-    .version = CONFIG_DATA_VERSION,
+    .header = 
+    {
+        .version = CONFIG_DATA_VERSION,
+        .length = sizeof(config_data_t),
+        .crc = UINT16_MAX,
+    },
     .flags_b = 
     {
         .echo_enabled = PIXELKEY_DEFAULT_COM_ECHO,
@@ -75,5 +82,58 @@ void config_register(config_api_t const * p_instance)
 {
     registered_api = p_instance;
 }
+
+// Allow pointer arithmetic in validate.
+WARNING_SAVE()
+WARNING_DISABLE("pointer-arith")
+
+/**
+ * Validates and updates NV memory config if needed; can only be called after config_register.
+ */
+pixelkey_error_t config_validate(void)
+{
+    config_data_t * p_data = NULL;
+    pixelkey_error_t err = registered_api->read(&p_data);
+    if (err == PIXELKEY_ERROR_NV_NOT_INITIALIZED)
+    {
+        // Write the default values to memory.
+        err = registered_api->write(&config_data_default);
+    }
+    else if (err != PIXELKEY_ERROR_NONE)
+    {
+        // Something happened to the NV memory...
+        // Restore defaults.
+        // Log an error? (these are separate clauses in case we want to do that.)
+        err = registered_api->write(&config_data_default);
+    }
+    else
+    {
+        // Load in the default values.
+        config_data_t upgraded_data = config_data_default;
+        const size_t header_len = sizeof(upgraded_data.header);
+
+        // Assume if the lengths are different it is a simple append operation.
+        if (p_data->header.length != config_data_default.header.length)
+        {
+            memcpy(((void *)&upgraded_data) + header_len,
+                    ((void *)p_data) + header_len,
+                    p_data->header.length - header_len);
+        }
+
+        // Check to see if the NV memory needs advanced updating.
+        if (p_data->header.version != config_data_default.header.version)
+        {
+            // This is a more complicated upgrade. Basically things are out of order.
+            // Right now there is no use case for this.
+        }
+
+        // Write the updated config back.
+        err = registered_api->write(&upgraded_data);
+    }
+
+    return err;
+}
+
+WARNING_RESTORE()
 
 /** @} */

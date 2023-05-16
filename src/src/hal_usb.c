@@ -47,6 +47,7 @@ static void tx_end(void);
 static pixelkey_error_t usb_serial_read(uint8_t * p_buffer, size_t * p_read_length);
 static pixelkey_error_t usb_serial_write(uint8_t * p_buffer, size_t write_length);
 static pixelkey_error_t usb_serial_flush(void);
+static bool usb_serial_rts(void);
 
 /** Current operational state of the USB. */
 static usb_op_state_t op_state = USB_OP_STATE_OFFLINE;
@@ -71,8 +72,8 @@ const serial_api_t g_usb_serial = {
     .read =  usb_serial_read,
     .write = usb_serial_write,
     .flush = usb_serial_flush,
+    .rts_get = usb_serial_rts,
 };
-
 
 /**
  * Idle function to check the status of the USB comms and handle CDC specific messaging.
@@ -212,13 +213,7 @@ static void rx_end(usb_event_info_t const * const p_event_info)
 {
     if (p_event_info->data_size != 0)
     {
-        // Since this could be used in terminal, echo the received data back to the host.
-        if (line_state.brts || config_get_or_default()->flags_b.echo_enabled)
-        {
-            g_usb.p_api->write(&g_usb_ctrl, rx_buffer, p_event_info->data_size, USB_CLASS_PCDC);
-        }
         rx_length = p_event_info->data_size;
-
         tasks_queue(TASK_CMD_RX);
     }
 
@@ -350,6 +345,14 @@ static pixelkey_error_t usb_serial_flush(void)
     }
 
     return PIXELKEY_ERROR_NONE;
+}
+
+/**
+ * Gets the RTS signal state.
+ */
+static bool usb_serial_rts(void)
+{
+    return line_state.brts;
 }
 
 /** @} */

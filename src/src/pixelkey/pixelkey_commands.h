@@ -40,7 +40,7 @@
 /** Command types. */
 typedef enum e_cmd_type
 {
-    CMD_TYPE_UNDEFINED,             ///< Undefined command.
+    CMD_TYPE_UNDEFINED = -1,        ///< Undefined command.
     CMD_TYPE_KEYFRAME_WRAPPER,      ///< Command wrapper around a keyframe.
     CMD_TYPE_KEYFRAME_MOD_REPEAT,   ///< Keyframe repeat modifier command.
     CMD_TYPE_KEYFRAME_MOD_SCHEDULE, ///< Keyframe schedule modifier command.
@@ -52,7 +52,8 @@ typedef enum e_cmd_type
     CMD_TYPE_STATUS,                ///< Display device status.
     CMD_TYPE_VERSION,               ///< Display device firmware version.
     CMD_TYPE_TIME_GET,              ///< Get the current system time.
-    CMD_TYPE_TIME_SET               ///< Set the current system time.
+    CMD_TYPE_TIME_SET,              ///< Set the current system time.
+    CMD_TYPE_COUNT,                 ///< Total number of command types.
 } cmd_type_t;
 
 /** Value types. */
@@ -134,6 +135,7 @@ typedef struct st_cmd_list
     struct st_cmd_list * p_next; ///< Pointer to the next command list element.
 } cmd_list_t;
 
+void pixelkey_cmd_free(cmd_t * p_cmd);
 void pixelkey_cmd_list_free(cmd_list_t * p_cmd_list);
 pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_list);
 

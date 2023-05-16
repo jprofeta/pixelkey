@@ -10,17 +10,47 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 
 #include "hal_device.h"
 #include "ring_buffer.h"
+#include "serial.h"
+#include "config.h"
+#include "version.h"
 
 #include "pixelkey.h"
 #include "pixelkey_errors.h"
 #include "pixelkey_commands.h"
 
+typedef void (*handler_fn)(void * p_cmd_args);
+
+static void send_trailer(bool is_nak, pixelkey_error_t error);
+
+static void handler_undefined(void * p_cmd_args);
+static void handler_config_get(void * p_cmd_args);
+static void handler_config_set(void * p_cmd_args);
+static void handler_resume(void * p_cmd_args);
+static void handler_stop(void * p_cmd_args);
+static void handler_status(void * p_cmd_args);
+static void handler_version(void * p_cmd_args);
+static void handler_time_get(void * p_cmd_args);
+static void handler_time_set(void * p_cmd_args);
+
 static cmd_t * cmd_buffer_data[PIXELKEY_COMMAND_BUFFER_LENGTH] = {0};
 
 static ring_buffer_t cmd_buffer = {0};
+
+static handler_fn cmd_handlers[CMD_TYPE_COUNT] = 
+{
+    [CMD_TYPE_CONFIG_GET] = handler_config_get,
+    [CMD_TYPE_CONFIG_SET] = handler_config_set,
+    [CMD_TYPE_RESUME]     = handler_resume,
+    [CMD_TYPE_STOP]       = handler_stop,
+    [CMD_TYPE_STATUS]     = handler_status,
+    [CMD_TYPE_VERSION]    = handler_version,
+    [CMD_TYPE_TIME_GET]   = handler_time_get,
+    [CMD_TYPE_TIME_SET]   = handler_time_set
+};
 
 /**
  * Initialize the command processor.
@@ -44,6 +74,238 @@ pixelkey_error_t pixelkey_commandproc_push(cmd_t * p_cmd)
     }
     
     return PIXELKEY_ERROR_NONE;
+}
+
+/**
+ * Executes queued commands.
+ */
+void pixelkey_commandproc_task(void)
+{
+    cmd_t * p_cmd = NULL;
+    while (ring_buffer_pop(&cmd_buffer, (void **)&p_cmd))
+    {
+        if (p_cmd->type <= CMD_TYPE_UNDEFINED || p_cmd->type >= CMD_TYPE_COUNT)
+        {
+            handler_undefined(NULL);
+        }
+        else
+        {
+            cmd_handlers[p_cmd->type](p_cmd->p_args);
+        }
+        
+        pixelkey_cmd_free(p_cmd);
+    }
+}
+
+static void send_trailer(bool is_nak, pixelkey_error_t error)
+{
+    char trailer[16] = "OK\n";
+    int len = 3;
+    
+    // Make sure any pending writes are complete first.
+    serial()->flush();
+
+    // Send the trailer NAK/OK sequence.
+    if (is_nak)
+    {
+        len = sprintf(trailer, "%d NAK\n", (int)error);
+    }
+    serial()->write((uint8_t *)trailer, (size_t)len);
+    serial()->flush();
+
+}
+
+static void handler_undefined(void * p_cmd_args)
+{
+    ARG_NOT_USED(p_cmd_args);
+
+    char msg[] = "Error: unknown command\n";
+    serial()->write((uint8_t *)msg, (size_t)strlen(msg));
+    serial()->flush();
+
+    send_trailer(true, PIXELKEY_ERROR_UNKNOWN_COMMAND);
+}
+
+static void handler_config_get(void * p_cmd_args)
+{
+    cmd_args_config_get_t * p_args = (cmd_args_config_get_t *)p_cmd_args;
+    char msg[64];
+    int len = 0;
+
+    config_data_t * p_config = NULL;
+    pixelkey_error_t config_error = config()->read(&p_config);
+
+    if (config_error != PIXELKEY_ERROR_NONE)
+    {
+        send_trailer(true, config_error);
+        return;
+    }
+
+    if (!strcmp("crc", p_args->key))
+    {
+        len = sprintf(msg, "0x%04X\n", p_config->header.crc);
+    }
+    else if (!strcmp("echo_enabled", p_args->key))
+    {
+        len = sprintf(msg, "%s\n", (p_config->flags_b.echo_enabled ? "true" : "false"));
+    }
+    else if (!strcmp("gamma_enabled", p_args->key))
+    {
+        len = sprintf(msg, "%s\n", (p_config->flags_b.gamma_enabled ? "true" : "false"));
+    }
+    else if (!strcmp("gamma_factor", p_args->key))
+    {
+        len = sprintf(msg, "%.3g\n", p_config->gamma_factor);
+    }
+    else if (!strcmp("framerate", p_args->key))
+    {
+        len = sprintf(msg, "%"PRIu32"\n", p_config->framerate);
+    }
+    else if (!strcmp("num_neopixels", p_args->key))
+    {
+        len = sprintf(msg, "%"PRIu32"\n", p_config->num_neopixels);
+    }
+    else
+    {
+        send_trailer(true, PIXELKEY_ERROR_KEY_NOT_FOUND);
+        return;
+    }
+
+    serial()->write((uint8_t *)msg, (size_t)len);
+    send_trailer(false, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_config_set(void * p_cmd_args)
+{
+    cmd_args_config_set_t * p_args = (cmd_args_config_set_t *)p_cmd_args;
+
+    config_data_t * p_config = NULL;
+    pixelkey_error_t config_error = config()->read(&p_config);
+
+    if (config_error != PIXELKEY_ERROR_NONE)
+    {
+        send_trailer(true, config_error);
+        return;
+    }
+
+    config_data_t new_config = *p_config;
+
+    if (!strcmp("echo_enabled", p_args->key))
+    {
+        if (p_args->value_type != VALUE_TYPE_BOOLEAN)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        new_config.flags_b.echo_enabled = p_args->value.b;
+        config_error = config()->write(&new_config);
+    }
+    else if (!strcmp("gamma_enabled", p_args->key))
+    {
+        if (p_args->value_type != VALUE_TYPE_BOOLEAN)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        new_config.flags_b.gamma_enabled = p_args->value.b;
+        config_error = config()->write(&new_config);
+    }
+    else if (!strcmp("gamma_factor", p_args->key))
+    {
+        if (p_args->value_type != VALUE_TYPE_FLOAT)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        new_config.gamma_factor = p_args->value.f32;
+        config_error = config()->write(&new_config);
+
+        if (config_error == PIXELKEY_ERROR_NONE)
+        {
+            color_gamma_build(new_config.gamma_factor);
+        }
+    }
+    else if (!strcmp("framerate", p_args->key))
+    {
+        if (p_args->value_type != VALUE_TYPE_INTEGER)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        new_config.framerate = (uint32_t) p_args->value.i32;
+        config_error = config()->write(&new_config);
+
+        if (config_error == PIXELKEY_ERROR_NONE)
+        {
+            pixelkey_keyframeproc_framerate_set((framerate_t)new_config.framerate);
+        }
+    }
+    else if (!strcmp("num_neopixels", p_args->key))
+    {
+        // For the time being, don't allow this to be changed.
+        /// @todo Add support to set number of neopixels.
+        send_trailer(true, PIXELKEY_ERROR_KEY_NOT_FOUND);
+        return;
+    }
+    else
+    {
+        send_trailer(true, PIXELKEY_ERROR_KEY_NOT_FOUND);
+        return;
+    }
+
+    send_trailer((config_error != PIXELKEY_ERROR_NONE), config_error);
+}
+
+static void handler_resume(void * p_cmd_args)
+{
+    send_trailer(true, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_stop(void * p_cmd_args)
+{
+    send_trailer(true, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_status(void * p_cmd_args)
+{
+    char msg[64];
+    int len = 0;
+
+    len = snprintf(msg, sizeof(msg), "%s v%s\n", g_pixelkey_product_str, g_pixelkey_version_str);
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    len = snprintf(msg, sizeof(msg), "Current state: %s\n", "active");
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    send_trailer(false, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_version(void * p_cmd_args)
+{
+    char msg[64];
+    int len = 0;
+
+    len = snprintf(msg, sizeof(msg), "%s\n", g_pixelkey_version_str);
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    send_trailer(false, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_time_get(void * p_cmd_args)
+{
+    send_trailer(true, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_time_set(void * p_cmd_args)
+{
+    send_trailer(true, PIXELKEY_ERROR_NONE);
 }
 
 /** @} */

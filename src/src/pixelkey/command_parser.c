@@ -778,6 +778,28 @@ static pixelkey_error_t parse_keyframe(char * cmd_tok, cmd_t * p_cmd)
     return PIXELKEY_ERROR_NONE;
 }
 
+void pixelkey_cmd_free(cmd_t * p_cmd)
+{
+    if (p_cmd == NULL)
+    {
+        return;
+    }
+
+    if (p_cmd->p_args != NULL)
+    {
+        if (p_cmd->type == CMD_TYPE_KEYFRAME_WRAPPER)
+        {
+            cmd_args_keyframe_wrapper_t * p_wrapper = (cmd_args_keyframe_wrapper_t *)p_cmd->p_args;
+            free(p_wrapper->p_keyframe);
+            p_wrapper->p_keyframe = NULL;
+        }
+        free(p_cmd->p_args);
+        p_cmd->p_args = NULL;
+    }
+
+    free(p_cmd);
+}
+
 void pixelkey_cmd_list_free(cmd_list_t * p_cmd_list)
 {
     while (p_cmd_list != NULL)
@@ -785,19 +807,7 @@ void pixelkey_cmd_list_free(cmd_list_t * p_cmd_list)
         // Free the command struct
         if (p_cmd_list->p_cmd != NULL)
         {
-            if (p_cmd_list->p_cmd->p_args != NULL)
-            {
-                if (p_cmd_list->p_cmd->type == CMD_TYPE_KEYFRAME_WRAPPER)
-                {
-                    cmd_args_keyframe_wrapper_t * p_wrapper = (cmd_args_keyframe_wrapper_t *)p_cmd_list->p_cmd->p_args;
-                    free(p_wrapper->p_keyframe);
-                    p_wrapper->p_keyframe = NULL;
-                }
-                free(p_cmd_list->p_cmd->p_args);
-                p_cmd_list->p_cmd->p_args = NULL;
-            }
-
-            free(p_cmd_list->p_cmd);
+            pixelkey_cmd_free(p_cmd_list->p_cmd);
             p_cmd_list->p_cmd = NULL;
         }
         // Save p_cmd_list to a temp variable, move the list forward, then free

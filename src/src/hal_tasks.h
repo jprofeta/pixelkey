@@ -16,8 +16,8 @@
  */
 #define TASK_LIST \
     XTASK(FRAME_RENDER, pixelkey_task_do_frame, Calculates the next frame.) \
-    XTASK(CMD_RX, pixelkey_task_command_rx, Command string reception and verification.) \
-    XTASK(CMD_HANDLER, pixelkey_task_command_handler, Command parsing and handling.)
+    XTASK(CMD_RX, pixelkey_task_command_rx, Command string reception and parsing.) \
+    XTASK(CMD_HANDLER, pixelkey_commandproc_task, Command handling.)
 
 
 #define XTASK(task,fn,doc)     TASK_ ## task /*!< doc See @ref fn. */,

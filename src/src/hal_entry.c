@@ -59,15 +59,10 @@ void hal_entry(void)
 {
     // Make sure NV is configured.
     config_register(&g_config);
-    config_data_t * p_data = NULL;
-    if (config()->read(&p_data) != PIXELKEY_ERROR_NONE)
+    if (config_validate() != PIXELKEY_ERROR_NONE)
     {
-        // Try to write the default values.
-        if (config()->write(config_default()) != PIXELKEY_ERROR_NONE)
-        {
-            // Something went wrong...
-            BKPT();
-        }
+        // Something went wrong...
+        BKPT();
     }
 
     config_data_t const * const p_config = config_get_or_default();
@@ -75,6 +70,8 @@ void hal_entry(void)
     // Setup initial data first.
     pixelkey_frameproc_init(p_config->framerate);
     color_gamma_build(p_config->gamma_factor);
+
+    pixelkey_commandproc_init();
 
     // Configure and open the peripherals
     npdata_open();

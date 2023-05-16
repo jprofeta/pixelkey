@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "pixelkey_errors.h"
 
@@ -41,7 +42,13 @@ typedef struct st_serial
      * @retval PIXELKEY_ERROR_NONE                  Flush was successful.
      * @retval PIXELKEY_ERROR_COMMUNICATION_ERROR   Communications error occurred.
      */
-    pixelkey_error_t (*flush)();
+    pixelkey_error_t (* flush)(void);
+
+    /**
+     * Get the state of the RTS signal.
+     * @return RTS signal state.
+     */
+    bool (* rts_get)(void);
 } serial_api_t;
 
 serial_api_t const * serial(void);

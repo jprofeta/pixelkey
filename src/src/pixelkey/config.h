@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
+#include <stddef.h>
 
 #include "pixelkey_errors.h"
 
@@ -26,16 +28,24 @@
  */
 typedef struct st_config_data
 {
-    uint16_t crc;                       ///< CRC-CCITT of all the following fields in the structure.
-    uint8_t  length;                    ///< Size of the configuration data struct at the time of save.
-    uint8_t  version;                   ///< Configuration struct version.
+    /** 
+     * Config header.
+     * @warning Modification or moving of this struct will break the config functions.
+     * @warning These fields should only be modified by the code in hal_flash.c.
+     */
+    struct
+    {
+        uint16_t crc;                   ///< CRC-CCITT of all the following fields in the structure.
+        uint8_t  length;                ///< Size of the configuration data struct at the time of save.
+        uint8_t  version;               ///< Configuration struct version.
+    } header;
     union
     {
         struct
         {
             uint32_t echo_enabled       :  1; ///< COM echo is enabled.
             uint32_t gamma_enabled      :  1; ///< Gamma correction is enabled. 
-            uint32_t                    : 31;
+            uint32_t                    : 30;
         } flags_b;                      ///< Configuration flags bit-field.
         uint32_t flags;                 ///< Configuration flags as a word.
     };
@@ -44,6 +54,11 @@ typedef struct st_config_data
     uint32_t num_neopixels;             ///< Number of attached neopixels.
 } config_data_t;
 #pragma pack(pop)
+
+static_assert(offsetof(config_data_t, header) == 0, "Config header must be the first element of config_data_t.");
+static_assert(offsetof(config_data_t, header.crc) == 0, "CRC must start at byte 0.");
+static_assert(offsetof(config_data_t, header.length) == 2, "Length must start at byte 2.");
+static_assert(offsetof(config_data_t, header.version) == 3, "Version must start at byte 3.");
 
 /** Configuration instance API. */
 typedef struct st_config_api
@@ -61,13 +76,14 @@ typedef struct st_config_api
      * @retval PIXELKEY_ERROR_NONE            Read was successful.
      * @retval PIXELKEY_ERROR_NV_MEMORY_ERROR NV memory error occurred on read.
      */
-    pixelkey_error_t (* read)(config_data_t const ** pp_config_data);
+    pixelkey_error_t (* read)(config_data_t ** pp_config_data);
 } config_api_t;
 
 config_api_t const * config(void);
 config_data_t const * config_default(void);
 config_data_t const * config_get_or_default(void);
 void config_register(config_api_t const * p_instance);
+pixelkey_error_t config_validate(void);
 
 /** @} */
 

@@ -62,10 +62,6 @@ Returns
 ```
 PixelKey vMM.mm.pp
 Current state: active|idle|stopped
-Keyframe pending? yes|no
-Time to next keyframe: ttt seconds
-Current keyframe: type
-Next keyframe: type
 OK
 ```
 
@@ -118,7 +114,7 @@ $version
 ```
 Returns
 ```
-PixelKey version MM.mm.pp
+MM.mm.pp
 OK
 ```
 where 

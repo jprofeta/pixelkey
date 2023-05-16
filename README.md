@@ -11,8 +11,9 @@ A simple NeoPixel USB Key powered by an RA4M1.
  - [X] Test keyframe processor
  - [X] USB enumeration
  - [X] Test USB serial echo
- - [ ] Implement USB to command buffer
- - [ ] Implement command parsing and handler
+ - [X] Implement USB to command buffer
+ - [X] Implement command parsing and handler
+ - [ ] Implement keyframe command handling
  - [ ] Add timesync and RTC functionality
  - [ ] Implement scheduled keyframes
  - [ ] Implement FW upgrade (maybe)

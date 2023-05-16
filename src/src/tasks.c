@@ -11,12 +11,14 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include "hal_device.h"
 #include "hal_tasks.h"
 #include "pixelkey.h"
 #include "neopixel.h"
 #include "serial.h"
+#include "config.h"
 
 #include "hal_npdata_transfer.h"
 
@@ -26,6 +28,7 @@
 WARNING_DISABLE("missing-prototypes")
 
 static void input_buffer_shift(uint32_t count, uint32_t length);
+static void echo_str(uint8_t * str, size_t length);
 
 /** Write index of the input buffer. */
 static size_t input_buffer_idx = 0;
@@ -64,6 +67,7 @@ void pixelkey_task_do_frame(void)
 void pixelkey_task_command_rx(void)
 {
     char err_str[64];
+    static int csi_start = -1;
 
     size_t read_length = PIXELKEY_INPUT_COMMAND_BUFFER_LENGTH - input_buffer_idx;
     serial()->read(&input_buffer[input_buffer_idx], &read_length);
@@ -71,9 +75,48 @@ void pixelkey_task_command_rx(void)
     // Scan the input for NEW-LINE symbols.
     for (int i = read_length; i > 0; i--)
     {
-        if ((input_buffer[input_buffer_idx] == (uint8_t) '\n')
+        if (csi_start >= 0)
+        {
+            uint8_t c = input_buffer[input_buffer_idx];
+            if ((input_buffer_idx - csi_start) >= 2 && c >= 0x40 && c <= 0x7E)  // The last char of the CSI sequence is 0x40-0x7E.
+            {
+                // This is the end of the CSI sequence, throw it away.
+                for (int j = 0; j < i - 1; j++)
+                {
+                    input_buffer[csi_start + j] = input_buffer[input_buffer_idx + j + 1];
+                }
+                input_buffer_idx = csi_start;
+                csi_start = -1;
+            }
+            else
+            {
+                input_buffer_idx++;
+            }
+        }
+        else if (input_buffer[input_buffer_idx] == '\x1B')
+        {
+            // Ignore any ASCII escape sequences
+            csi_start = input_buffer_idx;
+            input_buffer_idx++;
+        }
+        else if (input_buffer[input_buffer_idx] == (uint8_t) '\b')
+        {
+            // Handle backspace
+            char backspace_seq[] = "\b\x1B[0K"; // \b normally just moves the cursor back so throw in the escape code to clear the line.
+            echo_str((uint8_t *)backspace_seq, sizeof(backspace_seq) - 1);
+
+            // Decrement the write index and shift the buffer down.
+            input_buffer_idx--;
+            for (int j = 0; j < i - 1; j++) // i is the number of bytes remaining to be read.
+            {
+                input_buffer[input_buffer_idx + j] = input_buffer[input_buffer_idx + j + 2];
+            }
+        }
+        else if ((input_buffer[input_buffer_idx] == (uint8_t) '\n')
             || (input_buffer[input_buffer_idx] == (uint8_t) '\r'))
         {
+            echo_str(&input_buffer[input_buffer_idx], 1);
+
             input_buffer[input_buffer_idx] = (uint8_t) '\0';
 
             // Parse the command string.
@@ -120,6 +163,8 @@ void pixelkey_task_command_rx(void)
         else
         {
             // Increment the index to the next received character.
+            echo_str(&input_buffer[input_buffer_idx], 1);
+
             input_buffer_idx++;
         }
     }
@@ -138,6 +183,20 @@ static void input_buffer_shift(uint32_t count, uint32_t length)
         input_buffer[i] = input_buffer[j];
     }
     input_buffer_idx -= count;
+}
+
+/**
+ * Echos a string back to the serial interface if echo is enabled or if a terminal is detected.
+ * @param[in] str    Data to echo.
+ * @param     length Number of bytes to write.
+ */
+static void echo_str(uint8_t * str, size_t length)
+{
+    if (serial()->rts_get() || config_get_or_default()->flags_b.echo_enabled)
+    {
+        serial()->write(str, length);
+        serial()->flush();
+    }
 }
 
 /**

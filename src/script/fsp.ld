@@ -196,9 +196,10 @@ SECTIONS
 		. = ALIGN(128);
         KEEP(*(.mcuboot_sce9_key*))
 
+		KEEP(*(.version))
+
         *(.text*)
 
-        KEEP(*(.version))
         KEEP(*(.init))
         KEEP(*(.fini))
 
