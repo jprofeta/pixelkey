@@ -130,7 +130,7 @@ void hal_usb_idle(void)
             else if (USB_PCDC_SET_CONTROL_LINE_STATE == (event_info.setup.request_type & USB_BREQUEST))
             {
                 /* Line state is not sent as a data field, but as the control value instead.*/
-                line_state = *((usb_pcdc_ctrllinestate_t *)&event_info.setup.request_value);
+                memcpy(&line_state, &event_info.setup.request_value, sizeof(usb_pcdc_ctrllinestate_t));
                 err_code = g_usb.p_api->periControlStatusSet(&g_usb_ctrl, USB_SETUP_STATUS_ACK);
             }
             else

@@ -13,6 +13,7 @@
 #include "hal_device.h"
 #include "pixelkey.h"
 #include "neopixel.h"
+#include "config.h"
 
 #include "ring_buffer.h"
 
@@ -104,7 +105,15 @@ pixelkey_error_t pixelkey_keyframeproc_render_frame(color_rgb_t * p_frame_buffer
     // Write the colors to the frame buffer
     for (uint8_t i = 0; i < PIXELKEY_NEOPIXEL_COUNT; i++)
     {
-        p_frame_buffer[i] = current_color[i];
+        if (config_get_or_default()->flags_b.gamma_enabled)
+        {
+            // This will also move the color into the buffer.
+            color_gamma_correct(&current_color[i], &p_frame_buffer[i]);
+        }
+        else
+        {
+            p_frame_buffer[i] = current_color[i];
+        }
     }
 
     return PIXELKEY_ERROR_NONE;

@@ -40,8 +40,6 @@
 
 #define PIXELKEY_DEFAULT_COM_ECHO       (0)
 
-#define ECHO_USB 1
-
 void hal_usb_idle(void);
 
 /** @} */

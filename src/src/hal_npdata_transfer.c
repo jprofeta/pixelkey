@@ -171,7 +171,7 @@ static transfer_info_t npdata_secondary_xfr_info[] =
 // Create the rest of the standard API elements for the DTC since e2studio isn't doing it for us this time.
 /** @internal Secondary buffer DTC extended configuration. */
 static const dtc_extended_cfg_t npdata_secondary_xfr_extended = 
-{ .activation_source = VECTOR_NUMBER_DMAC2_INT };
+{ .activation_source = VECTOR_NUMBER_DMAC0_INT };
 
 /** @internal Secondary buffer transfer configuration. */
 static const transfer_cfg_t npdata_secondary_xfr_cfg =
@@ -201,12 +201,12 @@ static const transfer_instance_t npdata_secondary_xfr =
  */
 
 /**
- * DMAC2_INT ISR handler.
+ * DMAC_INT ISR handler.
  * @note This overrides the built-in FSP DMAC ISR.
  * 
  * This is setup to trigger on each repeat size completion.
  */
-void dmac2_repeat_isr(void)
+void dmac0_repeat_isr(void)
 {
     IRQn_Type irq = R_FSP_CurrentIrqGet();
 
@@ -215,9 +215,9 @@ void dmac2_repeat_isr(void)
 
     // If more blocks remain, we have to manually restart the DMAC.
     // If they are none left, stop the timer and keep the DMAC off.
-    if (R_DMAC2->DMCRB > 0U)
+    if (R_DMAC0->DMCRB > 0U)
     {
-        R_DMAC2->DMCNT = 1;
+        R_DMAC0->DMCNT = 1;
     }
     else
     {
@@ -291,11 +291,6 @@ static void push_data_to_buffer(uint32_t * const p_block)
 
         color_rgb_t color = g_npdata_frame[npdata_frame_idx];
 
-        if (config_get_or_default()->flags_b.gamma_enabled)
-        {
-            color_gamma_correct(&color, NULL);
-        }
-
         // NeoPixel data is transferred green-red-blue...
         npdata_color_word = (((uint32_t) color.green) << 16)
                             | (((uint32_t) color.red) << 8)
@@ -338,6 +333,7 @@ void npdata_frame_send(void)
     npdata_frame_idx = NPDATA_FRAME_IDX_DEFAULT;
     npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
     npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
+
     push_data_to_buffer((uint32_t *) npdata_gpt_buffer);
     for (size_t i = 0; i < NPDATA_SECONDARY_BUFFER_COUNT; i++)
     {
@@ -346,7 +342,8 @@ void npdata_frame_send(void)
 
     // Reconfigure the peripherals.
     // 1. Reset the DMAC source and block count.
-    g_npdata_transfer.p_api->reset(&g_npdata_transfer_ctrl, (void *) npdata_gpt_buffer, NULL, PIXELKEY_NEOPIXEL_COUNT * NEOPIXEL_CHANNEL_COUNT);
+    const uint16_t num_blocks = (uint16_t)((config_get_or_default()->num_neopixels * NEOPIXEL_COLOR_BITS) / NPDATA_GPT_BUFFER_LENGTH);
+    g_npdata_transfer.p_api->reset(&g_npdata_transfer_ctrl, (void *) npdata_gpt_buffer, NULL, num_blocks);
     // 2. Reset the DTC.
     npdata_secondary_xfr_info[0].p_src = default_npdata_secbuff_ptr;
     npdata_secondary_xfr_info[0].num_blocks = default_npdata_secbuff_block_count;
@@ -364,12 +361,19 @@ void npdata_frame_send(void)
     tasks_queue(TASK_FRAME_RENDER);
 }
 
-/** 
+/**
  * Opens the peripherals needed for data transmission to the NeoPixels.
 */
 void npdata_open(void)
 {
+    // Update the transfer info with the macro values
+    extern transfer_info_t g_npdata_transfer_info;
+    const uint16_t num_blocks = (uint16_t)((config_get_or_default()->num_neopixels * NEOPIXEL_COLOR_BITS) / NPDATA_GPT_BUFFER_LENGTH);
+    g_npdata_transfer_info.length = NPDATA_GPT_BUFFER_LENGTH;
+    g_npdata_transfer_info.num_blocks = num_blocks;
+
     g_npdata_timer.p_api->open(&g_npdata_timer_ctrl, &g_npdata_timer_cfg);
+
     g_npdata_transfer.p_api->open(&g_npdata_transfer_ctrl, &g_npdata_transfer_cfg);
     npdata_secondary_xfr.p_api->open(&npdata_secondary_xfr_ctrl, &npdata_secondary_xfr_cfg);
 

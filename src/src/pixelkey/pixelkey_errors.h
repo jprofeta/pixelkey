@@ -31,6 +31,7 @@ typedef enum e_pixelkey_error
     PIXELKEY_ERROR_CRC_MISMATCH = 33,               ///< Firmware upgrade image CRC does not match expected value.
 
     PIXELKEY_ERROR_OUT_OF_MEMORY = 48,              ///< No more memory is available in the heap.
+    PIXELKEY_ERROR_HAL_ERROR = 49,                  ///< An error occurred while changing hardware values.
 
 } pixelkey_error_t;
 

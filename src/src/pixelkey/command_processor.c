@@ -21,6 +21,7 @@
 #include "pixelkey.h"
 #include "pixelkey_errors.h"
 #include "pixelkey_commands.h"
+#include "pixelkey_hal.h"
 
 typedef void (*handler_fn_t)(void * p_cmd_args);
 
@@ -262,6 +263,7 @@ static void handler_config_set(void * p_cmd_args)
         if (config_error == PIXELKEY_ERROR_NONE)
         {
             pixelkey_keyframeproc_framerate_set((framerate_t)new_config.framerate);
+            config_error = pixelkey_hal_frame_timer_update((framerate_t)new_config.framerate);
         }
     }
     else if (!strcmp("num_neopixels", p_args->key))

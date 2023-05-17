@@ -156,17 +156,17 @@ transfer_info_t g_npdata_transfer_info =
   .transfer_settings_word_b.mode = TRANSFER_MODE_REPEAT,
   .p_dest = (void*) &R_GPT5->GTCCR[3],
   .p_src = (void const*) NULL,
-  .num_blocks = 12,
-  .length = 8, };
+  .num_blocks = 24,
+  .length = 4, };
 const dmac_extended_cfg_t g_npdata_transfer_extend =
 { .offset = 1, .src_buffer_size = 1,
-#if defined(VECTOR_NUMBER_DMAC2_INT)
-    .irq                 = VECTOR_NUMBER_DMAC2_INT,
+#if defined(VECTOR_NUMBER_DMAC0_INT)
+    .irq                 = VECTOR_NUMBER_DMAC0_INT,
 #else
   .irq = FSP_INVALID_VECTOR,
 #endif
   .ipl = (0),
-  .channel = 2, .p_callback = npdata_transfer_callback, .p_context = NULL, .activation_source =
+  .channel = 0, .p_callback = npdata_transfer_callback, .p_context = NULL, .activation_source =
           ELC_EVENT_GPT5_COUNTER_OVERFLOW, };
 const transfer_cfg_t g_npdata_transfer_cfg =
 { .p_info = &g_npdata_transfer_info, .p_extend = &g_npdata_transfer_extend, };
@@ -263,60 +263,6 @@ const timer_cfg_t g_npdata_timer_cfg =
 /* Instance structure to use this module. */
 const timer_instance_t g_npdata_timer =
 { .p_ctrl = &g_npdata_timer_ctrl, .p_cfg = &g_npdata_timer_cfg, .p_api = &g_timer_on_gpt };
-dmac_instance_ctrl_t g_transfer1_ctrl;
-transfer_info_t g_transfer1_info =
-{ .transfer_settings_word_b.dest_addr_mode = TRANSFER_ADDR_MODE_INCREMENTED,
-  .transfer_settings_word_b.repeat_area = TRANSFER_REPEAT_AREA_SOURCE,
-  .transfer_settings_word_b.irq = TRANSFER_IRQ_END,
-  .transfer_settings_word_b.chain_mode = TRANSFER_CHAIN_MODE_DISABLED,
-  .transfer_settings_word_b.src_addr_mode = TRANSFER_ADDR_MODE_FIXED,
-  .transfer_settings_word_b.size = TRANSFER_SIZE_2_BYTE,
-  .transfer_settings_word_b.mode = TRANSFER_MODE_BLOCK,
-  .p_dest = (void*) 0,
-  .p_src = (void const*) USB_SRC_ADDRESS,
-  .num_blocks = 0,
-  .length = 0, };
-const dmac_extended_cfg_t g_transfer1_extend =
-{ .offset = 0, .src_buffer_size = 1,
-#if defined(VECTOR_NUMBER_DMAC1_INT)
-    .irq                 = VECTOR_NUMBER_DMAC1_INT,
-#else
-  .irq = FSP_INVALID_VECTOR,
-#endif
-  .ipl = (3),
-  .channel = 1, .p_callback = NULL, .p_context = NULL, .activation_source = ELC_EVENT_USBFS_FIFO_0, };
-const transfer_cfg_t g_transfer1_cfg =
-{ .p_info = &g_transfer1_info, .p_extend = &g_transfer1_extend, };
-/* Instance structure to use this module. */
-const transfer_instance_t g_transfer1 =
-{ .p_ctrl = &g_transfer1_ctrl, .p_cfg = &g_transfer1_cfg, .p_api = &g_transfer_on_dmac };
-dmac_instance_ctrl_t g_transfer0_ctrl;
-transfer_info_t g_transfer0_info =
-{ .transfer_settings_word_b.dest_addr_mode = TRANSFER_ADDR_MODE_FIXED,
-  .transfer_settings_word_b.repeat_area = TRANSFER_REPEAT_AREA_DESTINATION,
-  .transfer_settings_word_b.irq = TRANSFER_IRQ_END,
-  .transfer_settings_word_b.chain_mode = TRANSFER_CHAIN_MODE_DISABLED,
-  .transfer_settings_word_b.src_addr_mode = TRANSFER_ADDR_MODE_INCREMENTED,
-  .transfer_settings_word_b.size = TRANSFER_SIZE_2_BYTE,
-  .transfer_settings_word_b.mode = TRANSFER_MODE_BLOCK,
-  .p_dest = (void*) USB_DEST_ADDRESS,
-  .p_src = (void const*) 0,
-  .num_blocks = 0,
-  .length = 0, };
-const dmac_extended_cfg_t g_transfer0_extend =
-{ .offset = 0, .src_buffer_size = 1,
-#if defined(VECTOR_NUMBER_DMAC0_INT)
-    .irq                 = VECTOR_NUMBER_DMAC0_INT,
-#else
-  .irq = FSP_INVALID_VECTOR,
-#endif
-  .ipl = (3),
-  .channel = 0, .p_callback = usb_ip0_d1fifo_callback, .p_context = NULL, .activation_source = ELC_EVENT_USBFS_FIFO_1, };
-const transfer_cfg_t g_transfer0_cfg =
-{ .p_info = &g_transfer0_info, .p_extend = &g_transfer0_extend, };
-/* Instance structure to use this module. */
-const transfer_instance_t g_transfer0 =
-{ .p_ctrl = &g_transfer0_ctrl, .p_cfg = &g_transfer0_cfg, .p_api = &g_transfer_on_dmac };
 usb_instance_ctrl_t g_usb_ctrl;
 
 #if !defined(g_usb_descriptor)
@@ -386,13 +332,13 @@ const usb_cfg_t g_usb_cfg =
 #else
   .p_context = &NULL,
 #endif
-#if (RA_NOT_DEFINED == g_transfer0)
+#if (RA_NOT_DEFINED == RA_NOT_DEFINED)
 #else
-  .p_transfer_tx = &g_transfer0,
+                .p_transfer_tx = &RA_NOT_DEFINED,
 #endif
-#if (RA_NOT_DEFINED == g_transfer1)
+#if (RA_NOT_DEFINED == RA_NOT_DEFINED)
 #else
-  .p_transfer_rx = &g_transfer1,
+                .p_transfer_rx = &RA_NOT_DEFINED,
 #endif
         };
 #undef RA_NOT_DEFINED

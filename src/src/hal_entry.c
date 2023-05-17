@@ -11,6 +11,7 @@
 #include "serial.h"
 #include "neopixel.h"
 #include "pixelkey.h"
+#include "pixelkey_hal.h"
 #include "keyframes.h"
 
 /* *****************************************************************************
@@ -34,7 +35,8 @@ extern const config_api_t g_config;
 
 void hal_frame_timer_callback(timer_callback_args_t * p_args)
 {
-    npdata_frame_send();
+    //npdata_frame_send();
+    tasks_queue(TASK_FRAME_TX);
 }
 
 void hal_rtc_callback(rtc_callback_args_t *p_args)
@@ -49,6 +51,27 @@ void hal_rtc_callback(rtc_callback_args_t *p_args)
         default:
             break;
     }
+}
+
+pixelkey_error_t pixelkey_hal_frame_timer_update(framerate_t new_framerate)
+{
+    const uint32_t new_period = R_BSP_SourceClockHzGet((fsp_priv_source_clock_t)BSP_CFG_CLOCK_SOURCE) / new_framerate;
+    fsp_err_t err = FSP_SUCCESS;
+
+    g_frame_timer.p_api->stop(&g_frame_timer_ctrl);
+    g_frame_timer.p_api->reset(&g_frame_timer_ctrl);
+
+    if (FSP_SUCCESS != g_frame_timer.p_api->periodSet(&g_frame_timer_ctrl, new_period))
+    {
+        return PIXELKEY_ERROR_HAL_ERROR;
+    }
+
+    if (FSP_SUCCESS != g_frame_timer.p_api->start(&g_frame_timer_ctrl))
+    {
+        return PIXELKEY_ERROR_HAL_ERROR;
+    }
+
+    return PIXELKEY_ERROR_NONE;
 }
 
 /*******************************************************************************************************************//**
@@ -76,7 +99,7 @@ void hal_entry(void)
     // Configure and open the peripherals
     npdata_open();
     g_frame_timer.p_api->open(&g_frame_timer_ctrl, &g_frame_timer_cfg);
-    g_frame_timer.p_api->start(&g_frame_timer_ctrl);
+    pixelkey_hal_frame_timer_update((framerate_t)p_config->framerate);
 
     g_usb.p_api->open(&g_usb_ctrl, &g_usb_cfg);
 
@@ -84,7 +107,6 @@ void hal_entry(void)
     serial_register(&g_usb_serial);
 
     /* Initial hardware testing. */
-    color_t c;
     keyframe_base_t * p_kf;
 
     keyframe_blink_t * p_kf_blink = (keyframe_blink_t *) keyframe_blink_ctor(NULL);

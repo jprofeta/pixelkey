@@ -130,8 +130,8 @@ FSP Configuration
       VSSUSB 11 USBFS0_VSSUSB - - - - - - - - IO "Read only" - 
     
   User Events
-    DMAC2 INT (DMAC transfer end 2): dmac2_repeat_isr
     DTC COMPLETE (DTC last transfer): dtc_complete_isr
+    DMAC0 INT (DMAC transfer end 0): dmac0_repeat_isr
     
   User Event Links
     
@@ -154,9 +154,9 @@ FSP Configuration
     Double Buffering: Enabled
     Continuous Transfer Mode: Not Supported
     LDO Regulator: Enabled
-    DMA Support: Enabled
-    DMA Source Address: FS Address
-    DMA Destination Address: FS Address
+    DMA Support: Disabled
+    DMA Source Address: DMA Disabled
+    DMA Destination Address: DMA Disabled
     USB Compliance Test mode: Disabled
     USB TPL table name: NULL
     
@@ -211,46 +211,6 @@ FSP Configuration
         USB RTOS Callback: NULL
         USB Callback Context: NULL
         
-        Instance "g_transfer0 Transfer (r_dmac) USBFS FIFO 1 (DMA transfer request 1)"
-          Name: g_transfer0
-          Channel: 0
-          Mode: Block
-          Transfer Size: 2 Bytes
-          Destination Address Mode: Fixed
-          Source Address Mode: Incremented
-          Repeat Area (Unused in Normal Mode): Destination
-          Destination Pointer: USB_DEST_ADDRESS
-          Source Pointer: 0
-          Number of Transfers: 0
-          Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 0
-          Activation Source: USBFS FIFO 1 (DMA transfer request 1)
-          Callback: usb_ip0_d1fifo_callback
-          Context: NULL
-          Transfer End Interrupt Priority: Priority 3
-          Interrupt Frequency: Interrupt after all transfers have completed
-          Offset value (Valid only when address mode is \'Offset\'): 0
-          Source Buffer Size: 1
-          
-        Instance "g_transfer1 Transfer (r_dmac) USBFS FIFO 0 (DMA transfer request 0)"
-          Name: g_transfer1
-          Channel: 1
-          Mode: Block
-          Transfer Size: 2 Bytes
-          Destination Address Mode: Incremented
-          Source Address Mode: Fixed
-          Repeat Area (Unused in Normal Mode): Source
-          Destination Pointer: 0
-          Source Pointer: USB_SRC_ADDRESS
-          Number of Transfers: 0
-          Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 0
-          Activation Source: USBFS FIFO 0 (DMA transfer request 0)
-          Callback: NULL
-          Context: NULL
-          Transfer End Interrupt Priority: Priority 3
-          Interrupt Frequency: Interrupt after all transfers have completed
-          Offset value (Valid only when address mode is \'Offset\'): 0
-          Source Buffer Size: 1
-          
     Instance "g_npdata_timer Timer, General PWM (r_gpt)"
       General: Name: g_npdata_timer
       General: Channel: 5
@@ -301,7 +261,7 @@ FSP Configuration
       
     Instance "g_npdata_transfer Transfer (r_dmac) GPT5 COUNTER OVERFLOW (Overflow)"
       Name: g_npdata_transfer
-      Channel: 2
+      Channel: 0
       Mode: Repeat
       Transfer Size: 4 Bytes
       Destination Address Mode: Fixed
@@ -309,8 +269,8 @@ FSP Configuration
       Repeat Area (Unused in Normal Mode): Source
       Destination Pointer: &R_GPT5->GTCCR[3]
       Source Pointer: NULL
-      Number of Transfers: 8
-      Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 12
+      Number of Transfers: 4
+      Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 24
       Activation Source: GPT5 COUNTER OVERFLOW (Overflow)
       Callback: npdata_transfer_callback
       Context: NULL

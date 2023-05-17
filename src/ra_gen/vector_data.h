@@ -6,15 +6,14 @@
         #endif
 /* Number of interrupts allocated */
 #ifndef VECTOR_DATA_IRQ_COUNT
-#define VECTOR_DATA_IRQ_COUNT    (11)
+#define VECTOR_DATA_IRQ_COUNT    (9)
 #endif
 /* ISR prototypes */
 void usbfs_interrupt_handler(void);
 void usbfs_resume_handler(void);
 void usbfs_d0fifo_handler(void);
 void usbfs_d1fifo_handler(void);
-void dmac_int_isr(void);
-void dmac2_repeat_isr(void);
+void dmac0_repeat_isr(void);
 void rtc_alarm_periodic_isr(void);
 void rtc_carry_isr(void);
 void gpt_counter_overflow_isr(void);
@@ -31,18 +30,14 @@ void dtc_complete_isr(void);
 #define USBFS_FIFO_1_IRQn          ((IRQn_Type) 3) /* USBFS FIFO 1 (DMA transfer request 1) */
 #define VECTOR_NUMBER_DMAC0_INT ((IRQn_Type) 4) /* DMAC0 INT (DMAC transfer end 0) */
 #define DMAC0_INT_IRQn          ((IRQn_Type) 4) /* DMAC0 INT (DMAC transfer end 0) */
-#define VECTOR_NUMBER_DMAC1_INT ((IRQn_Type) 5) /* DMAC1 INT (DMAC transfer end 1) */
-#define DMAC1_INT_IRQn          ((IRQn_Type) 5) /* DMAC1 INT (DMAC transfer end 1) */
-#define VECTOR_NUMBER_DMAC2_INT ((IRQn_Type) 6) /* DMAC2 INT (DMAC transfer end 2) */
-#define DMAC2_INT_IRQn          ((IRQn_Type) 6) /* DMAC2 INT (DMAC transfer end 2) */
-#define VECTOR_NUMBER_RTC_PERIOD ((IRQn_Type) 7) /* RTC PERIOD (Periodic interrupt) */
-#define RTC_PERIOD_IRQn          ((IRQn_Type) 7) /* RTC PERIOD (Periodic interrupt) */
-#define VECTOR_NUMBER_RTC_CARRY ((IRQn_Type) 8) /* RTC CARRY (Carry interrupt) */
-#define RTC_CARRY_IRQn          ((IRQn_Type) 8) /* RTC CARRY (Carry interrupt) */
-#define VECTOR_NUMBER_GPT0_COUNTER_OVERFLOW ((IRQn_Type) 9) /* GPT0 COUNTER OVERFLOW (Overflow) */
-#define GPT0_COUNTER_OVERFLOW_IRQn          ((IRQn_Type) 9) /* GPT0 COUNTER OVERFLOW (Overflow) */
-#define VECTOR_NUMBER_DTC_COMPLETE ((IRQn_Type) 10) /* DTC COMPLETE (DTC last transfer) */
-#define DTC_COMPLETE_IRQn          ((IRQn_Type) 10) /* DTC COMPLETE (DTC last transfer) */
+#define VECTOR_NUMBER_RTC_PERIOD ((IRQn_Type) 5) /* RTC PERIOD (Periodic interrupt) */
+#define RTC_PERIOD_IRQn          ((IRQn_Type) 5) /* RTC PERIOD (Periodic interrupt) */
+#define VECTOR_NUMBER_RTC_CARRY ((IRQn_Type) 6) /* RTC CARRY (Carry interrupt) */
+#define RTC_CARRY_IRQn          ((IRQn_Type) 6) /* RTC CARRY (Carry interrupt) */
+#define VECTOR_NUMBER_GPT0_COUNTER_OVERFLOW ((IRQn_Type) 7) /* GPT0 COUNTER OVERFLOW (Overflow) */
+#define GPT0_COUNTER_OVERFLOW_IRQn          ((IRQn_Type) 7) /* GPT0 COUNTER OVERFLOW (Overflow) */
+#define VECTOR_NUMBER_DTC_COMPLETE ((IRQn_Type) 8) /* DTC COMPLETE (DTC last transfer) */
+#define DTC_COMPLETE_IRQn          ((IRQn_Type) 8) /* DTC COMPLETE (DTC last transfer) */
 #ifdef __cplusplus
         }
         #endif

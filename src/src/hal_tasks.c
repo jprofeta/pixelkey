@@ -103,17 +103,17 @@ void tasks_run(task_fn_t idle_task)
     // Task execution is a priority round-robin queue.
     while (1)
     {
-        // Disable interrupts around modifying the task queue.
-        FSP_CRITICAL_SECTION_ENTER;
-        // Copy then clear the task queue list.
-        pending_tasks = queued_tasks;
-        queued_tasks = TASK_ID_NONE;
-        // Restore interrupts.
-        FSP_CRITICAL_SECTION_EXIT;
-
         // If there are pending tasks, execute them. Otherwise run the idle function.
-        if (pending_tasks)
+        if (queued_tasks)
         {
+            // Disable interrupts around modifying the task queue.
+            FSP_CRITICAL_SECTION_ENTER;
+            // Copy then clear the task queue list.
+            pending_tasks = queued_tasks;
+            queued_tasks = TASK_ID_NONE;
+            // Restore interrupts.
+            FSP_CRITICAL_SECTION_EXIT;
+
             task_id_t current_task = TASK_FLAG(0);
 
             // Loop through the tasks, executing as we go.

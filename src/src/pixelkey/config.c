@@ -108,27 +108,25 @@ pixelkey_error_t config_validate(void)
     }
     else
     {
-        // Load in the default values.
-        config_data_t upgraded_data = config_data_default;
-        const size_t header_len = sizeof(upgraded_data.header);
-
-        // Assume if the lengths are different it is a simple append operation.
-        if (p_data->header.length != config_data_default.header.length)
-        {
-            memcpy(((void *)&upgraded_data) + header_len,
-                    ((void *)p_data) + header_len,
-                    p_data->header.length - header_len);
-        }
-
         // Check to see if the NV memory needs advanced updating.
         if (p_data->header.version != config_data_default.header.version)
         {
             // This is a more complicated upgrade. Basically things are out of order.
             // Right now there is no use case for this.
         }
+        // Assume if the lengths are different it is a simple append operation.
+        else if (p_data->header.length != config_data_default.header.length)
+        {
+            // Load in the default values.
+            config_data_t upgraded_data = config_data_default;
+            const size_t header_len = sizeof(upgraded_data.header);
+            memcpy(((void *)&upgraded_data) + header_len,
+                    ((void *)p_data) + header_len,
+                    p_data->header.length - header_len);
 
-        // Write the updated config back.
-        err = registered_api->write(&upgraded_data);
+            // Write the updated config back.
+            err = registered_api->write(&upgraded_data);
+        }
     }
 
     return err;

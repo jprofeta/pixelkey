@@ -71,26 +71,6 @@ extern const timer_cfg_t g_npdata_timer_cfg;
 #ifndef NULL
 void NULL(timer_callback_args_t *p_args);
 #endif
-/* Transfer on DMAC Instance. */
-extern const transfer_instance_t g_transfer1;
-
-/** Access the DMAC instance using these structures when calling API functions directly (::p_api is not used). */
-extern dmac_instance_ctrl_t g_transfer1_ctrl;
-extern const transfer_cfg_t g_transfer1_cfg;
-
-#ifndef NULL
-void NULL(dmac_callback_args_t *p_args);
-#endif
-/* Transfer on DMAC Instance. */
-extern const transfer_instance_t g_transfer0;
-
-/** Access the DMAC instance using these structures when calling API functions directly (::p_api is not used). */
-extern dmac_instance_ctrl_t g_transfer0_ctrl;
-extern const transfer_cfg_t g_transfer0_cfg;
-
-#ifndef usb_ip0_d1fifo_callback
-void usb_ip0_d1fifo_callback(dmac_callback_args_t *p_args);
-#endif
 /* Basic on USB Instance. */
 extern const usb_instance_t g_usb;
 
