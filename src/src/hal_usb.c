@@ -38,7 +38,6 @@ typedef enum e_usb_op_state
     USB_OP_STATE_WRITE              ///< Write data processing is active.
 } usb_op_state_t;
 
-static void input_buffer_shift(uint32_t count, uint32_t length);
 static bool rx_start(void);
 static void rx_end(usb_event_info_t const * const p_event_info);
 static bool tx_start(void);

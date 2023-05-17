@@ -287,12 +287,13 @@ static void push_data_to_buffer(uint32_t * const p_block)
         npdata_color_bit = NEOPIXEL_COLOR_BITS - 1;
         npdata_frame_idx++;
 
-        color_rgb_t color = g_npdata_frame[npdata_frame_idx];
+        volatile color_rgb_t * p_color = &g_npdata_frame[npdata_frame_idx];
 
         // NeoPixel data is transferred green-red-blue...
-        npdata_color_word = (((uint32_t) color.green) << 16)
-                            | (((uint32_t) color.red) << 8)
-                            | ((uint32_t) color.blue);
+        // Copy it directly from the color_rgb_t struct.
+        // color_rgb_t should be in the correct order unless the static_asserts were changed.
+        uint32_t * p_color_u32 = (uint32_t *)(void *)p_color;
+        npdata_color_word = *p_color_u32;
     }
 
     // Write the data. NeoPixel data is written MSb first.

@@ -48,10 +48,14 @@ typedef enum e_color_space
 /** Color represented in red-green-blue color space. */
 typedef struct st_color_rgb
 {
+    uint8_t blue;        ///< Blue component.
     uint8_t red;         ///< Red component.
     uint8_t green;       ///< Green component.
-    uint8_t blue;        ///< Blue component. 
 } color_rgb_t;
+
+static_assert(offsetof(color_rgb_t, blue) == 0, "color_rgb_t layout must be B-R-G for ease of use converting to NeoPixel format.");
+static_assert(offsetof(color_rgb_t, red) == 1, "color_rgb_t layout must be B-R-G for ease of use converting to NeoPixel format.");
+static_assert(offsetof(color_rgb_t, green) == 2, "color_rgb_t layout must be B-R-G for ease of use converting to NeoPixel format.");
 
 /** Color represented in hue-saturation-value color space. */
 typedef struct st_color_hsv

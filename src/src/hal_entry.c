@@ -35,7 +35,7 @@ extern const config_api_t g_config;
 
 void hal_frame_timer_callback(timer_callback_args_t * p_args)
 {
-    //npdata_frame_send();
+    ARG_NOT_USED(p_args);
     tasks_queue(TASK_FRAME_TX);
 }
 
@@ -56,7 +56,6 @@ void hal_rtc_callback(rtc_callback_args_t *p_args)
 pixelkey_error_t pixelkey_hal_frame_timer_update(framerate_t new_framerate)
 {
     const uint32_t new_period = R_BSP_SourceClockHzGet((fsp_priv_source_clock_t)BSP_CFG_CLOCK_SOURCE) / new_framerate;
-    fsp_err_t err = FSP_SUCCESS;
 
     g_frame_timer.p_api->stop(&g_frame_timer_ctrl);
     g_frame_timer.p_api->reset(&g_frame_timer_ctrl);
