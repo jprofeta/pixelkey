@@ -22,6 +22,13 @@
 
 #include "hal_npdata_transfer.h"
 
+/** Position to begin looking for the CSI end character. */
+#define CSI_CHAR_END_START      (2U)
+/** Minimum value for the CSI end character. */
+#define CSI_CHAR_END_MIN_VALUE  (0x40U)
+/** Maximum value of the CSI end character. */
+#define CSI_CHAR_END_MAX_VALUE  (0x7EU)
+
 // Allow missing prototypes in this file.
 // The prototypes are auto-generated from the task list when they are used in hal_tasks.c.
 // The idea is that they should not be called by anyone other than the task manager.
@@ -73,19 +80,20 @@ void pixelkey_task_command_rx(void)
     serial()->read(&input_buffer[input_buffer_idx], &read_length);
 
     // Scan the input for NEW-LINE symbols.
-    for (int i = read_length; i > 0; i--)
+    for (size_t i = read_length; i > 0; i--)
     {
         if (csi_start >= 0)
         {
             uint8_t c = input_buffer[input_buffer_idx];
-            if ((input_buffer_idx - csi_start) >= 2 && c >= 0x40 && c <= 0x7E)  // The last char of the CSI sequence is 0x40-0x7E.
+            if ((input_buffer_idx - (size_t)csi_start) >= CSI_CHAR_END_START
+                    && c >= CSI_CHAR_END_MIN_VALUE && c <= CSI_CHAR_END_MAX_VALUE)
             {
                 // This is the end of the CSI sequence, throw it away.
-                for (int j = 0; j < i - 1; j++)
+                for (size_t j = 0; j < i - 1; j++)
                 {
-                    input_buffer[csi_start + j] = input_buffer[input_buffer_idx + j + 1];
+                    input_buffer[(size_t)csi_start + j] = input_buffer[input_buffer_idx + j + 1];
                 }
-                input_buffer_idx = csi_start;
+                input_buffer_idx = (size_t)csi_start;
                 csi_start = -1;
             }
             else
@@ -96,7 +104,7 @@ void pixelkey_task_command_rx(void)
         else if (input_buffer[input_buffer_idx] == '\x1B')
         {
             // Ignore any ASCII escape sequences
-            csi_start = input_buffer_idx;
+            csi_start = (int)input_buffer_idx;
             input_buffer_idx++;
         }
         else if (input_buffer[input_buffer_idx] == (uint8_t) '\b')
@@ -107,7 +115,7 @@ void pixelkey_task_command_rx(void)
 
             // Decrement the write index and shift the buffer down.
             input_buffer_idx--;
-            for (int j = 0; j < i - 1; j++) // i is the number of bytes remaining to be read.
+            for (size_t j = 0; j < i - 1; j++) // i is the number of bytes remaining to be read.
             {
                 input_buffer[input_buffer_idx + j] = input_buffer[input_buffer_idx + j + 2];
             }

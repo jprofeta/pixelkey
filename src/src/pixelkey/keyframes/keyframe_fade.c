@@ -13,6 +13,7 @@
 
 static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out);
 static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
+static keyframe_base_t * keyframe_fade_clone(keyframe_base_t * const p_keyframe);
 
 static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_axis_t axis, float ratio, color_hsv_t * p_out);
 static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, point_t * p_point);
@@ -25,6 +26,7 @@ static const keyframe_base_api_t keyframe_fade_api =
 {
     .render_frame = keyframe_fade_render_frame,
     .render_init = keyframe_fade_render_init,
+    .clone = keyframe_fade_clone,
 };
 
 /**
@@ -143,6 +145,19 @@ static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framer
     p_fade->state.pair_index = 0;
     p_fade->state.curr_b_point.x = 0.0f;
     p_fade->state.curr_b_point.y = 0.0f;
+}
+
+static keyframe_base_t * keyframe_fade_clone(keyframe_base_t * const p_keyframe)
+{
+    // Allocate a new keyframe and copy the values.
+    keyframe_fade_t * p_fade = malloc(sizeof(keyframe_fade_t));
+    if (p_fade == NULL)
+    {
+        return NULL;
+    }
+    memcpy(p_fade, p_keyframe, sizeof(keyframe_fade_t));
+
+    return &p_fade->base;
 }
 
 /**

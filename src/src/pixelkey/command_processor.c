@@ -22,7 +22,7 @@
 #include "pixelkey_errors.h"
 #include "pixelkey_commands.h"
 
-typedef void (*handler_fn)(void * p_cmd_args);
+typedef void (*handler_fn_t)(void * p_cmd_args);
 
 static void send_trailer(bool is_nak, pixelkey_error_t error);
 
@@ -35,12 +35,16 @@ static void handler_status(void * p_cmd_args);
 static void handler_version(void * p_cmd_args);
 static void handler_time_get(void * p_cmd_args);
 static void handler_time_set(void * p_cmd_args);
+static void handler_keyframe_wrapper(void * p_cmd_args);
+static void handler_keyframe_mod_repeat(void * p_cmd_args);
+static void handler_keyframe_mod_schedule(void * p_cmd_args);
+static void handler_keyframe_mod_group(void * p_cmd_args);
 
 static cmd_t * cmd_buffer_data[PIXELKEY_COMMAND_BUFFER_LENGTH] = {0};
 
 static ring_buffer_t cmd_buffer = {0};
 
-static handler_fn cmd_handlers[CMD_TYPE_COUNT] = 
+static handler_fn_t cmd_handlers[CMD_TYPE_COUNT] = 
 {
     [CMD_TYPE_CONFIG_GET] = handler_config_get,
     [CMD_TYPE_CONFIG_SET] = handler_config_set,
@@ -49,8 +53,15 @@ static handler_fn cmd_handlers[CMD_TYPE_COUNT] =
     [CMD_TYPE_STATUS]     = handler_status,
     [CMD_TYPE_VERSION]    = handler_version,
     [CMD_TYPE_TIME_GET]   = handler_time_get,
-    [CMD_TYPE_TIME_SET]   = handler_time_set
+    [CMD_TYPE_TIME_SET]   = handler_time_set,
+    [CMD_TYPE_KEYFRAME_WRAPPER] = handler_keyframe_wrapper,
+    [CMD_TYPE_KEYFRAME_MOD_REPEAT] = handler_keyframe_mod_repeat,
+    [CMD_TYPE_KEYFRAME_MOD_SCHEDULE] = handler_keyframe_mod_schedule,
+    [CMD_TYPE_KEYFRAME_MOD_GROUP] = handler_keyframe_mod_group,
 };
+
+static bool has_repeat_modifier = false;
+static int32_t repeat_modifier = 0;
 
 /**
  * Initialize the command processor.
@@ -90,7 +101,16 @@ void pixelkey_commandproc_task(void)
         }
         else
         {
-            cmd_handlers[p_cmd->type](p_cmd->p_args);
+            /// @todo Remove this check once all the handlers are implemented.
+            handler_fn_t handler = cmd_handlers[p_cmd->type];
+            if (handler)
+            {
+                handler(p_cmd->p_args);
+            }
+            else
+            {
+                send_trailer(true, PIXELKEY_ERROR_NONE);
+            }
         }
         
         pixelkey_cmd_free(p_cmd);
@@ -304,6 +324,80 @@ static void handler_time_get(void * p_cmd_args)
 }
 
 static void handler_time_set(void * p_cmd_args)
+{
+    send_trailer(true, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_keyframe_wrapper(void * p_cmd_args)
+{
+    cmd_args_keyframe_wrapper_t * p_args = (cmd_args_keyframe_wrapper_t *)p_cmd_args;
+    if (p_args->channels[0] == 0)
+    {
+        // No channels specified.
+        for (uint8_t i = 0; i < config_get_or_default()->num_neopixels; i++)
+        {
+            keyframe_base_t * p_keyframe = p_args->p_keyframe->p_api->clone(p_args->p_keyframe);
+            if (p_keyframe == NULL)
+            {
+                send_trailer(true, PIXELKEY_ERROR_OUT_OF_MEMORY);
+                return;
+            }
+
+            // Apply modifiers.
+            if (has_repeat_modifier)
+            {
+                p_keyframe->modifiers.repeat_count = repeat_modifier;
+            }
+
+            pixelkey_keyframeproc_push(i, p_keyframe);
+        }
+    }
+    else
+    {
+        // Loop through the channels.
+        // Values in p_args->channels are 1-based instead of 0-based like the actual indexes.
+        // Use 0 as a flag for the end of the channel list.
+        for (size_t i = 0; p_args->channels[i] != 0 && i < CMD_KEYFRAME_WRAPPER_CHANNELS_MAX_LENGTH; i++)
+        {
+            keyframe_base_t * p_keyframe = p_args->p_keyframe->p_api->clone(p_args->p_keyframe);
+            if (p_keyframe == NULL)
+            {
+                send_trailer(true, PIXELKEY_ERROR_OUT_OF_MEMORY);
+                return;
+            }
+
+            // Apply modifiers.
+            if (has_repeat_modifier)
+            {
+                p_keyframe->modifiers.repeat_count = repeat_modifier;
+            }
+
+            pixelkey_keyframeproc_push((uint8_t)(p_args->channels[i] - 1U), p_keyframe);
+        }
+    }
+
+    // Clear the modifiers
+    has_repeat_modifier = false;
+    repeat_modifier = 0;
+
+    send_trailer(false, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_keyframe_mod_repeat(void * p_cmd_args)
+{
+    cmd_args_keyframe_mod_repeat_t * p_args = (cmd_args_keyframe_mod_repeat_t *)p_cmd_args;
+    repeat_modifier = p_args->repeat_count;
+    has_repeat_modifier = true;
+
+    send_trailer(false, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_keyframe_mod_schedule(void * p_cmd_args)
+{
+    send_trailer(true, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_keyframe_mod_group(void * p_cmd_args)
 {
     send_trailer(true, PIXELKEY_ERROR_NONE);
 }

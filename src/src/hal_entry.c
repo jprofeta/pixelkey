@@ -68,7 +68,7 @@ void hal_entry(void)
     config_data_t const * const p_config = config_get_or_default();
 
     // Setup initial data first.
-    pixelkey_frameproc_init(p_config->framerate);
+    pixelkey_frameproc_init((framerate_t)p_config->framerate);
     color_gamma_build(p_config->gamma_factor);
 
     pixelkey_commandproc_init();
