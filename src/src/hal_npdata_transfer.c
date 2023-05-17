@@ -68,33 +68,33 @@
 
 #include "r_dtc.h"
 
-/** @internal Default value for @ref npdata_frame_idx. */
+/** Default value for @ref npdata_frame_idx. */
 #define NPDATA_FRAME_IDX_DEFAULT    (-1)
-/** @internal Default value for @ref npdata_color_bit. */
+/** Default value for @ref npdata_color_bit. */
 #define NPDATA_COLOR_BIT_DEFAULT    (UINT8_MAX)
-/** @internal Default value for @ref npdata_color_word. */
+/** Default value for @ref npdata_color_word. */
 #define NPDATA_COLOR_WORD_DEFAULT   (0U)
-/** @internal Mask for selecting the current data bit when converting color bytes to timing data. */
+/** Mask for selecting the current data bit when converting color bytes to timing data. */
 #define NPDATA_SHIFT_REG_MASK       (UINT32_C(1) << (NEOPIXEL_COLOR_BITS - 1))
+
+static void push_data_to_buffer(uint32_t * const p_block);
 
 /** NeoPixel frame buffer. */
 volatile color_rgb_t g_npdata_frame[PIXELKEY_NEOPIXEL_COUNT] = {0};
 
-static void push_data_to_buffer(uint32_t * const p_block);
-
-/** @internal GPT compare buffer for generating NeoPixel timing waveforms. */
+/** Primary GPT compare buffer for generating NeoPixel timing waveforms. */
 static volatile uint32_t npdata_gpt_buffer[NPDATA_GPT_BUFFER_LENGTH] = {0};
 
-/** @internal Secondary buffer for NeoPixel data used to fill npdata_gpt_buffer. */
+/** Secondary buffer for NeoPixel data used to fill npdata_gpt_buffer. */
 static volatile uint32_t npdata_secondary_buffer[NPDATA_SECONDARY_BUFFER_COUNT][NPDATA_GPT_BUFFER_LENGTH] = {0};
 
-/** @internal Current index to write to the secondary buffer. */
+/** Current index to write to the secondary buffer. */
 static volatile int32_t npdata_frame_idx = NPDATA_FRAME_IDX_DEFAULT;
 
-/** @internal Current bit to write to the secondary buffer. */
+/** Current bit to write to the secondary buffer. */
 static volatile uint8_t npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
 
-/** @internal Current full shift-register word for the color being written. */
+/** Current full shift-register word for the color being written. */
 static volatile uint32_t npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
 
 /**
@@ -102,15 +102,14 @@ static volatile uint32_t npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
  * @{
  */
 
-/** @internal The address of the ping-pong buffer needs to be saved somewhere so it can be reloaded by the DTC. */
+/** The address of the ping-pong buffer needs to be saved somewhere so it can be reloaded by the DTC. */
 static void const * const default_npdata_secbuff_ptr = (void *) npdata_secondary_buffer;
 
-/** @internal The number of blocks needs to be saved someplace so it can be reloaded by the DTC. */
+/** The number of blocks needs to be saved someplace so it can be reloaded by the DTC. */
 static const uint16_t default_npdata_secbuff_block_count = NPDATA_SECONDARY_BUFFER_COUNT;
 
 
 /**
- * @internal
  * Transfer info for the secondary buffer DTC operation. 
  * @note Since this requires a chain operation, it is simpler to configure it by hand than with e2 studio.
  * 
@@ -169,21 +168,21 @@ static transfer_info_t npdata_secondary_xfr_info[] =
 };
 
 // Create the rest of the standard API elements for the DTC since e2studio isn't doing it for us this time.
-/** @internal Secondary buffer DTC extended configuration. */
+/** Secondary buffer DTC extended configuration. */
 static const dtc_extended_cfg_t npdata_secondary_xfr_extended = 
 { .activation_source = VECTOR_NUMBER_DMAC0_INT };
 
-/** @internal Secondary buffer transfer configuration. */
+/** Secondary buffer transfer configuration. */
 static const transfer_cfg_t npdata_secondary_xfr_cfg =
 {
     .p_info = npdata_secondary_xfr_info,
     .p_extend = &npdata_secondary_xfr_extended
 };
 
-/** @internal Secondary buffer DTC instance control struct. */
+/** Secondary buffer DTC instance control struct. */
 static dtc_instance_ctrl_t npdata_secondary_xfr_ctrl;
 
-/** @internal Secondary buffer DTC instance. */
+/** Secondary buffer DTC instance. */
 static const transfer_instance_t npdata_secondary_xfr = 
 {
     .p_ctrl = &npdata_secondary_xfr_ctrl,
@@ -271,7 +270,6 @@ void dtc_complete_isr()
 /** @} */
 
 /**
- * @internal
  * Push new data to the secondary (or primary) buffer.
  * @param[in] p_block Pointer to the block to write the data to.
  */
