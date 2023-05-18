@@ -1,6 +1,6 @@
 # Error Codes
 
-The following error codes may be returned by the PixelKey.
+The following error codes may be returned by the PixelKey. For a full list of allocated error codes see the `pixelkey_error_t` enum in the [PixelKey documentation](https://jprofeta.github.io/pixelkey/group__pixelkey.html).
 
 | Value | Description |
 | :---: | :---------- |
