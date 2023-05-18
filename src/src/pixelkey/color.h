@@ -16,11 +16,19 @@
 #define RGB_MAX            (255U)
 /** Maximum value of an RGB color component as a float-32. */
 #define RGB_MAX_F32        (255.0f)
+/** Total range of RGB values. */
+#define RGB_RANGE          (256U)
+/** Total range of RGB values as a float-32. */
+#define RGB_RANGE_F32      (256.0f)
 
 /** Maximum value of hue. */
 #define HUE_MAX            (359U)
 /** Maximum value of hue as a float-32. */
 #define HUE_MAX_F32        (359.0f)
+/** Total range of hue values. */
+#define HUE_RANGE          (360U)
+/** Total range of hue values as a float-32. */
+#define HUE_RANGE_F32      (360.0f)
 
 /** Maximum value of saturation. */
 #define SATURATION_MAX     (100U)

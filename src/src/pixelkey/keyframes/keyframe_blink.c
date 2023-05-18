@@ -16,7 +16,7 @@
 
 static bool keyframe_blink_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out);
 static void keyframe_blink_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
-static keyframe_base_t * keyframe_blink_clone(keyframe_base_t * const p_keyframe);
+static keyframe_base_t * keyframe_blink_clone(keyframe_base_t const * const p_keyframe);
 
 /**
  * @internal
@@ -111,7 +111,7 @@ static void keyframe_blink_render_init(keyframe_base_t * const p_keyframe, frame
     p_blink->state.transition_time = (timestep_t) ((p_blink->state.finish_time * p_blink->args.duty_cycle) / 100);
 }
 
-static keyframe_base_t * keyframe_blink_clone(keyframe_base_t * const p_keyframe)
+static keyframe_base_t * keyframe_blink_clone(keyframe_base_t const * const p_keyframe)
 {
     // Allocate a new keyframe and copy the values.
     keyframe_blink_t * p_blink = malloc(sizeof(keyframe_blink_t));

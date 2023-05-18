@@ -624,7 +624,7 @@ void color_gamma_build(float gamma)
 {
     for (size_t i = 0; i < sizeof(gamma_table)/sizeof(gamma_table[0]); i++)
     {
-        gamma_table[i] = (uint8_t)(RGB_MAX_F32 * powf(((float) i)/RGB_MAX_F32, gamma) + 0.5);
+        gamma_table[i] = (uint8_t)(RGB_MAX_F32 * powf(((float) i) / RGB_MAX_F32, gamma) + 0.5);
     }
 }
 

@@ -9,6 +9,8 @@
 #include "pixelkey_commands.h"
 #include "pixelkey_errors.h"
 
+#include "color.h"
+
 cmd_list_t * p_list = NULL;
 
 TEST_GROUP(command_parse);
@@ -387,6 +389,12 @@ TEST(command_parse, keyframe_fade)
 
     cmd_args_keyframe_wrapper_t * p_wrapper = (cmd_args_keyframe_wrapper_t *)p_list->p_cmd->p_args;
     TEST_ASSERT_NOT_NULL(p_wrapper->p_keyframe);
+
+    keyframe_fade_t * p_fade = (keyframe_fade_t *)p_wrapper->p_keyframe;
+    TEST_ASSERT_EQUAL(2, p_fade->args.colors_len);
+
+    TEST_ASSERT_EQUAL(color_red.hsv.hue, p_fade->args.colors[0].hue);
+    TEST_ASSERT_EQUAL(color_blue.hsv.hue, p_fade->args.colors[1].hue);
 
     pixelkey_cmd_list_free(p_list);
     p_list = NULL;

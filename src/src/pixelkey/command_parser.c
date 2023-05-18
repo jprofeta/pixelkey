@@ -763,7 +763,7 @@ static pixelkey_error_t parse_keyframe(char * cmd_tok, cmd_t * p_cmd)
     }
     else if (!strcmp("fade", next_arg))
     {
-        p_wrapper->p_keyframe = keyframe_blink_parse(remaining_args);
+        p_wrapper->p_keyframe = keyframe_fade_parse(remaining_args);
         if (p_wrapper->p_keyframe == NULL)
         {
             return PIXELKEY_ERROR_INVALID_ARGUMENT;

@@ -84,7 +84,7 @@ typedef struct st_keyframe_base_api
      * @param[in] p_keyframe Pointer to the keyframe to copy.
      * @return Pointer to the cloned keyframe or NULL on failure.
      */
-    keyframe_base_t * (* clone)(keyframe_base_t * const p_keyframe);
+    keyframe_base_t * (* clone)(keyframe_base_t const * const p_keyframe);
 } keyframe_base_api_t;
 
 /** Provides scheduled time information for keyframes. */

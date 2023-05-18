@@ -83,11 +83,12 @@ typedef struct st_keyframe_fade
     /** Keyframe render state. */
     struct
     {
-        fade_axis_t fade_axis;    ///< Which axis of the colors need to be faded.
-        timestep_t  color_period; ///< The period to transition between each pair of colors.
-        timestep_t  finish_time;  ///< Total number of frames for this keyframe at the current framerate.
-        uint8_t     pair_index;   ///< Index of the first color of the currently transitioning pair.
-        point_t     curr_b_point; ///< The current bezier point to render.
+        fade_axis_t fade_axis;   ///< Which axis of the colors need to be faded.
+        timestep_t  pair_period; ///< The period to transition between each pair of colors.
+        timestep_t  finish_time; ///< Total number of frames for this keyframe at the current framerate.
+        uint8_t     pair_index;  ///< Index of the first color of the currently transitioning pair.
+        point_t     curr_b_info; ///< The current bezier point to render.
+        framerate_t framerate;   ///< Framerate currently being used.
     } state;
 } keyframe_fade_t;
 

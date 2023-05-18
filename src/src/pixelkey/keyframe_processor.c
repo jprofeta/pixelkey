@@ -148,6 +148,14 @@ pixelkey_error_t pixelkey_keyframeproc_push(uint8_t index, keyframe_base_t * p_k
 void pixelkey_keyframeproc_framerate_set(framerate_t framerate)
 {
     current_framerate = framerate;
+
+    // The keyframes need to be re-initialized with the new framerate.
+    // This will completely restart the keyframe, but it is either that or throw them out.
+    for (size_t i = 0; i < PIXELKEY_NEOPIXEL_COUNT; i++)
+    {
+        current_framecount[i] = 0;
+        init_keyframe(current_keyframe[i], &current_color[i]);
+    }
 }
 
 /**

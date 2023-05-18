@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
 #include "pixelkey.h"
 #include "keyframes.h"
@@ -13,13 +14,12 @@
 
 static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, timestep_t time, color_rgb_t * p_color_out);
 static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framerate_t framerate, color_rgb_t current_color);
-static keyframe_base_t * keyframe_fade_clone(keyframe_base_t * const p_keyframe);
+static keyframe_base_t * keyframe_fade_clone(keyframe_base_t const * const p_keyframe);
 
 static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_axis_t axis, float ratio, color_hsv_t * p_out);
 static void cubic_bezier_calc(cubic_bezier_t const * const p_curve, float t, point_t * p_point);
 
 /**
- * @private
  * Fade keyframe API function pointers.
  */
 static const keyframe_base_api_t keyframe_fade_api =
@@ -30,7 +30,6 @@ static const keyframe_base_api_t keyframe_fade_api =
 };
 
 /**
- * @private
  * Default values for fade keyframe structs.
  */
 static const keyframe_fade_t keyframe_fade_init = 
@@ -62,37 +61,45 @@ static bool keyframe_fade_render_frame(keyframe_base_t * const p_keyframe, times
 
     // Increment the pair index if we should be at a new one.
     // This assumes time increases monotonically. If for some reason it doesn't, the fade will be broken anyway.
-    if (time == (p_fade->state.pair_index + 1) * p_fade->state.color_period)
+    if (time == (p_fade->state.pair_index + 1) * p_fade->state.pair_period)
     {
         p_fade->state.pair_index += 1;
+        p_fade->state.curr_b_info = (point_t) { 0.0f, 0.0f };
     }
-
-    // Get the time relative to the start of this pair's transition.
-    // This is used to index the bezier curve later.
-    timestep_t relative_time = time - (p_fade->state.color_period * p_fade->state.pair_index);
-    point_t bezier_point = {0};
-
-    // Calculate the ratio for the interpolation index, then get the bezier point.
-    float t = ((float) relative_time) / ((float) p_fade->state.color_period);
-    cubic_bezier_calc(&p_fade->args.curve, t, &bezier_point);
-
-    // Scale the x by the fading period so it can be directly compared to relative_time.
-    bezier_point.x *= (float) p_fade->state.color_period;
-    if (((float) relative_time) >= bezier_point.x)
+    
+    if (p_fade->args.fade_type == FADE_TYPE_STEP)
     {
-        // This frame is "ahead" of the curve so update the current curve point.
-        p_fade->state.curr_b_point = bezier_point;
+        // Just output the color. Nice and simple.
+        color_convert2(COLOR_SPACE_HSV, COLOR_SPACE_RGB,
+                        (color_kind_t *) &p_fade->args.colors[p_fade->state.pair_index],
+                        (color_kind_t *)p_color_out);
     }
-    // else: No updated to the curve for this round, this frame is "behind". Fade based on the stored point.
+    else // p_fade->args.fade_type == FADE_TYPE_CUBIC
+    {
+        // Get the time relative to the start of this pair's transition.
+        // This is used to index the bezier curve.
+        float relative_time = ((float) time) /  ((float) p_fade->state.pair_period) - ((float) p_fade->state.pair_index);
 
-    color_hsv_t blended_color;
-    blend_colors(&p_fade->args.colors[p_fade->state.pair_index],
-                    &p_fade->args.colors[p_fade->state.pair_index + 1],
-                    p_fade->state.fade_axis,
-                    p_fade->state.curr_b_point.y,
-                    &blended_color);
-    color_convert2(COLOR_SPACE_HSV, COLOR_SPACE_RGB, (color_kind_t *) &blended_color, (color_kind_t *)p_color_out);
+        if (relative_time >= p_fade->state.curr_b_info.x)
+        {
+            float apparent_time = relative_time;
+            while (relative_time > p_fade->state.curr_b_info.x && apparent_time <= 1.0)
+            {
+                cubic_bezier_calc(&p_fade->args.curve, apparent_time, &p_fade->state.curr_b_info);
+                apparent_time += 1.0f / ((float) p_fade->state.framerate);
+            }
+        }
 
+        color_hsv_t blended_color;
+        blend_colors(&p_fade->args.colors[p_fade->state.pair_index],
+                        &p_fade->args.colors[p_fade->state.pair_index + 1],
+                        p_fade->state.fade_axis,
+                        p_fade->state.curr_b_info.y,
+                        &blended_color);
+
+        // Convert and write the blended color to the output.
+        color_convert2(COLOR_SPACE_HSV, COLOR_SPACE_RGB, (color_kind_t *) &blended_color, (color_kind_t *)p_color_out);
+    }
     return time >= p_fade->state.finish_time;
 }
 
@@ -135,19 +142,22 @@ static void keyframe_fade_render_init(keyframe_base_t * const p_keyframe, framer
     }
     p_fade->state.fade_axis = axis;
 
+    // Save the framerate
+    p_fade->state.framerate = framerate;
+
     // Calculate the total time for the keyframe.
     p_fade->state.finish_time = (timestep_t) (p_fade->args.period * ((float) framerate));
 
-    // Calculate the period between each color.
-    p_fade->state.color_period = (timestep_t) (p_fade->state.finish_time / (p_fade->args.colors_len - 1)); 
+    // Calculate the period between each pair of colors.
+    p_fade->state.pair_period = (timestep_t) (p_fade->state.finish_time / (p_fade->args.colors_len - 1)); 
 
     // Set default values.
     p_fade->state.pair_index = 0;
-    p_fade->state.curr_b_point.x = 0.0f;
-    p_fade->state.curr_b_point.y = 0.0f;
+    p_fade->state.curr_b_info.x = 0.0f;
+    p_fade->state.curr_b_info.y = 0.0f;
 }
 
-static keyframe_base_t * keyframe_fade_clone(keyframe_base_t * const p_keyframe)
+static keyframe_base_t * keyframe_fade_clone(keyframe_base_t const * const p_keyframe)
 {
     // Allocate a new keyframe and copy the values.
     keyframe_fade_t * p_fade = malloc(sizeof(keyframe_fade_t));
@@ -175,7 +185,33 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
     if (axis & FADE_AXIS_HUE)
     {
         float hue_delta = (float) (p_b->hue - p_a->hue);
-        p_out->hue = p_a->hue + (uint16_t) (ratio * hue_delta);
+        if (fabsf(hue_delta) > HUE_RANGE_F32 / 2.0f)
+        {
+            // Change the "direction" of hue_delta so it goes around the hue circle in the expected direction.
+            // For example, a transition from red (#FF0000) -> blue (#0000FF) should go through
+            // magenta (#FF00FF) and not through green (#00FF00).
+            if (hue_delta > 0)
+            {
+                hue_delta = -HUE_RANGE_F32 + hue_delta;
+            }
+            else
+            {
+                hue_delta = HUE_RANGE_F32 + hue_delta;
+            }
+        }
+
+        float out_hue = (float)p_a->hue + ratio * hue_delta;
+
+        if (out_hue >= HUE_RANGE_F32)
+        {
+            out_hue = HUE_RANGE_F32 - out_hue;
+        }
+        else if (out_hue < 0)
+        {
+            out_hue = HUE_RANGE_F32 + out_hue;
+        }
+
+        p_out->hue = (uint16_t)out_hue;
     }
     else
     {
@@ -247,6 +283,10 @@ keyframe_base_t * keyframe_fade_parse(char * p_str)
     }
 
     keyframe_fade_t * p_fade = (keyframe_fade_t *) keyframe_fade_ctor(NULL);
+    if (p_fade == NULL)
+    {
+        return NULL;
+    }
 
     bool has_error = true;
     do
@@ -307,6 +347,7 @@ keyframe_base_t * keyframe_fade_parse(char * p_str)
                 break;
             }
             p_fade->args.colors[p_fade->args.colors_len++] = hsv.hsv;
+            p_color_tok = strtok_r(NULL, ":", &p_color_context);
         }
 
         // Exit parsing if an error occurred while parsing the colors.
@@ -452,6 +493,10 @@ keyframe_base_t * keyframe_fade_ctor(keyframe_fade_t * p_fade)
     if (p_fade == NULL)
     {
         p_fade = malloc(sizeof(keyframe_fade_t));
+        if (p_fade == NULL)
+        {
+            return NULL;
+        }
         memcpy(p_fade, &keyframe_fade_init, sizeof(*p_fade));
     }
     else
