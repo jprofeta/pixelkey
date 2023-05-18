@@ -19,7 +19,7 @@
 
 #ifndef max
 /** Maximum of two values. */
-#define max(a,b)    ((a) > (b) ? (a) : (b))
+#define max(a,b)    ((a) >= (b) ? (a) : (b))
 #endif
 
 #ifndef min
@@ -33,10 +33,10 @@
 /** Red: #FF0000. */
 const color_t color_red         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0, 100, 100 } };
 
-/** Orange: #FF0000. */
+/** Orange: #FF8000. */
 const color_t color_orange      = { .color_space = COLOR_SPACE_HSV, .hsv = {  30, 100, 100 } };
 
-/** Yellow: #FF8000. */
+/** Yellow: #FFFF00. */
 const color_t color_yellow      = { .color_space = COLOR_SPACE_HSV, .hsv = {  60, 100, 100 } };
 
 /** Neon: #80FF00. */
@@ -122,7 +122,7 @@ static void color_convert_rgb(color_space_t from, color_kind_t const * p_in, col
             float l = (float) p_in->hsl.lightness / LIGHTNESS_MAX_F32;
 
             float chroma = s * (1.0f - fabsf(2.0f * l - 1.0f));
-            float x = chroma * (1.0f - fabsf((float)(h & 1) - 1.0f));
+            float x = chroma * (1.0f - fabsf(fmodf(((float)p_in->hsv.hue / HUE_SECTOR_SIZE_F32), 2.0f) - 1.0f));
             float m = l - chroma / 2.0f;
 
             switch (h)
@@ -167,38 +167,38 @@ static void color_convert_rgb(color_space_t from, color_kind_t const * p_in, col
             float v = (float) p_in->hsv.value / VALUE_MAX_F32;
 
             float chroma = v * s;
-            float x = chroma * (1.0f - fabsf((float)(h & 1) - 1.0f));
+            float x = chroma * (1.0f - fabsf(fmodf(((float)p_in->hsv.hue / HUE_SECTOR_SIZE_F32), 2.0f) - 1.0f));
             float m = v - chroma;
 
             switch (h)
             {
                 case 0:
-                    p_out->red = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * v);
                     p_out->green = (uint8_t) (RGB_MAX_F32 * (x + m));
                     p_out->blue = (uint8_t) (RGB_MAX_F32 * m);
                     break;
                 case 1:
                     p_out->red = (uint8_t) (RGB_MAX_F32 * (x + m));
-                    p_out->green = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * v);
                     p_out->blue = (uint8_t) (RGB_MAX_F32 * m);
                     break;
                 case 2:
                     p_out->red = (uint8_t) (RGB_MAX_F32 * m);
-                    p_out->green = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->green = (uint8_t) (RGB_MAX_F32 * v);
                     p_out->blue = (uint8_t) (RGB_MAX_F32 * (x + m));
                     break;
                 case 3:
                     p_out->red = (uint8_t) (RGB_MAX_F32 * m);
                     p_out->green = (uint8_t) (RGB_MAX_F32 * (x + m));
-                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * v);
                     break;
                 case 4:
                     p_out->red = (uint8_t) (RGB_MAX_F32 * (x + m));
                     p_out->green = (uint8_t) (RGB_MAX_F32 * m);
-                    p_out->blue = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->blue = (uint8_t) (RGB_MAX_F32 * v);
                     break;
                 default:
-                    p_out->red = (uint8_t) (RGB_MAX_F32 * (chroma + m));
+                    p_out->red = (uint8_t) (RGB_MAX_F32 * v);
                     p_out->green = (uint8_t) (RGB_MAX_F32 * m);
                     p_out->blue = (uint8_t) (RGB_MAX_F32 * (x + m));
                     break;
@@ -244,16 +244,21 @@ static void color_convert_hsv(color_space_t from, color_kind_t const * p_in, col
         {
             const color_rgb_t rgb = p_in->rgb;
 
-            uint8_t M = (uint8_t) max(rgb.red, max(rgb.green, rgb.blue));
-            uint8_t m = (uint8_t) min(rgb.red, min(rgb.green, rgb.blue));
-            uint8_t chroma = M - m;
+            uint8_t M = (uint8_t) max(max(rgb.green, rgb.blue), rgb.red);
+            uint8_t m = (uint8_t) min(min(rgb.green, rgb.blue), rgb.red);
+            uint8_t chroma = (uint8_t)(M - m);  // This cast is here just to shut-up GCC when running unit tests.
 
             float h = 0;
             if (chroma > 0)
             {
                 if (M == rgb.red)
                 {
-                    h = fmodf(((float) (rgb.green - rgb.blue)) / ((float) chroma), 6.0f);
+                    h = ((float) (rgb.green - rgb.blue)) / ((float) chroma);
+                    // Correct if this wraps around to negative hue.
+                    if (h < 0)
+                    {
+                        h = 6.0f + h;
+                    }
                 }
                 else if (M == rgb.green)
                 {
@@ -322,14 +327,19 @@ static void color_convert_hsl(color_space_t from, color_kind_t const * p_in, col
 
             uint8_t M = (uint8_t) max(rgb.red, max(rgb.green, rgb.blue));
             uint8_t m = (uint8_t) min(rgb.red, min(rgb.green, rgb.blue));
-            uint8_t chroma = M - m;
+            uint8_t chroma = (uint8_t)(M - m);  // This cast is here just to shut-up GCC when running unit tests.
 
             float h = 0;
             if (chroma > 0)
             {
                 if (M == rgb.red)
                 {
-                    h = fmodf(((float) (rgb.green - rgb.blue)) / ((float) chroma), 6.0f);
+                    h = ((float) (rgb.green - rgb.blue)) / ((float) chroma);
+                    // Correct if this wraps around to negative hue.
+                    if (h < 0)
+                    {
+                        h = 6.0f + h;
+                    }
                 }
                 else if (M == rgb.green)
                 {

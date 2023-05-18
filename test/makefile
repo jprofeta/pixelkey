@@ -23,9 +23,10 @@ INCLUDE_PATHS += $(PIXELKEY_SRC) $(PIXELKEY_SRC)/pixelkey $(PIXELKEY_SRC)/pixelk
 
 INCLUDE_FLAGS := $(addprefix -I,$(INCLUDE_PATHS))
 
-SRCS := ./test/pixelkey_test.c 
+SRCS := ./test/pixelkey_test.c ./test/pixelkey_stubs.c
 SRCS += $(shell find $(TESTS_SRC) -iname '*.c')
 SRCS += $(shell find $(PIXELKEY_SRC)/pixelkey -iname '*.c')
+SRCS += $(PIXELKEY_SRC)/version.c
 SRCS += $(UNITY_SRC)/src/unity.c $(UNITY_SRC)/extras/fixture/src/unity_fixture.c $(UNITY_SRC)/extras/memory/src/unity_memory.c
 
 # Prepends BUILD_DIR and appends .o to every src file

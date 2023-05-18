@@ -12,5 +12,6 @@ int main(int argc, const char* argv[])
 
 static void runAllTests(void)
 {
+    RUN_TEST_GROUP(color);
     RUN_TEST_GROUP(command_parse);
 }

@@ -45,7 +45,11 @@ typedef enum e_color_space
     COLOR_SPACE_HSL,     ///< Hue-saturation-lightness color space.
 } color_space_t;
 
-/** Color represented in red-green-blue color space. */
+/**
+ * Color represented in red-green-blue color space.
+ * @note The colors are represented internally as [blue, red, green] to be
+ *       binary compatible with the NeoPixel color format.
+ */
 typedef struct st_color_rgb
 {
     uint8_t blue;        ///< Blue component.
