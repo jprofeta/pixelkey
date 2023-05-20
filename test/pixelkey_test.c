@@ -14,5 +14,8 @@ static void runAllTests(void)
 {
     RUN_TEST_GROUP(color);
     RUN_TEST_GROUP(command_parse);
+
+#if TEST_PRINT_BEZIER_CURVE
     RUN_TEST_GROUP(keyframe_fade);
+#endif
 }

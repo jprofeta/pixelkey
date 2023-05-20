@@ -319,12 +319,19 @@ volatile color_rgb_t * npdata_frame_buffer_get(void)
  */
 void npdata_frame_send(void)
 {
-    // Check for a transmitting frame.
-    timer_status_t status;
-    g_npdata_timer.p_api->statusGet(&g_npdata_timer_ctrl, &status);
-    if (status.state == TIMER_STATE_COUNTING)
+#if CHECK_RENDER_UNDERFLOW
+    static uint32_t last_framecount = 0;
+    uint32_t current_framecount = pixelkey_keyframeproc_framecount_get();
+    if (current_framecount == last_framecount)
     {
-        /// @todo Add frame overrun logging/counter.
+        LOG_SIGNAL(DIAG_SIGNAL_RENDER_UNDERFLOW);
+    }
+#endif
+
+    // Check for a transmitting frame.
+    if (npdata_status_get() == TRANSFER_STATUS_WORKING)
+    {
+        LOG_SIGNAL(DIAG_SIGNAL_NPDATA_OVERFLOW);
         return;
     }
 
@@ -388,7 +395,6 @@ void npdata_color_set(uint32_t index, color_rgb_t const * const p_color)
 {
     if (index > PIXELKEY_NEOPIXEL_COUNT)
     {
-        /// @todo Log frame index out of range?
         return;
     }
 

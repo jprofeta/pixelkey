@@ -89,7 +89,8 @@ void hal_usb_idle(void)
 
     if (err_code != FSP_SUCCESS)
     {
-        /// @todo Log USB error on eventGet failure.
+        LOG_SIGNAL(DIAG_SIGNAL_USB_ERROR);
+        LOG_COUNTER(DIAG_COUNTER_USB_OPERATION_ERROR);
         BKPT();
         return;
     }
@@ -168,7 +169,8 @@ void hal_usb_idle(void)
 
     if (err_code != FSP_SUCCESS)
     {
-        /// @todo Log USB error on response operation failure.
+        LOG_SIGNAL(DIAG_SIGNAL_USB_ERROR);
+        LOG_COUNTER(DIAG_COUNTER_USB_OPERATION_ERROR);
         BKPT();
         return;
     }
@@ -194,7 +196,8 @@ static bool rx_start(void)
     }
     else if (err != FSP_SUCCESS)
     {
-        /// @todo Log USB error from data read.
+        LOG_SIGNAL(DIAG_SIGNAL_USB_ERROR);
+        LOG_COUNTER(DIAG_COUNTER_USB_READ_ERROR);
         BKPT();
         return false;
     }
@@ -238,7 +241,8 @@ static bool tx_start(void)
     }
     else if (err != FSP_SUCCESS)
     {
-        /// @todo Log USB error from data read.
+        LOG_SIGNAL(DIAG_SIGNAL_USB_ERROR);
+        LOG_COUNTER(DIAG_COUNTER_USB_WRITE_ERROR);
         BKPT();
         return false;
     }

@@ -26,6 +26,8 @@ static keyframe_base_t * current_keyframe[PIXELKEY_NEOPIXEL_COUNT] = {0};
 static timestep_t        current_framecount[PIXELKEY_NEOPIXEL_COUNT] = {0};
 static framerate_t       current_framerate = 0;
 
+static uint32_t          framecount = 0;
+
 /**
  * Initialize a keyframe or keyframe group.
  * @param[in] p_keyframe Pointer to the keyframe to initialize.
@@ -116,6 +118,8 @@ pixelkey_error_t pixelkey_keyframeproc_render_frame(color_rgb_t * p_frame_buffer
         }
     }
 
+    framecount++;
+
     return PIXELKEY_ERROR_NONE;
 }
 
@@ -159,11 +163,23 @@ void pixelkey_keyframeproc_framerate_set(framerate_t framerate)
 }
 
 /**
+ * Gets the total numbered of rendered frames.
+ * @return The framecount.
+ * 
+ * @note This value can overflow and wrap back to zero.
+ */
+uint32_t pixelkey_keyframeproc_framecount_get(void)
+{
+    return framecount;
+}
+
+/**
  * Initializes the keyframe processor.
  * @param framerate The initial framerate to use.
 */
 void pixelkey_frameproc_init(framerate_t framerate)
 {
+    framecount = 0;
     current_framerate = framerate;
 
     for (size_t i = 0; i < PIXELKEY_NEOPIXEL_COUNT; i++)

@@ -2,6 +2,7 @@
 #define HAL_DEVICE_H
 
 #include "helper_macros.h"
+#include "log.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>

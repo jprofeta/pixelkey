@@ -34,7 +34,6 @@
 // The idea is that they should not be called by anyone other than the task manager.
 WARNING_DISABLE("missing-prototypes")
 
-static void input_buffer_shift(uint32_t count, uint32_t length);
 static void echo_str(uint8_t * str, size_t length);
 
 /** Write index of the input buffer. */
@@ -54,7 +53,7 @@ void pixelkey_task_do_frame(void)
 
     if (err != PIXELKEY_ERROR_NONE)
     {
-        /// @todo Log render error
+        LOG_SIGNAL(DIAG_SIGNAL_RENDER_ERROR);
         return;
     }
 
@@ -109,15 +108,19 @@ void pixelkey_task_command_rx(void)
         }
         else if (input_buffer[input_buffer_idx] == (uint8_t) '\b')
         {
-            // Handle backspace
-            char backspace_seq[] = "\b\x1B[0K"; // \b normally just moves the cursor back so throw in the escape code to clear the line.
-            echo_str((uint8_t *)backspace_seq, sizeof(backspace_seq) - 1);
-
-            // Decrement the write index and shift the buffer down.
-            input_buffer_idx--;
-            for (size_t j = 0; j < i - 1; j++) // i is the number of bytes remaining to be read.
+            // Check the current index to make sure we don't go negative.
+            if (input_buffer_idx > 0)
             {
-                input_buffer[input_buffer_idx + j] = input_buffer[input_buffer_idx + j + 2];
+                // Handle backspace
+                char backspace_seq[] = "\b\x1B[0K"; // \b normally just moves the cursor back so throw in the escape code to clear the line.
+                echo_str((uint8_t *)backspace_seq, sizeof(backspace_seq) - 1);
+
+                // Decrement the write index and shift the buffer down.
+                input_buffer_idx--;
+                for (size_t j = 0; j < i - 1; j++) // i is the number of bytes remaining to be read.
+                {
+                    input_buffer[input_buffer_idx + j] = input_buffer[input_buffer_idx + j + 2];
+                }
             }
         }
         else if ((input_buffer[input_buffer_idx] == (uint8_t) '\n')
@@ -163,7 +166,11 @@ void pixelkey_task_command_rx(void)
             }
 
             // Shift the input buffer down to remove the parsed command string.
-            input_buffer_shift(input_buffer_idx, input_buffer_idx + i);
+            // i is the remaining bytes to read.
+            for (size_t j = 0; j < i; j++)
+            {
+                input_buffer[j] = input_buffer[input_buffer_idx + j + 1];
+            }
 
             // Reset the buffer index and continue the scan.
             input_buffer_idx = 0;
@@ -176,21 +183,6 @@ void pixelkey_task_command_rx(void)
             input_buffer_idx++;
         }
     }
-}
-
-
-/**
- * Shifts the input buffer down once a command is parsed.
- * @param count  Number of elements to remove.
- * @param length Current length of the input buffer
- */
-static void input_buffer_shift(uint32_t count, uint32_t length)
-{
-    for (uint32_t i = 0, j = count; j < length; i++, j++)
-    {
-        input_buffer[i] = input_buffer[j];
-    }
-    input_buffer_idx -= count;
 }
 
 /**
