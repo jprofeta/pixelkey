@@ -77,7 +77,7 @@
 /** Mask for selecting the current data bit when converting color bytes to timing data. */
 #define NPDATA_SHIFT_REG_MASK       (UINT32_C(1) << (NEOPIXEL_COLOR_BITS - 1))
 
-static void push_data_to_buffer(uint32_t * const p_block);
+static inline void push_data_to_buffer(uint32_t * const p_block);
 
 /** NeoPixel frame buffer. */
 volatile color_rgb_t g_npdata_frame[PIXELKEY_NEOPIXEL_COUNT] = {0};
@@ -85,17 +85,21 @@ volatile color_rgb_t g_npdata_frame[PIXELKEY_NEOPIXEL_COUNT] = {0};
 /** Primary GPT compare buffer for generating NeoPixel timing waveforms. */
 static volatile uint32_t npdata_gpt_buffer[NPDATA_GPT_BUFFER_LENGTH] = {0};
 
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
 /** Secondary buffer for NeoPixel data used to fill npdata_gpt_buffer. */
 static volatile uint32_t npdata_secondary_buffer[NPDATA_SECONDARY_BUFFER_COUNT][NPDATA_GPT_BUFFER_LENGTH] = {0};
+#endif
 
-/** Current index to write to the secondary buffer. */
+/** Current NeoPixel index to write to the buffers. */
 static volatile int32_t npdata_frame_idx = NPDATA_FRAME_IDX_DEFAULT;
 
-/** Current bit to write to the secondary buffer. */
+/** Current bit to write to the buffers. */
 static volatile uint8_t npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
 
 /** Current full shift-register word for the color being written. */
 static volatile uint32_t npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
+
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
 
 /**
  * @name DTC configuration and data
@@ -192,6 +196,7 @@ static const transfer_instance_t npdata_secondary_xfr =
 
 /** @} */
 
+#endif
 
 
 /**
@@ -207,9 +212,8 @@ static const transfer_instance_t npdata_secondary_xfr =
  */
 void dmac0_repeat_isr(void)
 {
-    IRQn_Type irq = R_FSP_CurrentIrqGet();
-
     // Clear IRQ to make sure it doesn't fire again after exiting.
+    IRQn_Type irq = R_FSP_CurrentIrqGet();
     R_BSP_IrqStatusClear(irq);
 
     // If more blocks remain, we have to manually restart the DMAC.
@@ -217,13 +221,24 @@ void dmac0_repeat_isr(void)
     if (R_DMAC0->DMCRB > 0U)
     {
         R_DMAC0->DMCNT = 1;
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
+        push_data_to_buffer((uint32_t *) npdata_gpt_buffer);
+#endif
+        LOG_TIME(DIAG_TIMING_FRAME_BLOCK_TX);
+        LOG_TIME_START(DIAG_TIMING_FRAME_BLOCK_BUFFER);
     }
     else
     {
         // Shutdown the transfer.
         g_npdata_timer.p_api->stop(&g_npdata_timer_ctrl);
+
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
         npdata_secondary_xfr.p_api->disable(&npdata_secondary_xfr_ctrl);
+#endif
+
         g_npdata_transfer.p_api->disable(&g_npdata_transfer_ctrl);
+        LOG_TIME(DIAG_TIMING_FRAME_TX);
+        LOG_TIME(DIAG_TIMING_FRAME_BLOCK_TX);
     }
 }
 
@@ -246,11 +261,11 @@ void npdata_transfer_callback(dmac_callback_args_t * p_args)
  */
 void dtc_complete_isr()
 {
-    IRQn_Type irq = R_FSP_CurrentIrqGet();
-
     // Clear IRQ to make sure it doesn't fire again after exiting.
+    IRQn_Type irq = R_FSP_CurrentIrqGet();
     R_BSP_IrqStatusClear(irq);
 
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
     // Calculate the block index that was just transferred to the DMAC area.
     // This isr will never see a num_blocks of 0 because the DTC rewrites the block count first if that happens.
     uint16_t block_idx = NPDATA_SECONDARY_BUFFER_COUNT - npdata_secondary_xfr_info[0].num_blocks;
@@ -265,6 +280,9 @@ void dtc_complete_isr()
     }
 
     push_data_to_buffer((uint32_t *) npdata_secondary_buffer[block_idx]);
+
+    LOG_TIME(DIAG_TIMING_FRAME_BLOCK_BUFFER);
+#endif
 }
 
 /** @} */
@@ -273,7 +291,7 @@ void dtc_complete_isr()
  * Push new data to the secondary (or primary) buffer.
  * @param[in] p_block Pointer to the block to write the data to.
  */
-static void push_data_to_buffer(uint32_t * const p_block)
+static inline void push_data_to_buffer(uint32_t * const p_block)
 {
     if (npdata_frame_idx >= ((int32_t) PIXELKEY_NEOPIXEL_COUNT))
     {
@@ -296,13 +314,17 @@ static void push_data_to_buffer(uint32_t * const p_block)
         npdata_color_word = *p_color_u32;
     }
 
+    uint32_t color_word = npdata_color_word;
+
     // Write the data. NeoPixel data is written MSb first.
     for (size_t i = 0; i < NPDATA_GPT_BUFFER_LENGTH; i++)
     {
-        p_block[i] = (npdata_color_word & (NPDATA_SHIFT_REG_MASK)) ? NPDATA_GPT_B1 : NPDATA_GPT_B0;
-        npdata_color_word <<= 1;
+        p_block[i] = (color_word & (NPDATA_SHIFT_REG_MASK)) ? NPDATA_GPT_B1 : NPDATA_GPT_B0;
+        color_word <<= 1;
         npdata_color_bit--;
     }
+
+    npdata_color_word = color_word;
 }
 
 /**
@@ -341,26 +363,38 @@ void npdata_frame_send(void)
     npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
 
     push_data_to_buffer((uint32_t *) npdata_gpt_buffer);
+
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
     for (size_t i = 0; i < NPDATA_SECONDARY_BUFFER_COUNT; i++)
     {
         push_data_to_buffer((uint32_t *) npdata_secondary_buffer[i]);
     }
+#endif
 
     // Reconfigure the peripherals.
     // 1. Reset the DMAC source and block count.
     const uint16_t num_blocks = (uint16_t)((config_get_or_default()->num_neopixels * NEOPIXEL_COLOR_BITS) / NPDATA_GPT_BUFFER_LENGTH);
     g_npdata_transfer.p_api->reset(&g_npdata_transfer_ctrl, (void *) npdata_gpt_buffer, NULL, num_blocks);
+
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
     // 2. Reset the DTC.
     npdata_secondary_xfr_info[0].p_src = default_npdata_secbuff_ptr;
     npdata_secondary_xfr_info[0].num_blocks = default_npdata_secbuff_block_count;
-    
+#endif
+
     // Enable the peripherals
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
     npdata_secondary_xfr.p_api->enable(&npdata_secondary_xfr_ctrl);
+#endif
     g_npdata_transfer.p_api->enable(&g_npdata_transfer_ctrl);
 
     // Prefill the capture registers to zero, and start the timer to transfer the data.
+    R_GPT5->GTCCR[0] = 0;
+    R_GPT5->GTCCR[2] = 0;
     R_GPT5->GTCCR[1] = 0;
     R_GPT5->GTCCR[3] = 0;
+    LOG_TIME_START(DIAG_TIMING_FRAME_TX);
+    LOG_TIME_START(DIAG_TIMING_FRAME_BLOCK_TX);
     g_npdata_timer.p_api->start(&g_npdata_timer_ctrl);
 
     // Queue the task to render the next frame.
@@ -381,7 +415,10 @@ void npdata_open(void)
     g_npdata_timer.p_api->open(&g_npdata_timer_ctrl, &g_npdata_timer_cfg);
 
     g_npdata_transfer.p_api->open(&g_npdata_transfer_ctrl, &g_npdata_transfer_cfg);
+
+#if NPDATA_SECONDARY_BUFFER_COUNT > 0
     npdata_secondary_xfr.p_api->open(&npdata_secondary_xfr_ctrl, &npdata_secondary_xfr_cfg);
+#endif
 
     R_BSP_IrqCfgEnable(VECTOR_NUMBER_DTC_COMPLETE, 1, NULL);
 }

@@ -16,10 +16,10 @@
 #define PIXELKEY_NEOPIXEL_COUNT         (4U)
 
 /** Length of the GPT waveform buffer. */
-#define NPDATA_GPT_BUFFER_LENGTH        (8U)
+#define NPDATA_GPT_BUFFER_LENGTH        (24U)
 
 /** Number of secondary waveform buffers to keep. */
-#define NPDATA_SECONDARY_BUFFER_COUNT   (2U)
+#define NPDATA_SECONDARY_BUFFER_COUNT   (0U)
 
 /** Count for the high period of a 1-bit. */
 #define NPDATA_GPT_B1                   (30)

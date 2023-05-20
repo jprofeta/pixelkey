@@ -44,6 +44,14 @@
 /** Signifies an argument is not used. */
 #define ARG_NOT_USED(arg) ((void)(arg))
 
+#ifndef max
+#   define max(a,b)     ((a) > (b) ? (a) : (b))
+#endif
+
+#ifndef min
+#   define min(a,b)     ((a) <= (b) ? (a) : (b))
+#endif
+
 /** @} */
 
 #endif

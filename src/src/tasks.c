@@ -49,7 +49,9 @@ void pixelkey_task_do_frame(void)
 {
     color_rgb_t temp_frame[PIXELKEY_NEOPIXEL_COUNT] = {0};
 
+    LOG_TIME_START(DIAG_TIMING_FRAME_RENDER);
     pixelkey_error_t err = pixelkey_keyframeproc_render_frame(temp_frame);
+    LOG_TIME(DIAG_TIMING_FRAME_RENDER);
 
     if (err != PIXELKEY_ERROR_NONE)
     {

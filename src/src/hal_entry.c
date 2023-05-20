@@ -14,6 +14,9 @@
 #include "pixelkey_hal.h"
 #include "keyframes.h"
 
+// Enable the SysTick clock and use the processor clock as the source.
+#define SYSTICK_CONFIG_VALUE    (SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk)
+
 /* *****************************************************************************
  * Function declarations
  * ****************************************************************************/
@@ -21,6 +24,8 @@
 FSP_CPP_HEADER
 void R_BSP_WarmStart(bsp_warm_start_event_t event);
 FSP_CPP_FOOTER
+
+static void systick_init(void);
 
 extern const serial_api_t g_usb_serial;
 extern const config_api_t g_config;
@@ -32,6 +37,19 @@ extern const config_api_t g_config;
 /* *****************************************************************************
  * Static functions
  * ****************************************************************************/
+
+static void systick_init(void)
+{
+    // Disable the systick clock first.
+    SysTick->CTRL = 0U;
+
+    // Set the reload value and clear the current value.
+    SysTick->LOAD = SysTick_LOAD_RELOAD_Msk;
+    SysTick->VAL = 0;
+
+    // Change the clock source to the processor clock and enable.
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
+}
 
 void hal_frame_timer_callback(timer_callback_args_t * p_args)
 {
@@ -88,6 +106,15 @@ void hal_entry(void)
     }
 
     config_data_t const * const p_config = config_get_or_default();
+
+#if DIAGNOSTICS_ENABLE
+    // Configure SysTick for diagnostics
+    systick_init();
+
+    LOG_SIGNAL_RESET();
+    LOG_COUNTER_RESET();
+    LOG_TIME_RESET_ALL();
+#endif
 
     // Setup initial data first.
     pixelkey_frameproc_init((framerate_t)p_config->framerate);

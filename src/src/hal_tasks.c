@@ -108,9 +108,11 @@ void tasks_run(task_fn_t idle_task)
         {
             // Disable interrupts around modifying the task queue.
             FSP_CRITICAL_SECTION_ENTER;
+
             // Copy then clear the task queue list.
             pending_tasks = queued_tasks;
             queued_tasks = TASK_ID_NONE;
+
             // Restore interrupts.
             FSP_CRITICAL_SECTION_EXIT;
 
