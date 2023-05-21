@@ -286,7 +286,7 @@
       <property id="module.driver.transfer.p_src" value="NULL"/>
       <property id="module.driver.transfer.length" value="4"/>
       <property id="module.driver.transfer.num_blocks" value="24"/>
-      <property id="module.driver.transfer.activation_event" value="_signal.event.gpt5.counter.overflow"/>
+      <property id="module.driver.transfer.activation_event" value="_signal.event.gpt5.capture.compare.b"/>
       <property id="module.driver.transfer.p_callback" value="npdata_transfer_callback"/>
       <property id="module.driver.transfer.p_context" value="NULL"/>
       <property id="module.driver.transfer.ipl" value="board.icu.common.irq.priority0"/>

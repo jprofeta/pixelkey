@@ -259,7 +259,7 @@ FSP Configuration
       Extra Features: Output Disable: GTIOCA Disable Setting: Disable Prohibited
       Extra Features: Output Disable: GTIOCB Disable Setting: Disable Prohibited
       
-    Instance "g_npdata_transfer Transfer (r_dmac) GPT5 COUNTER OVERFLOW (Overflow)"
+    Instance "g_npdata_transfer Transfer (r_dmac) GPT5 CAPTURE COMPARE B (Compare match B)"
       Name: g_npdata_transfer
       Channel: 0
       Mode: Repeat
@@ -271,7 +271,7 @@ FSP Configuration
       Source Pointer: NULL
       Number of Transfers: 4
       Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 24
-      Activation Source: GPT5 COUNTER OVERFLOW (Overflow)
+      Activation Source: GPT5 CAPTURE COMPARE B (Compare match B)
       Callback: npdata_transfer_callback
       Context: NULL
       Transfer End Interrupt Priority: Priority 0 (highest)

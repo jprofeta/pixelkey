@@ -69,11 +69,10 @@
 #include "r_dtc.h"
 
 /** Default value for @ref npdata_frame_idx. */
-#define NPDATA_FRAME_IDX_DEFAULT    (-1)
+#define NPDATA_FRAME_IDX_DEFAULT    (0U)
 /** Default value for @ref npdata_color_bit. */
-#define NPDATA_COLOR_BIT_DEFAULT    (UINT8_MAX)
-/** Default value for @ref npdata_color_word. */
-#define NPDATA_COLOR_WORD_DEFAULT   (0U)
+#define NPDATA_COLOR_BIT_DEFAULT    (NPDATA_SHIFT_REG_MASK)
+
 /** Mask for selecting the current data bit when converting color bytes to timing data. */
 #define NPDATA_SHIFT_REG_MASK       (UINT32_C(1) << (NEOPIXEL_COLOR_BITS - 1))
 
@@ -91,13 +90,13 @@ static volatile uint32_t npdata_secondary_buffer[NPDATA_SECONDARY_BUFFER_COUNT][
 #endif
 
 /** Current NeoPixel index to write to the buffers. */
-static volatile int32_t npdata_frame_idx = NPDATA_FRAME_IDX_DEFAULT;
+static volatile uint32_t npdata_frame_idx = NPDATA_FRAME_IDX_DEFAULT;
 
 /** Current bit to write to the buffers. */
-static volatile uint8_t npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
+static volatile uint32_t npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
 
 /** Current full shift-register word for the color being written. */
-static volatile uint32_t npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
+static volatile uint32_t npdata_color_word = 0U;
 
 #if NPDATA_SECONDARY_BUFFER_COUNT > 0
 
@@ -221,7 +220,7 @@ void dmac0_repeat_isr(void)
     if (R_DMAC0->DMCRB > 0U)
     {
         R_DMAC0->DMCNT = 1;
-#if NPDATA_SECONDARY_BUFFER_COUNT > 0
+#if NPDATA_SECONDARY_BUFFER_COUNT == 0
         push_data_to_buffer((uint32_t *) npdata_gpt_buffer);
 #endif
         LOG_TIME(DIAG_TIMING_FRAME_BLOCK_TX);
@@ -293,25 +292,12 @@ void dtc_complete_isr()
  */
 static inline void push_data_to_buffer(uint32_t * const p_block)
 {
-    if (npdata_frame_idx >= ((int32_t) PIXELKEY_NEOPIXEL_COUNT))
+    const uint32_t num_neopixels = config_get_or_default()->num_neopixels;
+
+    if (npdata_frame_idx >= num_neopixels)
     {
         // No more elements left.
         return;
-    }
-
-    if (npdata_color_bit == UINT8_MAX)
-    {
-        // Load the next color word.
-        npdata_color_bit = NEOPIXEL_COLOR_BITS - 1;
-        npdata_frame_idx++;
-
-        volatile color_rgb_t * p_color = &g_npdata_frame[npdata_frame_idx];
-
-        // NeoPixel data is transferred green-red-blue...
-        // Copy it directly from the color_rgb_t struct.
-        // color_rgb_t should be in the correct order unless the static_asserts were changed.
-        uint32_t * p_color_u32 = (uint32_t *)(void *)p_color;
-        npdata_color_word = *p_color_u32;
     }
 
     uint32_t color_word = npdata_color_word;
@@ -319,9 +305,29 @@ static inline void push_data_to_buffer(uint32_t * const p_block)
     // Write the data. NeoPixel data is written MSb first.
     for (size_t i = 0; i < NPDATA_GPT_BUFFER_LENGTH; i++)
     {
-        p_block[i] = (color_word & (NPDATA_SHIFT_REG_MASK)) ? NPDATA_GPT_B1 : NPDATA_GPT_B0;
-        color_word <<= 1;
-        npdata_color_bit--;
+        p_block[i] = (color_word & npdata_color_bit) ? NPDATA_GPT_B1 : NPDATA_GPT_B0;
+        npdata_color_bit >>= 1;
+
+        if (npdata_color_bit == 0)
+        {
+            // Load the next color word.
+            npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
+            npdata_frame_idx++;
+
+            if (npdata_frame_idx >= num_neopixels)
+            {
+                // No more elements left.
+                return;
+            }
+
+            volatile color_rgb_t * p_color = &g_npdata_frame[npdata_frame_idx];
+
+            // NeoPixel data is transferred green-red-blue... MSb first
+            // Copy it directly from the color_rgb_t struct.
+            // color_rgb_t should be in the correct order unless the static_asserts were changed.
+            uint32_t * p_color_u32 = (uint32_t *)(void *)p_color;
+            color_word = *p_color_u32;
+        }
     }
 
     npdata_color_word = color_word;
@@ -360,7 +366,11 @@ void npdata_frame_send(void)
     // Initialize the buffers and state variables.
     npdata_frame_idx = NPDATA_FRAME_IDX_DEFAULT;
     npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
-    npdata_color_word = NPDATA_COLOR_WORD_DEFAULT;
+    // NeoPixel data is transferred green-red-blue...
+    // Copy it directly from the color_rgb_t struct.
+    // color_rgb_t should be in the correct order unless the static_asserts were changed.
+    uint32_t * p_color_u32 = (uint32_t *)(void *)(&g_npdata_frame[0]);
+    npdata_color_word = *p_color_u32;
 
     push_data_to_buffer((uint32_t *) npdata_gpt_buffer);
 
@@ -386,13 +396,18 @@ void npdata_frame_send(void)
 #if NPDATA_SECONDARY_BUFFER_COUNT > 0
     npdata_secondary_xfr.p_api->enable(&npdata_secondary_xfr_ctrl);
 #endif
+    // Change to software mode and send the first signals to the GPT manually.
+    g_npdata_transfer_ctrl.p_reg->DMTMD_b.DCTG = 0;
+    g_npdata_transfer.p_api->enable(&g_npdata_transfer_ctrl);
+    g_npdata_transfer_ctrl.p_reg->DMREQ = R_DMAC0_DMREQ_SWREQ_Msk;
+    FSP_HARDWARE_REGISTER_WAIT(g_npdata_transfer_ctrl.p_reg->DMSTS, 0);
+    g_npdata_transfer.p_api->disable(&g_npdata_transfer_ctrl);
+
+    g_npdata_transfer_ctrl.p_reg->DMTMD_b.DCTG = 1;
     g_npdata_transfer.p_api->enable(&g_npdata_transfer_ctrl);
 
     // Prefill the capture registers to zero, and start the timer to transfer the data.
-    R_GPT5->GTCCR[0] = 0;
-    R_GPT5->GTCCR[2] = 0;
-    R_GPT5->GTCCR[1] = 0;
-    R_GPT5->GTCCR[3] = 0;
+    R_GPT5->GTCNT = 0;
     LOG_TIME_START(DIAG_TIMING_FRAME_TX);
     LOG_TIME_START(DIAG_TIMING_FRAME_BLOCK_TX);
     g_npdata_timer.p_api->start(&g_npdata_timer_ctrl);

@@ -167,7 +167,7 @@ const dmac_extended_cfg_t g_npdata_transfer_extend =
 #endif
   .ipl = (0),
   .channel = 0, .p_callback = npdata_transfer_callback, .p_context = NULL, .activation_source =
-          ELC_EVENT_GPT5_COUNTER_OVERFLOW, };
+          ELC_EVENT_GPT5_CAPTURE_COMPARE_B, };
 const transfer_cfg_t g_npdata_transfer_cfg =
 { .p_info = &g_npdata_transfer_info, .p_extend = &g_npdata_transfer_extend, };
 /* Instance structure to use this module. */
