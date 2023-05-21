@@ -30,6 +30,8 @@ pixelkey_error_t pixelkey_keyframeproc_push(uint8_t index, keyframe_base_t * p_k
 
 void pixelkey_commandproc_init(void);
 void pixelkey_commandproc_task(void);
+void pixelkey_commandproc_terminal_connected(void);
+void pixelkey_commandproc_send_prompt(void);
 pixelkey_error_t pixelkey_commandproc_push(cmd_t * p_cmd);
 
 /** @} */

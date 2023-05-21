@@ -17,8 +17,10 @@
 #define TASK_LIST \
     XTASK(FRAME_TX, npdata_frame_send, Transmits the last rendered frame.) \
     XTASK(FRAME_RENDER, pixelkey_task_do_frame, Calculates the next frame.) \
+    XTASK(TERMINAL_CONNECTED, pixelkey_task_terminal_connected, Sends strings for newly connected terminals.) \
     XTASK(CMD_RX, pixelkey_task_command_rx, Command string reception and parsing.) \
-    XTASK(CMD_HANDLER, pixelkey_commandproc_task, Command handling.)
+    XTASK(CMD_HANDLER, pixelkey_commandproc_task, Command handling.) \
+    XTASK(CMD_PROMPT, pixelkey_task_command_prompt, Sends the command prompt string once command handling completes.) \
 
 
 #define XTASK(task,fn,doc)     TASK_ ## task /*!< doc See @ref fn. */,

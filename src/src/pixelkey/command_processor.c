@@ -23,6 +23,8 @@
 #include "pixelkey_commands.h"
 #include "pixelkey_hal.h"
 
+#define CMDPROC_PROMPT_STR    "> "
+
 typedef void (*handler_fn_t)(void * p_cmd_args);
 
 static void send_trailer(bool is_nak, pixelkey_error_t error);
@@ -30,6 +32,7 @@ static void send_trailer(bool is_nak, pixelkey_error_t error);
 static void handler_undefined(void * p_cmd_args);
 static void handler_config_get(void * p_cmd_args);
 static void handler_config_set(void * p_cmd_args);
+static void handler_help(void * p_cmd_args);
 static void handler_resume(void * p_cmd_args);
 static void handler_stop(void * p_cmd_args);
 static void handler_status(void * p_cmd_args);
@@ -47,19 +50,45 @@ static ring_buffer_t cmd_buffer = {0};
 
 static handler_fn_t cmd_handlers[CMD_TYPE_COUNT] = 
 {
-    [CMD_TYPE_CONFIG_GET] = handler_config_get,
-    [CMD_TYPE_CONFIG_SET] = handler_config_set,
-    [CMD_TYPE_RESUME]     = handler_resume,
-    [CMD_TYPE_STOP]       = handler_stop,
-    [CMD_TYPE_STATUS]     = handler_status,
-    [CMD_TYPE_VERSION]    = handler_version,
-    [CMD_TYPE_TIME_GET]   = handler_time_get,
-    [CMD_TYPE_TIME_SET]   = handler_time_set,
-    [CMD_TYPE_KEYFRAME_WRAPPER] = handler_keyframe_wrapper,
-    [CMD_TYPE_KEYFRAME_MOD_REPEAT] = handler_keyframe_mod_repeat,
+    [CMD_TYPE_CONFIG_GET]            = handler_config_get,
+    [CMD_TYPE_CONFIG_SET]            = handler_config_set,
+    [CMD_TYPE_RESUME]                = handler_resume,
+    [CMD_TYPE_STOP]                  = handler_stop,
+    [CMD_TYPE_STATUS]                = handler_status,
+    [CMD_TYPE_VERSION]               = handler_version,
+    [CMD_TYPE_TIME_GET]              = handler_time_get,
+    [CMD_TYPE_TIME_SET]              = handler_time_set,
+    [CMD_TYPE_KEYFRAME_WRAPPER]      = handler_keyframe_wrapper,
+    [CMD_TYPE_KEYFRAME_MOD_REPEAT]   = handler_keyframe_mod_repeat,
     [CMD_TYPE_KEYFRAME_MOD_SCHEDULE] = handler_keyframe_mod_schedule,
-    [CMD_TYPE_KEYFRAME_MOD_GROUP] = handler_keyframe_mod_group,
+    [CMD_TYPE_KEYFRAME_MOD_GROUP]    = handler_keyframe_mod_group,
+    [CMD_TYPE_HELP]                  = handler_help,
 };
+
+// Make sure neither of these strings exceed 64 bytes!
+static struct st_cmd_help
+{
+    char const * const name;
+    char const * const desc;
+} cmd_help[] = 
+{
+    { "$help, help, ?", "Displays a help message" },
+    { "$version", "Shows current firmware version." },
+    { "$status", "Shows device status and info." },
+    { "$stop", "Stops keyframe processing and rendering." },
+    { "$resume", "Resume keyframe processing and rendering." },
+    { "$config-get", "Gets a configuration value." },
+    { "$config-set", "Sets a configuration value." },
+    { "$time-get", "Gets current system time." },
+    { "$time-set", "Sets current system time." },
+    { "set", "Keyframe to set the color of NeoPixels." },
+    { "blink", "Keyframe to blink between two colors." },
+    { "fade", "Keyframe to fade between colors." },
+    { "^<repeat>", "Repeat keyframe modifier." },
+    { "@<schedule>", "Schedule keyframe modifier." },
+    { "{[name], }", "Keyframe group modifier." },
+};
+#define CMD_HELP_COUNT  (sizeof(cmd_help)/sizeof(cmd_help[0]))
 
 static bool has_repeat_modifier = false;
 static int32_t repeat_modifier = 0;
@@ -118,6 +147,36 @@ void pixelkey_commandproc_task(void)
     }
 }
 
+/**
+ * Writes the initial device info and terminal prompt when a terminal attach is detected.
+ */
+void pixelkey_commandproc_terminal_connected(void)
+{
+    char msg[64];
+    int len;
+
+    len = snprintf(msg, sizeof(msg), "\n%s v%s\n%s", g_pixelkey_product_str, g_pixelkey_version_str, CMDPROC_PROMPT_STR);
+    serial()->write((uint8_t *)msg, (size_t)len);
+    // Don't flush here. Since we are in the middle of the initial handshake, the message can be sent twice
+    // depending on how the state machine goes. Just let it transmit it when it can.
+}
+
+/**
+ * Writes the terminal prompt.
+ * This is done as a task so that it can execute after all command processing has been completed.
+ */
+void pixelkey_commandproc_send_prompt(void)
+{
+    char msg[] = CMDPROC_PROMPT_STR;
+    serial()->write((uint8_t *)msg, sizeof(msg)-1);
+    serial()->flush();
+}
+
+/**
+ * Sends the OK/NAK trailer for each command.
+ * @param is_nak True if a NAK should be sent, false for OK.
+ * @param error  The error code if this is called for a NAK.
+ */
 static void send_trailer(bool is_nak, pixelkey_error_t error)
 {
     char trailer[16] = "OK\n";
@@ -133,7 +192,6 @@ static void send_trailer(bool is_nak, pixelkey_error_t error)
     }
     serial()->write((uint8_t *)trailer, (size_t)len);
     serial()->flush();
-
 }
 
 static void handler_undefined(void * p_cmd_args)
@@ -145,6 +203,53 @@ static void handler_undefined(void * p_cmd_args)
     serial()->flush();
 
     send_trailer(true, PIXELKEY_ERROR_UNKNOWN_COMMAND);
+}
+
+static void handler_help(void * p_cmd_args)
+{
+    ARG_NOT_USED(p_cmd_args);
+
+    char msg[64];
+    int len = 0;
+
+    len = snprintf(msg, sizeof(msg), "%s v%s\n", g_pixelkey_product_str, g_pixelkey_version_str);
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    len = snprintf(msg, sizeof(msg), "  %s\n\n", "https://github.com/jprofeta/pixelkey");
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    len = snprintf(msg, sizeof(msg), "Command syntax:\n");
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    len = snprintf(msg, sizeof(msg), "  $<cmd> [args...]\n");
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    len = snprintf(msg, sizeof(msg), "  [index list] <keyframe> <keyframe args...>\n");
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    len = snprintf(msg, sizeof(msg), "  <^|@|{|}><modifier args>\n\n");
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    len = snprintf(msg, sizeof(msg), "Available commands:\n");
+    serial()->write((uint8_t *)msg, (size_t)len);
+    serial()->flush();
+
+    for (size_t i = 0; i < CMD_HELP_COUNT; i++)
+    {
+        len = snprintf(msg, sizeof(msg), "  %-16s", cmd_help[i].name);
+        serial()->write((uint8_t *)msg, (size_t)len);
+        serial()->flush();
+
+        len = snprintf(msg, sizeof(msg), "%s\n", cmd_help[i].desc);
+        serial()->write((uint8_t *)msg, (size_t)len);
+        serial()->flush();
+    }
 }
 
 static void handler_config_get(void * p_cmd_args)

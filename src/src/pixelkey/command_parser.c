@@ -87,6 +87,10 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
             {
                 parse_error = parse_config_set(arg_ctx, p_cmd);
             }
+            else if (!strcmp(cmd_name, "$help"))
+            {
+                parse_error = parse_no_args(CMD_TYPE_HELP, arg_ctx, p_cmd);
+            }
             else if (!strcmp(cmd_name, "$resume"))
             {
                 parse_error = parse_no_args(CMD_TYPE_RESUME, arg_ctx, p_cmd);
@@ -115,6 +119,10 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
             {
                 parse_error = PIXELKEY_ERROR_UNKNOWN_COMMAND;
             }
+        }
+        else if (*cmd_tok == CMD_HELP_PREFIX)
+        {
+            parse_error = parse_no_args(CMD_TYPE_HELP, NULL, p_cmd);
         }
         else if (*cmd_tok == CMD_REPEAT_MOD_PREFIX)
         {
@@ -146,10 +154,19 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
             // Not supported yet
             parse_error = PIXELKEY_ERROR_UNKNOWN_COMMAND;
         }
-        else if (*cmd_tok == CMD_GROUP_MOD_PREFIX)
+        else if (*cmd_tok == CMD_GROUP_BEGIN_MOD_PREFIX)
         {
             // Not supported yet
             parse_error = PIXELKEY_ERROR_UNKNOWN_COMMAND;
+        }
+        else if (*cmd_tok == CMD_GROUP_END_MOD_PREFIX)
+        {
+            // Not supported yet
+            parse_error = PIXELKEY_ERROR_UNKNOWN_COMMAND;
+        }
+        else if (!strcmp(cmd_tok, "help"))
+        {
+            parse_error = parse_no_args(CMD_TYPE_HELP, NULL, p_cmd);
         }
         else
         {

@@ -24,7 +24,13 @@
 #define CMD_SCHEDULE_MOD_PREFIX     ('@')
 
 /** Prefix for group keyframe modifier command. */
-#define CMD_GROUP_MOD_PREFIX        ('#')
+#define CMD_GROUP_BEGIN_MOD_PREFIX  ('{')
+
+/** Prefix for group keyframe modifier command. */
+#define CMD_GROUP_END_MOD_PREFIX    ('}')
+
+/** Prefix for help shortcut. */
+#define CMD_HELP_PREFIX             ('?')
 
 /** Max string length for configuration keys. */
 #define CMD_CONFIG_KEY_MAX_LENGTH   (32)
@@ -53,6 +59,7 @@ typedef enum e_cmd_type
     CMD_TYPE_VERSION,               ///< Display device firmware version.
     CMD_TYPE_TIME_GET,              ///< Get the current system time.
     CMD_TYPE_TIME_SET,              ///< Set the current system time.
+    CMD_TYPE_HELP,                  ///< Displays a help message.
     CMD_TYPE_COUNT,                 ///< Total number of command types.
 } cmd_type_t;
 

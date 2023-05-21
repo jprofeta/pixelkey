@@ -130,7 +130,15 @@ void hal_usb_idle(void)
             else if (USB_PCDC_SET_CONTROL_LINE_STATE == (event_info.setup.request_type & USB_BREQUEST))
             {
                 /* Line state is not sent as a data field, but as the control value instead.*/
+                usb_pcdc_ctrllinestate_t old_state = line_state;
                 memcpy(&line_state, &event_info.setup.request_value, sizeof(usb_pcdc_ctrllinestate_t));
+
+                // A terminal was connected when a transition of DTR occurs with RTS asserted.
+                if (!old_state.bdtr && line_state.bdtr && line_state.brts)
+                {
+                    tasks_queue(TASK_TERMINAL_CONNECTED);
+                }
+
                 err_code = g_usb.p_api->periControlStatusSet(&g_usb_ctrl, USB_SETUP_STATUS_ACK);
             }
             else
@@ -227,9 +235,9 @@ static void rx_end(usb_event_info_t const * const p_event_info)
  */
 static bool tx_start(void)
 {
-    if (tx_length == 0)
+    if (tx_length == 0 || op_state == USB_OP_STATE_WRITE)
     {
-        // No data to transmit.
+        // No data to transmit or already in progress.
         return false;
     }
 

@@ -70,6 +70,22 @@ void pixelkey_task_do_frame(void)
 }
 
 /**
+ * Sends initial strings for a connected terminal.
+ */
+void pixelkey_task_terminal_connected(void)
+{
+    pixelkey_commandproc_terminal_connected();
+}
+
+/**
+ * Sends the command prompt.
+ */
+void pixelkey_task_command_prompt(void)
+{
+    pixelkey_commandproc_send_prompt();
+}
+
+/**
  * Processes data from the USB input buffer and parses into a command.
  */
 void pixelkey_task_command_rx(void)
@@ -176,6 +192,11 @@ void pixelkey_task_command_rx(void)
 
             // Reset the buffer index and continue the scan.
             input_buffer_idx = 0;
+
+            if (i == 1 && serial()->rts_get())
+            {
+                tasks_queue(TASK_CMD_PROMPT);
+            }
         }
         else
         {
