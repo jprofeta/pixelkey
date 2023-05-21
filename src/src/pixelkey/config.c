@@ -37,6 +37,7 @@ static config_data_t const config_data_default =
     .gamma_factor = NEOPIXEL_GAMMA_CORRECTION_DEFAULT,
     .framerate = PIXELKEY_DEFAULT_FRAMERATE,
     .num_neopixels = PIXELKEY_NEOPIXEL_COUNT,
+    .max_rgb_value = UINT8_MAX,
 };
 
 /**

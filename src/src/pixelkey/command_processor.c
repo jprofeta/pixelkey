@@ -186,6 +186,10 @@ static void handler_config_get(void * p_cmd_args)
     {
         len = sprintf(msg, "%"PRIu32"\n", p_config->num_neopixels);
     }
+    else if (!strcmp("max_rgb_value", p_args->key))
+    {
+        len = sprintf(msg, "%"PRIu16"\n", p_config->max_rgb_value);
+    }
     else
     {
         send_trailer(true, PIXELKEY_ERROR_KEY_NOT_FOUND);
@@ -272,6 +276,23 @@ static void handler_config_set(void * p_cmd_args)
         /// @todo Add support to set number of neopixels.
         send_trailer(true, PIXELKEY_ERROR_KEY_NOT_FOUND);
         return;
+    }
+    else if (!strcmp("max_rgb_value", p_args->key))
+    {
+        if (p_args->value_type != VALUE_TYPE_INTEGER)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        if (p_args->value.i32 < 0 || p_args->value.i32 > UINT8_MAX)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        new_config.max_rgb_value = p_args->value.i32;
+        config_error = config()->write(&new_config);
     }
     else
     {

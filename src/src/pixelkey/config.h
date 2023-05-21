@@ -52,6 +52,7 @@ typedef struct st_config_data
     float gamma_factor;                 ///< Gamma correction factor.
     uint32_t framerate;                 ///< Frame rate.
     uint32_t num_neopixels;             ///< Number of attached neopixels.
+    uint8_t max_rgb_value;              ///< Maximum brightness allowed for any RGB channel.
 } config_data_t;
 #pragma pack(pop)
 

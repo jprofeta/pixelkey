@@ -116,6 +116,15 @@ pixelkey_error_t pixelkey_keyframeproc_render_frame(color_rgb_t * p_frame_buffer
         {
             p_frame_buffer[i] = current_color[i];
         }
+
+        if (config_get_or_default()->max_rgb_value < UINT8_MAX)
+        {
+            const uint16_t new_max = (uint16_t)config_get_or_default()->max_rgb_value;
+            // Scale the output by the programmed max value.
+            p_frame_buffer[i].blue = (uint8_t)((new_max * (uint16_t)p_frame_buffer[i].blue + UINT8_MAX / 2) / UINT8_MAX);
+            p_frame_buffer[i].red = (uint8_t)((new_max * (uint16_t)p_frame_buffer[i].red + UINT8_MAX / 2) / UINT8_MAX);
+            p_frame_buffer[i].green = (uint8_t)((new_max * (uint16_t)p_frame_buffer[i].green + UINT8_MAX / 2) / UINT8_MAX);
+        }
     }
 
     framecount++;
