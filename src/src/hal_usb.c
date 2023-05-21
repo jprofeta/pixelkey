@@ -62,9 +62,9 @@ static size_t rx_length = 0;
 static size_t tx_length = 0;
 
 /** RX data buffer. */
-static uint8_t rx_buffer[USB_BUFFER_LENGTH] __attribute__ (( aligned (2) )) = {0};
+static uint8_t rx_buffer[USB_BUFFER_LENGTH] ALIGN(2) = {0};
 /** TX data buffer. */
-static uint8_t tx_buffer[USB_BUFFER_LENGTH] __attribute__ (( aligned (2) )) = {0};
+static uint8_t tx_buffer[USB_BUFFER_LENGTH] ALIGN(2) = {0};
 
 /** Serial instance for USB. */
 const serial_api_t g_usb_serial = {

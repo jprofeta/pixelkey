@@ -6,7 +6,7 @@
         #endif
 /* Number of interrupts allocated */
 #ifndef VECTOR_DATA_IRQ_COUNT
-#define VECTOR_DATA_IRQ_COUNT    (9)
+#define VECTOR_DATA_IRQ_COUNT    (8)
 #endif
 /* ISR prototypes */
 void usbfs_interrupt_handler(void);
@@ -17,7 +17,6 @@ void dmac0_repeat_isr(void);
 void rtc_alarm_periodic_isr(void);
 void rtc_carry_isr(void);
 void gpt_counter_overflow_isr(void);
-void dtc_complete_isr(void);
 
 /* Vector table allocations */
 #define VECTOR_NUMBER_USBFS_INT ((IRQn_Type) 0) /* USBFS INT (USBFS interrupt) */
@@ -36,8 +35,6 @@ void dtc_complete_isr(void);
 #define RTC_CARRY_IRQn          ((IRQn_Type) 6) /* RTC CARRY (Carry interrupt) */
 #define VECTOR_NUMBER_GPT0_COUNTER_OVERFLOW ((IRQn_Type) 7) /* GPT0 COUNTER OVERFLOW (Overflow) */
 #define GPT0_COUNTER_OVERFLOW_IRQn          ((IRQn_Type) 7) /* GPT0 COUNTER OVERFLOW (Overflow) */
-#define VECTOR_NUMBER_DTC_COMPLETE ((IRQn_Type) 8) /* DTC COMPLETE (DTC last transfer) */
-#define DTC_COMPLETE_IRQn          ((IRQn_Type) 8) /* DTC COMPLETE (DTC last transfer) */
 #ifdef __cplusplus
         }
         #endif

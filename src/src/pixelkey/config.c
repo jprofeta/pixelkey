@@ -61,7 +61,7 @@ config_data_t const * config_default(void)
  * Gets a pointer to the saved configuration values or the defaults if an error occurs.
  * @return Pointer to saved config or default values.
  */
-config_data_t const * config_get_or_default(void)
+inline config_data_t const * config_get_or_default(void)
 {
     config_data_t * p_data;
     if (PIXELKEY_ERROR_NONE == registered_api->read(&p_data))

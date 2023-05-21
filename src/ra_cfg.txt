@@ -130,7 +130,6 @@ FSP Configuration
       VSSUSB 11 USBFS0_VSSUSB - - - - - - - - IO "Read only" - 
     
   User Events
-    DTC COMPLETE (DTC last transfer): dtc_complete_isr
     DMAC0 INT (DMAC transfer end 0): dmac0_repeat_isr
     
   User Event Links
@@ -259,7 +258,7 @@ FSP Configuration
       Extra Features: Output Disable: GTIOCA Disable Setting: Disable Prohibited
       Extra Features: Output Disable: GTIOCB Disable Setting: Disable Prohibited
       
-    Instance "g_npdata_transfer Transfer (r_dmac) GPT5 CAPTURE COMPARE B (Compare match B)"
+    Instance "g_npdata_transfer Transfer (r_dmac) GPT5 COUNTER OVERFLOW (Overflow)"
       Name: g_npdata_transfer
       Channel: 0
       Mode: Repeat
@@ -271,7 +270,7 @@ FSP Configuration
       Source Pointer: NULL
       Number of Transfers: 4
       Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 24
-      Activation Source: GPT5 CAPTURE COMPARE B (Compare match B)
+      Activation Source: GPT5 COUNTER OVERFLOW (Overflow)
       Callback: npdata_transfer_callback
       Context: NULL
       Transfer End Interrupt Priority: Priority 0 (highest)

@@ -25,7 +25,7 @@ static pixelkey_error_t flash_config_write(config_data_t const * const p_config_
 static pixelkey_error_t flash_config_read(config_data_t ** pp_config_data);
 
 /** Pointer to the configuration struct at the start of the Data Flash section. */
-static config_data_t const * const p_nv_config = (config_data_t *)((void *)&__Data_Flash_Start);
+config_data_t const * const p_nv_config = (config_data_t *)((void *)&__Data_Flash_Start);
 
 /** Calculated NV memory CRC to validate the data. */
 static uint32_t nv_crc = UINT32_MAX;

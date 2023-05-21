@@ -20,6 +20,12 @@
 /** Restore the diagnostic state from the last @ref WARNING_SAVE(). */
 #define WARNING_RESTORE()       DO_PRAGMA(GCC diagnostic pop)
 
+/** Wraps around a GCC attribute. */
+#define ATTRIBUTE(x)            __attribute__ (( x ))
+
+/** Specifies an alignment attribute. */
+#define ALIGN(bytes)            ATTRIBUTE(aligned (bytes))
+
 /** Create a generic int flag. */
 #define FLAG(i)      (          1 << i)
 

@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-#include "r_dtc.h"
-
 #include "hal_data.h"
 #include "hal_device.h"
 #include "hal_npdata_transfer.h"
@@ -25,7 +23,9 @@ FSP_CPP_HEADER
 void R_BSP_WarmStart(bsp_warm_start_event_t event);
 FSP_CPP_FOOTER
 
+#if DIAGNOSTICS_ENABLE
 static void systick_init(void);
+#endif
 
 extern const serial_api_t g_usb_serial;
 extern const config_api_t g_config;
@@ -38,6 +38,7 @@ extern const config_api_t g_config;
  * Static functions
  * ****************************************************************************/
 
+#if DIAGNOSTICS_ENABLE
 static void systick_init(void)
 {
     // Disable the systick clock first.
@@ -50,6 +51,7 @@ static void systick_init(void)
     // Change the clock source to the processor clock and enable.
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
 }
+#endif
 
 void hal_frame_timer_callback(timer_callback_args_t * p_args)
 {

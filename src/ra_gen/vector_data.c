@@ -12,7 +12,6 @@
             [5] = rtc_alarm_periodic_isr, /* RTC PERIOD (Periodic interrupt) */
             [6] = rtc_carry_isr, /* RTC CARRY (Carry interrupt) */
             [7] = gpt_counter_overflow_isr, /* GPT0 COUNTER OVERFLOW (Overflow) */
-            [8] = dtc_complete_isr, /* DTC COMPLETE (DTC last transfer) */
         };
         const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENTRIES] =
         {
@@ -24,6 +23,5 @@
             [5] = BSP_PRV_IELS_ENUM(EVENT_RTC_PERIOD), /* RTC PERIOD (Periodic interrupt) */
             [6] = BSP_PRV_IELS_ENUM(EVENT_RTC_CARRY), /* RTC CARRY (Carry interrupt) */
             [7] = BSP_PRV_IELS_ENUM(EVENT_GPT0_COUNTER_OVERFLOW), /* GPT0 COUNTER OVERFLOW (Overflow) */
-            [8] = BSP_PRV_IELS_ENUM(EVENT_DTC_COMPLETE), /* DTC COMPLETE (DTC last transfer) */
         };
         #endif
