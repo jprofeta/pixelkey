@@ -39,7 +39,8 @@ static const keyframe_fade_t keyframe_fade_init =
     {
         .colors_len = 0,
         .push_current = false,
-        .fade_type = FADE_TYPE_STEP,
+        .fade_type = FADE_TYPE_CUBIC,
+        .curve = { { 0.0f,  0.0f }, { 1.0f,  1.0f } },  // Linear fade
         .period = 1
     }
 };
