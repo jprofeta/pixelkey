@@ -151,30 +151,23 @@ void hal_entry(void)
     p_kf_fade->args.colors[0].value = 25;
     p_kf_fade->args.colors[1] = color_green.hsv;
     p_kf_fade->args.colors[1].value = 25;
-    p_kf_fade->args.colors[2] = color_red.hsv;
+    p_kf_fade->args.colors[2] = color_blue.hsv;
     p_kf_fade->args.colors[2].value = 25;
-    p_kf_fade->args.colors_len = 3;
+    p_kf_fade->args.colors[3] = color_red.hsv;
+    p_kf_fade->args.colors[3].value = 25;
+    p_kf_fade->args.colors_len = 4;
     p_kf_fade->args.fade_type = FADE_TYPE_CUBIC;
     p_kf_fade->args.curve = cb_linear;
     p_kf_fade->args.period = 6;
     p_kf_fade->args.push_current = false;
     p_kf_fade->base.modifiers.repeat_count = -1;
 
-    p_kf = keyframe_blink_ctor(NULL);
-    memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
-    pixelkey_keyframeproc_push(0, p_kf);
+    p_kf = (keyframe_base_t *)p_kf_fade;
 
-    p_kf = keyframe_blink_ctor(NULL);
-    memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
-    pixelkey_keyframeproc_push(1, p_kf);
-
-    p_kf = keyframe_blink_ctor(NULL);
-    memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
-    pixelkey_keyframeproc_push(2, p_kf);
-
-    p_kf = keyframe_blink_ctor(NULL);
-    memcpy(p_kf, p_kf_blink, sizeof(keyframe_blink_t));
-    pixelkey_keyframeproc_push(3, p_kf);
+    pixelkey_keyframeproc_push(0, p_kf->p_api->clone(p_kf));
+    pixelkey_keyframeproc_push(1, p_kf->p_api->clone(p_kf));
+    pixelkey_keyframeproc_push(2, p_kf->p_api->clone(p_kf));
+    pixelkey_keyframeproc_push(3, p_kf->p_api->clone(p_kf));
 
     // Do the frame processing so it is ready on the first timer overflow.
     extern void pixelkey_task_do_frame(void);
