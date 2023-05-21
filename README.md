@@ -1,8 +1,10 @@
 # PixelKey
+[![Repository](https://img.shields.io/static/v1?style=social&logo=github&message=jprofeta/pixelkey&label=GitHub)](https://github.com/jprofeta/pixelkey)
+
 [![License](https://img.shields.io/badge/license-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Documentation](https://img.shields.io/badge/docs-GitHub_Pages-informational)](https://jprofeta.github.io/pixelkey)
 
-A simple NeoPixel USB Key powered by an RA4M1.
+A simple NeoPixel USB Key powered by a Renesas RA4M1.
 
 ## To do
  - [X] Implement frame transmission
