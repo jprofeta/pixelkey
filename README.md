@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Documentation](https://img.shields.io/badge/docs-GitHub_Pages-informational)](https://jprofeta.github.io/pixelkey)
 
-A simple NeoPixel USB Key powered by a Renesas RA4M1.
+A simple NeoPixel USB Key powered by a Renesas RA4M1 and the Renesas FSP: [https://github.com/renesas/fsp](https://github.com/renesas/fsp).
 
 ## To do
  - [X] Implement frame transmission
