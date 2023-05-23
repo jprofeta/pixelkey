@@ -30,7 +30,7 @@ config_data_t const * const p_nv_config = (config_data_t *)((void *)&__Data_Flas
 /** Calculated NV memory CRC to validate the data. */
 static uint32_t nv_crc = UINT32_MAX;
 
-const config_api_t g_config =
+const config_api_t g_hal_config =
 {
     .write = flash_config_write,
     .read = flash_config_read,

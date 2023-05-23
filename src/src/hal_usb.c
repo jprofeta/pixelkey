@@ -67,7 +67,7 @@ static uint8_t rx_buffer[USB_BUFFER_LENGTH] ALIGN(2) = {0};
 static uint8_t tx_buffer[USB_BUFFER_LENGTH] ALIGN(2) = {0};
 
 /** Serial instance for USB. */
-const serial_api_t g_usb_serial = {
+const serial_api_t g_hal_usb_serial = {
     .read =  usb_serial_read,
     .write = usb_serial_write,
     .flush = usb_serial_flush,

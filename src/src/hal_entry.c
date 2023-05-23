@@ -27,8 +27,8 @@ FSP_CPP_FOOTER
 static void systick_init(void);
 #endif
 
-extern const serial_api_t g_usb_serial;
-extern const config_api_t g_config;
+extern const serial_api_t g_hal_usb_serial;
+extern const config_api_t g_hal_config;
 
 /* *****************************************************************************
  * Static variables
@@ -100,7 +100,7 @@ pixelkey_error_t pixelkey_hal_frame_timer_update(framerate_t new_framerate)
 void hal_entry(void)
 {
     // Make sure NV is configured.
-    config_register(&g_config);
+    config_register(&g_hal_config);
     if (config_validate() != PIXELKEY_ERROR_NONE)
     {
         // Something went wrong...
@@ -132,7 +132,7 @@ void hal_entry(void)
     g_usb.p_api->open(&g_usb_ctrl, &g_usb_cfg);
 
     // Register the USB serial.
-    serial_register(&g_usb_serial);
+    serial_register(&g_hal_usb_serial);
 
     /* Initial hardware testing. */
     keyframe_base_t * p_kf;
