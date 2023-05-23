@@ -93,6 +93,10 @@ static struct st_cmd_help
 static bool has_repeat_modifier = false;
 static int32_t repeat_modifier = 0;
 
+static bool has_schedule_modifier = false;
+static bool is_schedule_repeating = false;
+static keyframe_schedule_t schedule_modifier = {0};
+
 /**
  * Initialize the command processor.
  */
@@ -453,6 +457,8 @@ static void handler_time_get(void * p_cmd_args)
 
 static void handler_time_set(void * p_cmd_args)
 {
+    cmd_args_time_set_t * p_time = (cmd_args_time_set_t *)p_cmd_args;
+
     send_trailer(true, PIXELKEY_ERROR_NONE);
 }
 
@@ -475,6 +481,12 @@ static void handler_keyframe_wrapper(void * p_cmd_args)
             if (has_repeat_modifier)
             {
                 p_keyframe->modifiers.repeat_count = repeat_modifier;
+            }
+
+            if (has_schedule_modifier)
+            {
+                p_keyframe->modifiers.schedule = schedule_modifier;
+                p_keyframe->modifiers.schedule_is_repeating = is_schedule_repeating;
             }
 
             pixelkey_keyframeproc_push(i, p_keyframe);
@@ -500,13 +512,28 @@ static void handler_keyframe_wrapper(void * p_cmd_args)
                 p_keyframe->modifiers.repeat_count = repeat_modifier;
             }
 
+            if (has_schedule_modifier)
+            {
+                p_keyframe->modifiers.schedule = schedule_modifier;
+                p_keyframe->modifiers.schedule_is_repeating = is_schedule_repeating;
+            }
+
             pixelkey_keyframeproc_push((uint8_t)(p_args->channels[i] - 1U), p_keyframe);
         }
     }
 
     // Clear the modifiers
-    has_repeat_modifier = false;
-    repeat_modifier = 0;
+    if (has_repeat_modifier)
+    {
+        has_repeat_modifier = false;
+        repeat_modifier = 0;
+    }
+    if (has_schedule_modifier)
+    {
+        has_schedule_modifier = false;
+        schedule_modifier = (keyframe_schedule_t){0};
+        is_schedule_repeating = false;
+    }
 
     send_trailer(false, PIXELKEY_ERROR_NONE);
 }
