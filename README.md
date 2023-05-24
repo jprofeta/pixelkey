@@ -7,25 +7,6 @@
 
 A simple NeoPixel USB Key powered by a Renesas RA4M1 and the Renesas FSP: [https://github.com/renesas/fsp](https://github.com/renesas/fsp).
 
-## To do
- - [X] Implement frame transmission
- - [X] Implement task manager
- - [X] Create frame render task and link to GPT0
- - [X] Test keyframe processor
- - [X] USB enumeration
- - [X] Test USB serial echo
- - [X] Implement USB to command buffer
- - [X] Implement command parsing and handler
- - [X] Implement keyframe command handling
- - [X] Add NV memory for initial state and framerate
- - [X] Fix fade keyframe beizer curve following
- - [ ] Add timesync and RTC functionality
- - [ ] Implement scheduled keyframes
- - [ ] Implement FW upgrade (maybe)
- - [ ] Finalize MK2 hardware design
- - [ ] Add MK2 schematics and layout to repo
- - [ ] Create python API and support project
-
 ## How to use
 PixelKey enumerates as a virtual COM device. Command strings terminated by a new-line can configure the device and change the NeoPixel states. A terminal emulator such as PuTTY can open the COM port to control the PixelKey. Please ensure you use the following settings:
  - Backspace is set to Control+H or `\b`. ASCII control sequences are ignored by the command parser.
