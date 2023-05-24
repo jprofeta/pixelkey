@@ -44,3 +44,13 @@ For a list of available error codes see [docs/error_codes](./docs/error_codes.md
 
 ## License
 See [LICENSE.md](./LICENSE.md).
+
+## Firmware design
+The design philosiphy for the firmware is to be as modular as possible. All the core PixelKey code that resides in `src/src/pixelkey` should be agnostic to the system it is running under. All HAL accesses are made though simple API structures that are registered at startup. Theoretically, this will make it easy to port to another MCU.
+
+All hardware specific code including the task manager, API layers, and some tasks themselves are stored at the top level of `src/src`. They provide the necessary abstractions to work on top of the RA4M1 and the Renesas FSP. 
+
+### Firmware stackup
+![firmware stackup](docs/firmware_stackup.drawio.svg)
+
+The columns show the approximate relationship between each block element.
