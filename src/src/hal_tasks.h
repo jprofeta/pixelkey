@@ -15,6 +15,7 @@
  * @note Tasks should be defined in order of priority (highest first).
  */
 #define TASK_LIST \
+    XTASK(REBOOT, pixelkey_reboot, Triggers a software reset.) \
     XTASK(FRAME_TX, npdata_frame_send, Transmits the last rendered frame.) \
     XTASK(FRAME_RENDER, pixelkey_task_do_frame, Calculates the next frame.) \
     XTASK(TERMINAL_CONNECTED, pixelkey_task_terminal_connected, Sends strings for newly connected terminals.) \

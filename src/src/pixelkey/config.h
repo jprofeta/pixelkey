@@ -17,8 +17,18 @@
 
 #define CONFIG_DATA_VERSION     (1)
 
+/** Provides configuration of the NeoPixel PHY to support other chipsets. */
+typedef struct st_config_neopixel_phy
+{
+    uint16_t frequency_khz; ///< Symbol frequency, in KHz, for the NeoPixel phy.
+    uint8_t  duty_cycle_b0; ///< Duty cycle of 0-bit.
+    uint8_t  duty_cycle_b1; ///< Duty cycle of 1-bit.
+} config_neopixel_phy_t;
+
+static_assert(sizeof(config_neopixel_phy_t) == 4, "config_neopixel_phy_t must be 4 bytes or an upgrade path provided.");
+
 // Saved to memory; must be packed!
-#pragma pack(push,1)
+#pragma pack(push, 1)
 /**
  * Configuration structure.
  * 
@@ -35,24 +45,25 @@ typedef struct st_config_data
      */
     struct
     {
-        uint16_t crc;                   ///< CRC-CCITT of all the following fields in the structure.
-        uint8_t  length;                ///< Size of the configuration data struct at the time of save.
-        uint8_t  version;               ///< Configuration struct version.
+        uint16_t crc;                     ///< CRC-CCITT of all the following fields in the structure.
+        uint8_t  length;                  ///< Size of the configuration data struct at the time of save.
+        uint8_t  version;                 ///< Configuration struct version.
     } header;
     union
     {
         struct
         {
-            uint32_t echo_enabled       :  1; ///< COM echo is enabled.
-            uint32_t gamma_enabled      :  1; ///< Gamma correction is enabled. 
-            uint32_t                    : 30;
-        } flags_b;                      ///< Configuration flags bit-field.
-        uint32_t flags;                 ///< Configuration flags as a word.
+            uint32_t echo_enabled   :  1; ///< COM echo is enabled.
+            uint32_t gamma_enabled  :  1; ///< Gamma correction is enabled. 
+            uint32_t                : 30;
+        } flags_b;                        ///< Configuration flags bit-field.
+        uint32_t flags;                   ///< Configuration flags as a word.
     };
-    float gamma_factor;                 ///< Gamma correction factor.
-    uint32_t framerate;                 ///< Frame rate.
-    uint32_t num_neopixels;             ///< Number of attached neopixels.
-    uint8_t max_rgb_value;              ///< Maximum brightness allowed for any RGB channel.
+    float    gamma_factor;                ///< Gamma correction factor.
+    uint32_t framerate;                   ///< Frame rate.
+    uint32_t num_neopixels;               ///< Number of attached neopixels.
+    uint8_t  max_rgb_value;               ///< Maximum brightness allowed for any RGB channel.
+    config_neopixel_phy_t neopixel_phy;   ///< PHY configuration.
 } config_data_t;
 #pragma pack(pop)
 

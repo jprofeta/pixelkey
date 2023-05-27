@@ -62,6 +62,7 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
             parse_error = PIXELKEY_ERROR_UNKNOWN_COMMAND;
             break;
         }
+        lower(cmd_tok);
 
         cmd_t * p_cmd = (cmd_t *)malloc(sizeof(cmd_t));
         if (p_cmd == NULL)
@@ -73,12 +74,16 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
 
         p_list->p_cmd = p_cmd;
 
-        if (*cmd_tok == CMD_PREFIX)
+        // Parse help first since it has multiple representations
+        if (!strcmp(cmd_tok, "?") || !strcmp(cmd_tok, "help") || !strcmp(cmd_tok, "$help"))
+        {
+            parse_error = parse_no_args(CMD_TYPE_HELP, NULL, p_cmd);
+        }
+        else if (*cmd_tok == CMD_PREFIX)
         {
             // Parse as non-keyframe command.
             char * arg_ctx = NULL;  // This should be the start of the next argument token in cmd_tok.
             char * cmd_name = strtok_r(cmd_tok, " ", &arg_ctx);
-            lower(cmd_name);
             if (!strcmp(cmd_name, "$config-get"))
             {
                 parse_error = parse_config_get(arg_ctx, p_cmd);
@@ -86,10 +91,6 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
             else if (!strcmp(cmd_name, "$config-set"))
             {
                 parse_error = parse_config_set(arg_ctx, p_cmd);
-            }
-            else if (!strcmp(cmd_name, "$help"))
-            {
-                parse_error = parse_no_args(CMD_TYPE_HELP, arg_ctx, p_cmd);
             }
             else if (!strcmp(cmd_name, "$resume"))
             {
@@ -115,14 +116,14 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
             {
                 parse_error = parse_time_set(arg_ctx, p_cmd);
             }
+            else if (!strcmp(cmd_name, "$reboot"))
+            {
+                parse_error = parse_no_args(CMD_TYPE_REBOOT, arg_ctx, p_cmd);
+            }
             else
             {
                 parse_error = PIXELKEY_ERROR_UNKNOWN_COMMAND;
             }
-        }
-        else if (*cmd_tok == CMD_HELP_PREFIX)
-        {
-            parse_error = parse_no_args(CMD_TYPE_HELP, NULL, p_cmd);
         }
         else if (*cmd_tok == CMD_REPEAT_MOD_PREFIX)
         {
@@ -163,10 +164,6 @@ pixelkey_error_t pixelkey_command_parse(char * command_str, cmd_list_t ** p_cmd_
         {
             // Not supported yet
             parse_error = PIXELKEY_ERROR_UNKNOWN_COMMAND;
-        }
-        else if (!strcmp(cmd_tok, "help"))
-        {
-            parse_error = parse_no_args(CMD_TYPE_HELP, NULL, p_cmd);
         }
         else
         {

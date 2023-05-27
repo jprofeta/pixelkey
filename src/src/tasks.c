@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include "hal_data.h"
 #include "hal_device.h"
 #include "hal_tasks.h"
 #include "pixelkey.h"
@@ -41,6 +42,20 @@ static size_t input_buffer_idx = 0;
 
 /** Input buffer for received command data over USB. */
 static uint8_t input_buffer[PIXELKEY_INPUT_COMMAND_BUFFER_LENGTH] = {0};
+
+void __NO_RETURN pixelkey_reboot(void)
+{
+    // Shut down the USB before reboot.
+    g_usb.p_api->close(&g_usb_ctrl);
+
+    // Unlock and set the reset signal in the core.
+    SCB->AIRCR = ((0x05FAU << SCB_AIRCR_VECTKEY_Pos) & SCB_AIRCR_VECTKEY_Msk) | SCB_AIRCR_SYSRESETREQ_Msk;
+    
+    while (1)
+    {
+        // Loop until reboot.
+    }
+}
 
 /**
  * Renders and queues a frame to be transferred at the next frame interval.

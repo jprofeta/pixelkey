@@ -29,9 +29,6 @@
 /** Prefix for group keyframe modifier command. */
 #define CMD_GROUP_END_MOD_PREFIX    ('}')
 
-/** Prefix for help shortcut. */
-#define CMD_HELP_PREFIX             ('?')
-
 /** Max string length for configuration keys. */
 #define CMD_CONFIG_KEY_MAX_LENGTH   (32)
 /** Max string length for time representations. */
@@ -60,6 +57,7 @@ typedef enum e_cmd_type
     CMD_TYPE_TIME_GET,              ///< Get the current system time.
     CMD_TYPE_TIME_SET,              ///< Set the current system time.
     CMD_TYPE_HELP,                  ///< Displays a help message.
+    CMD_TYPE_REBOOT,                ///< Triggers a software reset of the micro.
     CMD_TYPE_COUNT,                 ///< Total number of command types.
 } cmd_type_t;
 

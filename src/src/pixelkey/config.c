@@ -38,6 +38,12 @@ static config_data_t const config_data_default =
     .framerate = PIXELKEY_DEFAULT_FRAMERATE,
     .num_neopixels = PIXELKEY_NEOPIXEL_COUNT,
     .max_rgb_value = UINT8_MAX,
+    .neopixel_phy =
+    {
+        .frequency_khz = PIXELKEY_DEFAULT_PHY_FREQUENCY,
+        .duty_cycle_b0 = PIXELKEY_DEFAULT_PHY_B0,
+        .duty_cycle_b1 = PIXELKEY_DEFAULT_PHY_B1,
+    },
 };
 
 /**

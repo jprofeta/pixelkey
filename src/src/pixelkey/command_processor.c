@@ -13,6 +13,7 @@
 #include <stdio.h>
 
 #include "hal_device.h"
+#include "hal_tasks.h"
 #include "ring_buffer.h"
 #include "serial.h"
 #include "config.h"
@@ -39,6 +40,7 @@ static void handler_status(void * p_cmd_args);
 static void handler_version(void * p_cmd_args);
 static void handler_time_get(void * p_cmd_args);
 static void handler_time_set(void * p_cmd_args);
+static void handler_reboot(void * p_cmd_args);
 static void handler_keyframe_wrapper(void * p_cmd_args);
 static void handler_keyframe_mod_repeat(void * p_cmd_args);
 static void handler_keyframe_mod_schedule(void * p_cmd_args);
@@ -63,6 +65,7 @@ static handler_fn_t cmd_handlers[CMD_TYPE_COUNT] =
     [CMD_TYPE_KEYFRAME_MOD_SCHEDULE] = handler_keyframe_mod_schedule,
     [CMD_TYPE_KEYFRAME_MOD_GROUP]    = handler_keyframe_mod_group,
     [CMD_TYPE_HELP]                  = handler_help,
+    [CMD_TYPE_REBOOT]                = handler_reboot,
 };
 
 // Make sure neither of these strings exceed 64 bytes!
@@ -72,18 +75,19 @@ static struct st_cmd_help
     char const * const desc;
 } cmd_help[] = 
 {
-    { "$help, help, ?", "Displays a help message" },
-    { "$version", "Shows current firmware version." },
-    { "$status", "Shows device status and info." },
-    { "$stop", "Stops keyframe processing and rendering." },
-    { "$resume", "Resume keyframe processing and rendering." },
     { "$config-get", "Gets a configuration value." },
     { "$config-set", "Sets a configuration value." },
+    { "$help, help, ?", "Displays a help message." },
+    { "$reboot", "Reboots the PixelKey."},
+    { "$resume", "Resume keyframe processing and rendering." },
+    { "$status", "Shows device status and info." },
+    { "$stop", "Stops keyframe processing and rendering." },
     { "$time-get", "Gets current system time." },
     { "$time-set", "Sets current system time." },
-    { "set", "Keyframe to set the color of NeoPixels." },
+    { "$version", "Shows current firmware version." },
     { "blink", "Keyframe to blink between two colors." },
     { "fade", "Keyframe to fade between colors." },
+    { "set", "Keyframe to set the color of NeoPixels." },
     { "^<repeat>", "Repeat keyframe modifier." },
     { "@<schedule>", "Schedule keyframe modifier." },
     { "{[name], }", "Keyframe group modifier." },
@@ -299,6 +303,18 @@ static void handler_config_get(void * p_cmd_args)
     {
         len = sprintf(msg, "%"PRIu16"\n", p_config->max_rgb_value);
     }
+    else if (!strcmp("phy.frequency", p_args->key))
+    {
+        len = sprintf(msg, "%"PRIu16"\n", p_config->neopixel_phy.frequency_khz);
+    }
+    else if (!strcmp("phy.b0", p_args->key))
+    {
+        len = sprintf(msg, "%"PRIu16"\n", p_config->neopixel_phy.duty_cycle_b0);
+    }
+    else if (!strcmp("phy.b1", p_args->key))
+    {
+        len = sprintf(msg, "%"PRIu16"\n", p_config->neopixel_phy.duty_cycle_b1);
+    }
     else
     {
         send_trailer(true, PIXELKEY_ERROR_KEY_NOT_FOUND);
@@ -400,7 +416,58 @@ static void handler_config_set(void * p_cmd_args)
             return;
         }
 
-        new_config.max_rgb_value = p_args->value.i32;
+        new_config.max_rgb_value = (uint8_t) p_args->value.i32;
+        config_error = config()->write(&new_config);
+    }
+    else if (!strcmp("phy.frequency", p_args->key))
+    {
+        if (p_args->value_type != VALUE_TYPE_INTEGER)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        if (p_args->value.i32 < 1 || p_args->value.i32 > 1200)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        new_config.neopixel_phy.frequency_khz = (uint16_t) p_args->value.i32;
+        config_error = config()->write(&new_config);
+    }
+    else if (!strcmp("phy.b0", p_args->key))
+    {
+        if (p_args->value_type != VALUE_TYPE_INTEGER)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        if (p_args->value.i32 < 1 || p_args->value.i32 > 99)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        new_config.neopixel_phy.duty_cycle_b0 = (uint8_t) p_args->value.i32;
+        config_error = config()->write(&new_config);
+    }
+    else if (!strcmp("phy.b1", p_args->key))
+    {
+        if (p_args->value_type != VALUE_TYPE_INTEGER)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        if (p_args->value.i32 < 1 || p_args->value.i32 > 99)
+        {
+            send_trailer(true, PIXELKEY_ERROR_INVALID_ARGUMENT);
+            return;
+        }
+
+        new_config.neopixel_phy.duty_cycle_b1 = (uint8_t) p_args->value.i32;
         config_error = config()->write(&new_config);
     }
     else
@@ -460,6 +527,15 @@ static void handler_time_set(void * p_cmd_args)
     cmd_args_time_set_t * p_time = (cmd_args_time_set_t *)p_cmd_args;
 
     send_trailer(true, PIXELKEY_ERROR_NONE);
+}
+
+static void handler_reboot(void * p_cmd_args)
+{
+    ARG_NOT_USED(p_cmd_args);
+
+    tasks_queue(TASK_REBOOT);
+
+    send_trailer(false, PIXELKEY_ERROR_NONE);
 }
 
 static void handler_keyframe_wrapper(void * p_cmd_args)

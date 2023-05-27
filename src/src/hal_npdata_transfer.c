@@ -55,6 +55,12 @@ static uint32_t npdata_color_bit = NPDATA_COLOR_BIT_DEFAULT;
 /** Current full shift-register word for the color being written. */
 static uint32_t npdata_color_word = 0U;
 
+/** Timer counts for the high period of a 0-bit. */
+static uint32_t npdata_b0_counts = 0;
+
+/** Timer counts for the high period of a 1-bit. */
+static uint32_t npdata_b1_counts = 0;
+
 /**
  * @name ISR functions and callbacks
  * @{
@@ -133,7 +139,7 @@ static inline void push_data_to_buffer(uint32_t * const p_block)
     // Write the data. NeoPixel data is written MSb first.
     for (size_t i = 0; i < NPDATA_GPT_BUFFER_LENGTH; i++)
     {
-        p_block[i] = (npdata_color_word & npdata_color_bit) ? NPDATA_GPT_B1 : NPDATA_GPT_B0;
+        p_block[i] = (npdata_color_word & npdata_color_bit) ? (npdata_b1_counts) : (npdata_b0_counts);
         npdata_color_bit >>= 1;
 
         if (npdata_color_bit == 0)
@@ -228,6 +234,9 @@ void npdata_frame_send(void)
 */
 void npdata_open(void)
 {
+    // Grab the PHY configuration.
+    config_neopixel_phy_t const * const p_phy_settings = &config_get_or_default()->neopixel_phy;
+
     // Update the transfer info with the macro values
     extern transfer_info_t g_npdata_transfer_info;
     const uint16_t num_blocks = (uint16_t)((config_get_or_default()->num_neopixels * NEOPIXEL_COLOR_BITS) / NPDATA_GPT_BUFFER_LENGTH);
@@ -235,8 +244,17 @@ void npdata_open(void)
     g_npdata_transfer_info.num_blocks = num_blocks;
 
     g_npdata_timer.p_api->open(&g_npdata_timer_ctrl, &g_npdata_timer_cfg);
-
     g_npdata_transfer.p_api->open(&g_npdata_transfer_ctrl, &g_npdata_transfer_cfg);
+
+    // Set the data timer period.
+    const uint32_t source_freq_hz = R_BSP_SourceClockHzGet(BSP_CLOCKS_SOURCE_CLOCK_HOCO);
+    const uint32_t desired_freq_hz = p_phy_settings->frequency_khz * 1000U;
+    const uint32_t period = (source_freq_hz + (desired_freq_hz / 2U)) / desired_freq_hz; // Round to the nearest count.
+    g_npdata_timer.p_api->periodSet(&g_npdata_timer_ctrl, period);
+
+    // Save the bit timings.
+    npdata_b0_counts = (period * p_phy_settings->duty_cycle_b0 + 50U) / 100U;   // Convert from percentage to counts, rounding to nearest count.
+    npdata_b1_counts = (period * p_phy_settings->duty_cycle_b1 + 50U) / 100U;
 }
 
 /**

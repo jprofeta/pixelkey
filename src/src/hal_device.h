@@ -38,6 +38,12 @@
 
 #define PIXELKEY_DEFAULT_COM_ECHO       (0)
 
+#define PIXELKEY_DEFAULT_PHY_FREQUENCY  (800)
+
+#define PIXELKEY_DEFAULT_PHY_B0         (25)
+
+#define PIXELKEY_DEFAULT_PHY_B1         (50)
+
 void hal_usb_idle(void);
 
 /** @} */
