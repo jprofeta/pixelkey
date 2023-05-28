@@ -31,49 +31,49 @@
 #define COLOR_RGB_HEX_STR_LENGTH    (7U)
 
 /** Red: #FF0000. */
-const color_t color_red         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0, 100, 100 } };
+const color_t color_red         = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(  0), 100, 100 } };
 
 /** Orange: #FF8000. */
-const color_t color_orange      = { .color_space = COLOR_SPACE_HSV, .hsv = {  30, 100, 100 } };
+const color_t color_orange      = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE( 30), 100, 100 } };
 
 /** Yellow: #FFFF00. */
-const color_t color_yellow      = { .color_space = COLOR_SPACE_HSV, .hsv = {  60, 100, 100 } };
+const color_t color_yellow      = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE( 60), 100, 100 } };
 
 /** Neon: #80FF00. */
-const color_t color_neon        = { .color_space = COLOR_SPACE_HSV, .hsv = {  90, 100, 100 } };
+const color_t color_neon        = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE( 90), 100, 100 } };
 
 /** Green: #00FF00. */
-const color_t color_green       = { .color_space = COLOR_SPACE_HSV, .hsv = { 120, 100, 100 } };
+const color_t color_green       = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(120), 100, 100 } };
 
 /** Seafoam: #00FF80. */
-const color_t color_seafoam     = { .color_space = COLOR_SPACE_HSV, .hsv = { 150, 100, 100 } };
+const color_t color_seafoam     = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(150), 100, 100 } };
 
 /** Cyan: #00FFFF. */
-const color_t color_cyan        = { .color_space = COLOR_SPACE_HSV, .hsv = { 180, 100, 100 } };
+const color_t color_cyan        = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(180), 100, 100 } };
 
 /** Light Blue: #0080FF. */
-const color_t color_lightblue   = { .color_space = COLOR_SPACE_HSV, .hsv = { 210, 100, 100 } };
+const color_t color_lightblue   = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(210), 100, 100 } };
 
 /** Blue: #0000FF. */
-const color_t color_blue        = { .color_space = COLOR_SPACE_HSV, .hsv = { 240, 100, 100 } };
+const color_t color_blue        = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(240), 100, 100 } };
 
 /** Purple: #8000FF. */
-const color_t color_purple      = { .color_space = COLOR_SPACE_HSV, .hsv = { 270, 100, 100 } };
+const color_t color_purple      = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(270), 100, 100 } };
 
 /** Magenta: #FF00FF. */
-const color_t color_magenta     = { .color_space = COLOR_SPACE_HSV, .hsv = { 300, 100, 100 } };
+const color_t color_magenta     = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(300), 100, 100 } };
 
 /** Pink: #FF0080. */
-const color_t color_pink        = { .color_space = COLOR_SPACE_HSV, .hsv = { 330, 100, 100 } };
+const color_t color_pink        = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(330), 100, 100 } };
 
 /** White: #FFFFFF. */
-const color_t color_white       = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0, 100 } };
+const color_t color_white       = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(  0),   0, 100 } };
 
 /** Black: #000000. */
-const color_t color_black       = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0,   0 } };
+const color_t color_black       = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(  0),   0,   0 } };
 
 /** Off: #000000. */
-const color_t color_off         = { .color_space = COLOR_SPACE_HSV, .hsv = {   0,   0,   0 } };
+const color_t color_off         = { .color_space = COLOR_SPACE_HSV, .hsv = { HUE(  0),   0,   0 } };
 
 static const struct named_color
 {
@@ -104,6 +104,7 @@ static uint8_t gamma_table[RGB_MAX + 1] = {0};
 
 static int parse_next_hex_byte(char ** p_str);
 static int parse_next_uint(char * p_str, int min, int max);
+static float parse_next_f32(char * p_str, float min, float max);
 
 /**
  * Converts a color to the RGB color space.
@@ -117,15 +118,16 @@ static void color_convert_rgb(color_space_t from, color_kind_t const * p_in, col
     {
         case COLOR_SPACE_HSL:
         {
-            uint16_t h = p_in->hsv.hue / HUE_SECTOR_SIZE;
+            float h_f32 = HUE_FP_TO_F32(p_in->hsv.hue) / HUE_SECTOR_SIZE_F32;
+            uint16_t h_sector = (uint16_t)(h_f32);
             float s = (float) p_in->hsl.saturation / SATURATION_MAX_F32;
             float l = (float) p_in->hsl.lightness / LIGHTNESS_MAX_F32;
 
             float chroma = s * (1.0f - fabsf(2.0f * l - 1.0f));
-            float x = chroma * (1.0f - fabsf(fmodf(((float)p_in->hsv.hue / HUE_SECTOR_SIZE_F32), 2.0f) - 1.0f));
+            float x = chroma * (1.0f - fabsf(fmodf(h_f32, 2.0f) - 1.0f));
             float m = l - chroma / 2.0f;
 
-            switch (h)
+            switch (h_sector)
             {
                 case 0:
                     p_out->red = (uint8_t) (RGB_MAX_F32 * (chroma + m));
@@ -162,15 +164,16 @@ static void color_convert_rgb(color_space_t from, color_kind_t const * p_in, col
         break;
         case COLOR_SPACE_HSV:
         {
-            uint16_t h = p_in->hsv.hue / HUE_SECTOR_SIZE;
+            float h_f32 = HUE_FP_TO_F32(p_in->hsv.hue) / HUE_SECTOR_SIZE_F32;
+            uint16_t h_sector = (uint16_t)(h_f32);
             float s = (float) p_in->hsv.saturation / SATURATION_MAX_F32;
             float v = (float) p_in->hsv.value / VALUE_MAX_F32;
 
             float chroma = v * s;
-            float x = chroma * (1.0f - fabsf(fmodf(((float)p_in->hsv.hue / HUE_SECTOR_SIZE_F32), 2.0f) - 1.0f));
+            float x = chroma * (1.0f - fabsf(fmodf(h_f32, 2.0f) - 1.0f));
             float m = v - chroma;
 
-            switch (h)
+            switch (h_sector)
             {
                 case 0:
                     p_out->red = (uint8_t) (RGB_MAX_F32 * v);
@@ -271,7 +274,7 @@ static void color_convert_hsv(color_space_t from, color_kind_t const * p_in, col
             }
             // else: keep default of 0 deg.
 
-            p_out->hue = (uint16_t) (HUE_SECTOR_SIZE_F32 * h);
+            p_out->hue = HUE_F32(HUE_SECTOR_SIZE_F32 * h);
             p_out->value = (uint8_t) ((VALUE_MAX * (uint16_t) M) / RGB_MAX);  // Convert 0-255 -> 0-100
 
             if (M == 0) // Value == 0
@@ -354,7 +357,7 @@ static void color_convert_hsl(color_space_t from, color_kind_t const * p_in, col
 
             float l = ((float) M + (float) m) / (RGB_MAX_F32 * 2.0f);
 
-            p_out->hue = (uint16_t) (HUE_SECTOR_SIZE_F32 * h);
+            p_out->hue = HUE_F32(HUE_SECTOR_SIZE_F32 * h);
             p_out->lightness = (uint8_t) (LIGHTNESS_MAX_F32 * l);
 
             if (p_out->lightness == 0 || p_out->lightness == LIGHTNESS_MAX)
@@ -440,8 +443,8 @@ static int parse_next_hex_byte(char ** p_str)
 /**
  * Parses the next integer in a list separated by commas.
  * @param[in,out] p_str Pointer to the string to parse, or NULL to continue from the last string.
- * @param         min   Minumum accepted value.
- * @param         max   Maximum accepted value.
+ * @param         min   Minumum accepted value (inclusive).
+ * @param         max   Maximum accepted value (exclusive).
  * @return the parsed integer or -1 on error or out of range.
  */
 static int parse_next_uint(char * p_str, int min, int max)
@@ -451,12 +454,34 @@ static int parse_next_uint(char * p_str, int min, int max)
     {
         return -1;
     }
-    int pct_value = atoi(p_tok);
-    if (pct_value < min || pct_value > max)
+    int value = atoi(p_tok);
+    if (value < min || value >= max)
     {
         return -1;
     }
-    return pct_value;
+    return value;
+}
+
+/**
+ * Parses the next float in a list separated by commas.
+ * @param[in,out] p_str Pointer to the string to parse, or NULL to continue from the last string.
+ * @param         min   Minimum accepted value (inclusive).
+ * @param         max   Maximum accepted value (exclusive).
+ * @return the parsed float or NaN on error or out of range.
+*/
+static float parse_next_f32(char * p_str, float min, float max)
+{
+    char * p_tok = strtok(p_str, ",");
+    if (p_tok == NULL)
+    {
+        return -1;
+    }
+    float value = strtof(p_tok, NULL);
+    if (value < min || value >= max)
+    {
+        return NAN;
+    }
+    return value;
 }
 
 /**
@@ -533,37 +558,68 @@ bool color_parse(char * p_str, color_t * p_color_out)
                 p_color_out->color_space = COLOR_SPACE_HSV;
             }
 
-            int parsed_value = parse_next_uint(p_str, 0, 359);
-            if (parsed_value < 0) { return false; }
+            float parsed_value_f32 = parse_next_f32(p_str, 0.0, HUE_RANGE_F32);
+            if (isnan(parsed_value_f32)) { return false; }
             if (is_hsl)
             {
-                p_color_out->hsl.hue = (uint16_t) parsed_value;
+                p_color_out->hsl.hue = HUE_F32(parsed_value_f32);
             }
             else
             {
-                p_color_out->hsv.hue = (uint16_t) parsed_value;
+                p_color_out->hsv.hue = HUE_F32(parsed_value_f32);
+            }
+
+            int32_t parsed_value = parse_next_uint(NULL, 0, 100);
+            if (is_hsl)
+            {
+                if (parsed_value < 0)
+                {
+                    p_color_out->hsl.saturation = SATURATION_MAX;
+                    p_color_out->hsl.lightness = LIGHTNESS_MAX;
+                    return true;
+                }
+                else
+                {
+                    p_color_out->hsl.saturation = (uint8_t) parsed_value;
+                }
+            }
+            else
+            {if (parsed_value < 0)
+                {
+                    p_color_out->hsv.saturation = SATURATION_MAX;
+                    p_color_out->hsv.value = VALUE_MAX;
+                    return true;
+                }
+                else
+                {
+                    p_color_out->hsv.saturation = (uint8_t) parsed_value;
+                }
             }
 
             parsed_value = parse_next_uint(NULL, 0, 100);
-            if (parsed_value < 0) { return false; }
             if (is_hsl)
             {
-                p_color_out->hsl.saturation = (uint8_t) parsed_value;
+                if (parsed_value < 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    p_color_out->hsl.lightness = (uint8_t) parsed_value;
+                }
             }
             else
             {
-                p_color_out->hsv.saturation = (uint8_t) parsed_value;
-            }
-
-            parsed_value = parse_next_uint(NULL, 0, 100);
-            if (parsed_value < 0) { return false; }
-            if (is_hsl)
-            {
-                p_color_out->hsl.lightness = (uint8_t) parsed_value;
-            }
-            else
-            {
-                p_color_out->hsv.value = (uint8_t) parsed_value;
+                if (parsed_value < 0)
+                {
+                    // Allow shortcut to value. The saturation is actually the value to use and assume 100% saturation.
+                    p_color_out->hsv.value = p_color_out->hsv.saturation;
+                    p_color_out->hsv.saturation = SATURATION_MAX;
+                }
+                else
+                {
+                    p_color_out->hsv.value = (uint8_t) parsed_value;
+                }
             }
 
             if (strtok(NULL, ",") != NULL)

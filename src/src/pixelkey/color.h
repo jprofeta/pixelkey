@@ -29,6 +29,14 @@
 #define HUE_RANGE          (360U)
 /** Total range of hue values as a float-32. */
 #define HUE_RANGE_F32      (360.0f)
+/** Number of fixed-point fractional bits in the internal hue representation. */
+#define HUE_FP_BITS        (6U)
+/** Converts an integer hue to the fixed-point representation. */
+#define HUE(x)             ((uint16_t)((x) << HUE_FP_BITS))
+/** Converts a float hue to the fixed-point representation. */
+#define HUE_F32(x)         ((uint16_t)((x) * (float)(1 << HUE_FP_BITS)))
+/** Converts a fixed-point value to a float. */
+#define HUE_FP_TO_F32(x)   ((float)(x) / (float)(1 << HUE_FP_BITS))
 
 /** Maximum value of saturation. */
 #define SATURATION_MAX     (100U)
@@ -72,7 +80,7 @@ static_assert(offsetof(color_rgb_t, green) == 2, "color_rgb_t layout must be B-R
 /** Color represented in hue-saturation-value color space. */
 typedef struct st_color_hsv
 {
-    uint16_t hue;        ///< Hue component; ranges from 0-359.
+    uint16_t hue;        ///< Hue component; ranges from ~0-359.
     uint8_t  saturation; ///< Saturation component; ranges from 0-100.
     uint8_t  value;      ///< Value component; ranges from 0-100.
 } color_hsv_t;

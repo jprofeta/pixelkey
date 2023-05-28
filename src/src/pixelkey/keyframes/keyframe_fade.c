@@ -185,7 +185,7 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
 {
     if (axis & FADE_AXIS_HUE)
     {
-        float hue_delta = (float) (p_b->hue - p_a->hue);
+        float hue_delta = HUE_FP_TO_F32(p_b->hue) - HUE_FP_TO_F32(p_a->hue);
         if (fabsf(hue_delta) > HUE_RANGE_F32 / 2.0f)
         {
             // Change the "direction" of hue_delta so it goes around the hue circle in the expected direction.
@@ -201,7 +201,7 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
             }
         }
 
-        float out_hue = (float)p_a->hue + ratio * hue_delta;
+        float out_hue = HUE_FP_TO_F32(p_a->hue) + ratio * hue_delta;
 
         if (out_hue >= HUE_RANGE_F32)
         {
@@ -212,7 +212,7 @@ static void blend_colors(color_hsv_t const * p_a, color_hsv_t const * p_b, fade_
             out_hue = HUE_RANGE_F32 + out_hue;
         }
 
-        p_out->hue = (uint16_t)out_hue;
+        p_out->hue = HUE_F32(out_hue);
     }
     else
     {

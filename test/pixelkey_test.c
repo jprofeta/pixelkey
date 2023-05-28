@@ -3,6 +3,8 @@
 
 #include "unity_fixture.h"
 
+#define TEST_PRINT_BEZIER_CURVE 1
+
 static void runAllTests(void);
 
 int main(int argc, const char* argv[])
