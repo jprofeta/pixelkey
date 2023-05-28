@@ -37,11 +37,12 @@ All hardware specific code including the task manager, API layers, and some task
 The columns show the approximate relationship between each block element.
 
 ### Frame transmission
-Transmission of frame symbols to the attached NeoPixels occurs asynchronously using the DMAC and GPT peripherals. The flow diagram below outlines the two software components of transmitting the symbols. First, upon the expiration of the frame timer, the frame initialization tasks is queued. The initialization task sets up the GPT and DMAC peripherals for transmission. The GPT is used in custom waveform mode to send the bit symbols. The DMAC 
+Transmission of frame symbols to the attached NeoPixels occurs asynchronously using the DMAC and GPT peripherals. The flow diagram below outlines the two software components of transmitting the symbols. 
+![frame transmission](docs/npdata_transfer.drawio.svg)
+
+First, upon the expiration of the frame timer, the frame initialization tasks is queued. The initialization task sets up the GPT and DMAC peripherals for transmission. The GPT is used in custom waveform mode to send the bit symbols. The DMAC 
 pushes the next symbol timing to the GPT capture register. The DMAC is configured to repeat up to buffer size (N) transfers in symbols/N blocks (M).
 
 After each repeat count is complete, the DMAC triggers and interrupt request. In this ISR, the DMAC source address is changed to the opposite buffer then the DMAC transfer is resumed. Then the just completed buffer is re-filled with the next batch of symbols.
 
-Double-buffering was critical to reduce RAM overhead and maintain data integrity. With 4 attached NeoPixels, it requires 96 32-bit words for the frame symbols. This is increased by 24 words for every additional NeoPixel. Using two buffers of 24 symbols each (or smaller) and generating on the fly is a considerable RAM savings. At the HOCO frequency of 48&nbsp;MHz there are only 60 core clock cycles between NeoPixel bit symbols at the standard 800&nbsp;KHz operating frequency. ISR latency is nominally 29 cycles and the pipeline delay is 5 cycles, this provides a maximum of 25 instructions before the next GPT capture must be provided. SRAM accesses take approximately 2 cycles so this theoretically reduces available instructions to 12. This is very little opportunity to calculate the next symbol and restart the DMAC. 
-
-![frame transmission](docs/npdata_transfer.drawio.svg)
+Ping-pong-buffering was critical to reduce RAM overhead and maintain data integrity. With 4 attached NeoPixels, it requires 96 32-bit words for the frame symbols. This is increased by 24 words for every additional NeoPixel. Using two buffers of 24 symbols each (or smaller) and generating on the fly is a considerable RAM savings. At the HOCO frequency of 48&nbsp;MHz there are only 60 core clock cycles between NeoPixel bit symbols at the standard 800&nbsp;KHz operating frequency. ISR latency is nominally 29 cycles and the pipeline delay is 5 cycles, this provides a maximum of 25 instructions before the next GPT capture must be provided. SRAM accesses take approximately 2 cycles so this theoretically reduces available instructions to 12. This is very little opportunity to calculate the next symbol and restart the DMAC. 
