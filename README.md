@@ -37,7 +37,8 @@ All hardware specific code including the task manager, API layers, and some task
 The columns show the approximate relationship between each block element.
 
 ### Frame transmission
-Transmission of frame symbols to the attached NeoPixels occurs asynchronously using the DMAC and GPT peripherals. The flow diagram below outlines the two software components of transmitting the symbols. 
+Transmission of frame symbols to the attached NeoPixels occurs asynchronously using the DMAC and GPT peripherals. The flow diagram below outlines the two software components of transmitting the symbols.
+
 ![frame transmission](docs/npdata_transfer.drawio.svg)
 
 First, upon the expiration of the frame timer, the frame initialization tasks is queued. The initialization task sets up the GPT and DMAC peripherals for transmission. The GPT is used in custom waveform mode to send the bit symbols. The DMAC 
